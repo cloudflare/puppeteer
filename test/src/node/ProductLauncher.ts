@@ -15,7 +15,7 @@
  */
 import os from 'os';
 
-import {Browser} from '../common/Browser.js';
+import {Browser} from '../../../lib/cjs/puppeteer/common/Browser.js';
 import {BrowserFetcher} from './BrowserFetcher.js';
 
 import {
@@ -24,7 +24,7 @@ import {
   PuppeteerNodeLaunchOptions,
 } from './LaunchOptions.js';
 
-import {Product} from '../common/Product.js';
+import {Product} from '../../../lib/cjs/puppeteer/common/Product.js';
 import {ChromeLauncher} from './ChromeLauncher.js';
 import {FirefoxLauncher} from './FirefoxLauncher.js';
 import {accessSync, existsSync} from 'fs';

@@ -16,10 +16,10 @@
 
 import {initializePuppeteer} from './initializePuppeteer.js';
 
-export * from './common/NetworkConditions.js';
-export * from './common/QueryHandler.js';
-export * from './common/DeviceDescriptors.js';
-export * from './common/Errors.js';
+export * from '../../lib/cjs/puppeteer/common/NetworkConditions.js';
+export * from '../../lib/cjs/puppeteer/common/QueryHandler.js';
+export * from '../../lib/cjs/puppeteer/common/DeviceDescriptors.js';
+export * from '../../lib/cjs/puppeteer/common/Errors.js';
 
 export {Protocol} from 'devtools-protocol';
 

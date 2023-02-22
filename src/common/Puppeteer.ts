@@ -42,6 +42,7 @@ export interface ConnectOptions extends BrowserConnectOptions {
   browserWSEndpoint?: string;
   browserURL?: string;
   transport?: ConnectionTransport;
+  sessionId?: string;
 }
 
 /**

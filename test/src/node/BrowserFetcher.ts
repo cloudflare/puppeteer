@@ -22,9 +22,9 @@ import * as childProcess from 'child_process';
 import * as https from 'https';
 import * as http from 'http';
 
-import {Product} from '../common/Product.js';
+import {Product} from '../../../lib/cjs/puppeteer/common/Product.js';
 import extractZip from 'extract-zip';
-import {debug} from '../common/Debug.js';
+import {debug} from '../../../lib/cjs/puppeteer/common/Debug.js';
 import {promisify} from 'util';
 import removeRecursive from 'rimraf';
 import * as URL from 'url';
@@ -33,7 +33,7 @@ import createHttpsProxyAgent, {
   HttpsProxyAgentOptions,
 } from 'https-proxy-agent';
 import {getProxyForUrl} from 'proxy-from-env';
-import {assert} from '../util/assert.js';
+import {assert} from '../../../lib/cjs/puppeteer/util/assert.js';
 
 import tar from 'tar-fs';
 import bzip from 'unbzip2-stream';

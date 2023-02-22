@@ -3,8 +3,7 @@
 export * from './compat.d.js';
 export * from './constants.js';
 export * from './environment.js';
-export * from './initializePuppeteer.js';
-export * from './puppeteer.js';
+export * from './puppeteer-core.js';
 export * from './revisions.js';
 
 // Exports from `common`
@@ -50,25 +49,13 @@ export * from './common/Target.js';
 export * from './common/TargetManager.js';
 export * from './common/TaskQueue.js';
 export * from './common/TimeoutSettings.js';
-export * from './common/Tracing.js';
 export * from './common/USKeyboardLayout.js';
 export * from './common/WebWorker.js';
+export * from './common/WorkersWebSocketTransport.js';
+export * from './common/chunking.js';
 export * from './common/fetch.js';
 export * from './common/types.js';
 export * from './common/util.js';
-
-// Exports from `node`
-export * from './node/BrowserFetcher.js';
-export * from './node/BrowserRunner.js';
-export * from './node/ChromeLauncher.js';
-export * from './node/FirefoxLauncher.js';
-export * from './node/LaunchOptions.js';
-export * from './node/NodeWebSocketTransport.js';
-export * from './node/PipeTransport.js';
-export * from './node/ProductLauncher.js';
-export * from './node/Puppeteer.js';
-export * from './node/install.js';
-export * from './node/util.js';
 
 // Exports from `generated`
 export * from './generated/injected.js';

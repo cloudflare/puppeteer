@@ -46,15 +46,12 @@ import {Target} from './Target.js';
 import {TargetManagerEmittedEvents} from './TargetManager.js';
 import {TaskQueue} from './TaskQueue.js';
 import {TimeoutSettings} from './TimeoutSettings.js';
-import {Tracing} from './Tracing.js';
 import {EvaluateFunc, HandleFor, NodeFor} from './types.js';
 import {
   createJSHandle,
   debugError,
   evaluationString,
   getExceptionMessage,
-  importFS,
-  getReadableAsBuffer,
   getReadableFromProtocolStream,
   isNumber,
   isString,
@@ -477,7 +474,6 @@ export class Page extends EventEmitter {
   #accessibility: Accessibility;
   #frameManager: FrameManager;
   #emulationManager: EmulationManager;
-  #tracing: Tracing;
   #pageBindings = new Map<string, Function>();
   #coverage: Coverage;
   #javascriptEnabled = true;
@@ -513,7 +509,6 @@ export class Page extends EventEmitter {
       this.#timeoutSettings
     );
     this.#emulationManager = new EmulationManager(client);
-    this.#tracing = new Tracing(client);
     this.#coverage = new Coverage(client);
     this.#screenshotTaskQueue = screenshotTaskQueue;
     this.#viewport = null;
@@ -883,10 +878,6 @@ export class Page extends EventEmitter {
 
   get coverage(): Coverage {
     return this.#coverage;
-  }
-
-  get tracing(): Tracing {
-    return this.#tracing;
   }
 
   get accessibility(): Accessibility {
@@ -3009,6 +3000,7 @@ export class Page extends EventEmitter {
         ? result.data
         : Buffer.from(result.data, 'base64');
 
+    /*
     if (options.path) {
       try {
         const fs = (await importFS()).promises;
@@ -3022,6 +3014,7 @@ export class Page extends EventEmitter {
         throw error;
       }
     }
+    */
     return buffer;
 
     function processClip(
@@ -3125,7 +3118,7 @@ export class Page extends EventEmitter {
   /**
    * @param options -
    * @returns
-   */
+   *
   async pdf(options: PDFOptions = {}): Promise<Buffer> {
     const {path = undefined} = options;
     const readable = await this.createPDFStream(options);
@@ -3133,6 +3126,7 @@ export class Page extends EventEmitter {
     assert(buffer, 'Could not create buffer');
     return buffer;
   }
+  */
 
   /**
    * @returns The page's title

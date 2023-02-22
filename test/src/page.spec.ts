@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import expect from 'expect';
-import fs from 'fs';
+//import fs from 'fs';
 import {ServerResponse} from 'http';
 import path from 'path';
 import sinon from 'sinon';
@@ -1973,6 +1973,7 @@ describe('Page', function () {
     );
   });
 
+  /*
   describe('printing to PDF', function () {
     it('can print to PDF and save to file', async () => {
       // Printing to pdf is currently only supported in headless
@@ -2019,6 +2020,7 @@ describe('Page', function () {
       expect(error).toBeInstanceOf(puppeteer.errors.TimeoutError);
     });
   });
+  */
 
   describe('Page.title', function () {
     it('should return the page title', async () => {

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import {BrowserConnectOptions} from '../common/BrowserConnector.js';
-import {Product} from '../common/Product.js';
+import {BrowserConnectOptions} from '../../../lib/cjs/puppeteer/common/BrowserConnector.js';
+import {Product} from '../../../lib/cjs/puppeteer/common/Product.js';
 
 /**
  * Launcher options that only apply to Chrome.

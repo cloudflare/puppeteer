@@ -18,14 +18,14 @@ import {
   Puppeteer,
   CommonPuppeteerSettings,
   ConnectOptions,
-} from '../common/Puppeteer.js';
+} from '../../../lib/cjs/puppeteer/common/Puppeteer.js';
 import {BrowserFetcher, BrowserFetcherOptions} from './BrowserFetcher.js';
 import {LaunchOptions, BrowserLaunchArgumentOptions} from './LaunchOptions.js';
-import {BrowserConnectOptions} from '../common/BrowserConnector.js';
-import {Browser} from '../common/Browser.js';
+import {BrowserConnectOptions} from '../../../lib/cjs/puppeteer/common/BrowserConnector.js';
+import {Browser} from '../../../lib/cjs/puppeteer/common/Browser.js';
 import {createLauncher, ProductLauncher} from './ProductLauncher.js';
-import {PUPPETEER_REVISIONS} from '../revisions.js';
-import {Product} from '../common/Product.js';
+import {PUPPETEER_REVISIONS} from '../../../lib/cjs/puppeteer/revisions.js';
+import {Product} from '../../../lib/cjs/puppeteer/common/Product.js';
 
 /**
  * @public

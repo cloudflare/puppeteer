@@ -229,7 +229,8 @@ export class Browser extends EventEmitter {
     process?: ChildProcess,
     closeCallback?: BrowserCloseCallback,
     targetFilterCallback?: TargetFilterCallback,
-    isPageTargetCallback?: IsPageTargetCallback
+    isPageTargetCallback?: IsPageTargetCallback,
+    sessionId?: string
   ): Promise<Browser> {
     const browser = new Browser(
       product,
@@ -240,7 +241,8 @@ export class Browser extends EventEmitter {
       process,
       closeCallback,
       targetFilterCallback,
-      isPageTargetCallback
+      isPageTargetCallback,
+      sessionId,
     );
     await browser._attach();
     return browser;
@@ -256,6 +258,7 @@ export class Browser extends EventEmitter {
   #contexts: Map<string, BrowserContext>;
   #screenshotTaskQueue: TaskQueue;
   #targetManager: TargetManager;
+  #sessionId: string;
 
   /**
    * @internal
@@ -276,7 +279,8 @@ export class Browser extends EventEmitter {
     process?: ChildProcess,
     closeCallback?: BrowserCloseCallback,
     targetFilterCallback?: TargetFilterCallback,
-    isPageTargetCallback?: IsPageTargetCallback
+    isPageTargetCallback?: IsPageTargetCallback,
+    sessionId?: string
   ) {
     super();
     product = product || 'chrome';
@@ -313,6 +317,7 @@ export class Browser extends EventEmitter {
         new BrowserContext(this.#connection, this, contextId)
       );
     }
+    this.#sessionId = sessionId || 'unknown'
   }
 
   #emitDisconnected = () => {
@@ -745,9 +750,17 @@ export class Browser extends EventEmitter {
     return !this.#connection._closed;
   }
 
+  /**
+   * Get the BISO session ID associated with this browser
+   */
+  sessionId(): string {
+    return this.#sessionId
+  }
+
   #getVersion(): Promise<Protocol.Browser.GetVersionResponse> {
     return this.#connection.send('Browser.getVersion');
   }
+
 }
 /**
  * @public

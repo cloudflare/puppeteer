@@ -1,20 +1,21 @@
 {
-  "name": "puppeteer",
-  "version": "17.0.0",
-  "description": "A high-level API to control headless Chrome over the DevTools Protocol",
+  "name": "@cloudflare/puppeteer",
+  "version": "0.0.0-alpha.6",
+  "description": "A high-level API to control headless Chrome over the DevTools Protocol for use in Workers",
   "keywords": [
     "puppeteer",
     "chrome",
     "headless",
-    "automation"
+    "automation",
+    "workers"
   ],
   "type": "commonjs",
-  "main": "./lib/cjs/puppeteer/puppeteer.js",
+  "main": "./lib/cjs/puppeteer/puppeteer-core.js",
   "exports": {
     ".": {
       "types": "./lib/types.d.ts",
-      "import": "./lib/esm/puppeteer/puppeteer.js",
-      "require": "./lib/cjs/puppeteer/puppeteer.js"
+      "import": "./lib/esm/puppeteer/puppeteer-core.js",
+      "require": "./lib/cjs/puppeteer/puppeteer-core.js"
     },
     "./*": {
       "import": "./*",
@@ -36,7 +37,7 @@
     "test:chrome:headless-chrome": "cross-env HEADLESS=chrome PUPPETEER_DEFERRED_PROMISE_DEBUG_TIMEOUT=20000 mocha",
     "test:chrome:headful": "cross-env HEADLESS=false PUPPETEER_DEFERRED_PROMISE_DEBUG_TIMEOUT=20000 mocha",
     "prepublishOnly": "npm run build",
-    "prepare": "node typescript-if-required.js && husky install",
+    "prepare": "node typescript-if-required.js",
     "lint": "run-s lint:prettier lint:eslint",
     "lint:prettier": "prettier --check .",
     "lint:eslint": "([ \"$CI\" = true ] && eslint --ext js --ext ts --quiet -f codeframe . || eslint --ext js --ext ts .)",
@@ -58,7 +59,6 @@
     "build": "run-s generate:sources build:tsc generate:types generate:esm-package-json",
     "build:tsc": "tsc --version && run-p build:tsc:*",
     "build:tsc:esm": "tsc -b src/tsconfig.esm.json",
-    "build:tsc:cjs": "tsc -b src/tsconfig.cjs.json",
     "build:tsc:test": "tsc -b test"
   },
   "files": [
@@ -70,17 +70,11 @@
   "author": "The Chromium Authors",
   "license": "Apache-2.0",
   "dependencies": {
-    "cross-fetch": "3.1.5",
-    "debug": "4.3.4",
     "devtools-protocol": "0.0.1019158",
-    "extract-zip": "2.0.1",
-    "https-proxy-agent": "5.0.1",
-    "progress": "2.0.3",
-    "proxy-from-env": "1.1.0",
-    "rimraf": "3.0.2",
-    "tar-fs": "2.1.1",
-    "unbzip2-stream": "1.4.3",
-    "ws": "8.8.1"
+    "events": "^3.3.0",
+    "stream": "^0.0.2",
+    "url": "^0.11.0",
+    "util": "^0.12.5"
   },
   "devDependencies": {
     "@commitlint/cli": "17.0.3",
@@ -121,8 +115,9 @@
     "eslint-plugin-unused-imports": "2.0.0",
     "esprima": "4.0.1",
     "expect": "25.2.7",
+    "extract-zip": "^2.0.1",
     "gts": "4.0.0",
-    "husky": "8.0.1",
+    "https-proxy-agent": "^5.0.1",
     "jpeg-js": "0.4.4",
     "mime": "3.0.0",
     "minimist": "1.2.6",
@@ -132,12 +127,18 @@
     "pixelmatch": "5.3.0",
     "pngjs": "6.0.0",
     "prettier": "2.7.1",
+    "progress": "^2.0.3",
+    "proxy-from-env": "^1.1.0",
+    "rimraf": "3.0.2",
     "semver": "7.3.7",
     "sinon": "14.0.0",
     "source-map-support": "0.5.21",
+    "tar-fs": "^2.1.1",
     "text-diff": "1.0.1",
     "tsd": "0.22.0",
     "tsx": "3.8.2",
-    "typescript": "4.7.4"
+    "typescript": "4.7.4",
+    "unbzip2-stream": "^1.4.3",
+    "ws": "^8.8.1"
   }
 }

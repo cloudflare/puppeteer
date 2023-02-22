@@ -404,21 +404,24 @@ export async function waitWithTimeout<T>(
 
 /**
  * @internal
- */
+ *
 let fs: typeof import('fs') | null = null;
+*/
+
 /**
  * @internal
- */
+ *
 export async function importFS(): Promise<typeof import('fs')> {
   if (!fs) {
     fs = await import('fs');
   }
   return fs;
 }
+*/
 
 /**
  * @internal
- */
+ *
 export async function getReadableAsBuffer(
   readable: Readable,
   path?: string
@@ -453,6 +456,7 @@ export async function getReadableAsBuffer(
     return null;
   }
 }
+*/
 
 /**
  * @internal

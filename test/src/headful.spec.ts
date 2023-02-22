@@ -23,7 +23,7 @@ import {promisify} from 'util';
 import {
   PuppeteerLaunchOptions,
   PuppeteerNode,
-} from '../../lib/cjs/puppeteer/node/Puppeteer.js';
+} from './node/Puppeteer.js';
 import {
   describeChromeOnly,
   getTestState,

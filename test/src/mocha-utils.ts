@@ -30,8 +30,8 @@ import {isErrorLike} from '../../lib/cjs/puppeteer/util/ErrorLike.js';
 import {
   PuppeteerLaunchOptions,
   PuppeteerNode,
-} from '../../lib/cjs/puppeteer/node/Puppeteer.js';
-import puppeteer from '../../lib/cjs/puppeteer/puppeteer.js';
+} from './node/Puppeteer.js';
+import puppeteer from './puppeteer.js';
 import {TestServer} from '../../utils/testserver/lib/index.js';
 import {extendExpectWithToBeGolden} from './utils.js';
 

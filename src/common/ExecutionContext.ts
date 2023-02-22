@@ -249,25 +249,33 @@ export class ExecutionContext {
         : createJSHandle(this, remoteObject);
     }
 
-    let functionText = pageFunction.toString();
-    try {
-      new Function('(' + functionText + ')');
-    } catch (error) {
-      // This means we might have a function shorthand. Try another
-      // time prefixing 'function '.
-      if (functionText.startsWith('async ')) {
-        functionText =
-          'async function ' + functionText.substring('async '.length);
-      } else {
-        functionText = 'function ' + functionText;
-      }
-      try {
-        new Function('(' + functionText + ')');
-      } catch (error) {
-        // We tried hard to serialize, but there's a weird beast here.
-        throw new Error('Passed function is not well-serializable!');
-      }
-    }
+    const functionText = pageFunction.toString();
+
+    /**
+     * We remove the check for the ability for dynamic javascript to be
+     * serializable, because the Workers runtime does not allow dynamic
+     * javascript to be executed, as a security precaution. In the
+     * future, we can consider the serialization check in the back end
+     * but before the message gets to the remote browser.
+     * try {
+     * new Function('(' + functionText + ')');
+     * } catch (error) {
+     * // This means we might have a function shorthand. Try another
+     * // time prefixing 'function '.
+     * if (functionText.startsWith('async ')) {
+     * functionText =
+     * 'async function ' + functionText.substring('async '.length);
+     * } else {
+     * functionText = 'function ' + functionText;
+     * }
+     * try {
+     * new Function('(' + functionText + ')');
+     * } catch (error) {
+     * // We tried hard to serialize, but there's a weird beast here.
+     * throw new Error('Passed function is not well-serializable!');
+     * }
+     * }
+     */
     let callFunctionOnPromise;
     try {
       callFunctionOnPromise = this._client.send('Runtime.callFunctionOn', {

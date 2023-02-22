@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import {assert} from '../util/assert.js';
-import {Browser} from '../common/Browser.js';
-import {Product} from '../common/Product.js';
+import {assert} from '../../../lib/cjs/puppeteer/util/assert.js';
+import {Browser} from '../../../lib/cjs/puppeteer/common/Browser.js';
+import {Product} from '../../../lib/cjs/puppeteer/common/Product.js';
 import {BrowserRunner} from './BrowserRunner.js';
 import {
   BrowserLaunchArgumentOptions,

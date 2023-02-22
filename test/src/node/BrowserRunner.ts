@@ -20,19 +20,19 @@ import * as path from 'path';
 import * as readline from 'readline';
 import removeFolder from 'rimraf';
 import {promisify} from 'util';
-import {assert} from '../util/assert.js';
-import {Connection} from '../common/Connection.js';
-import {debug} from '../common/Debug.js';
-import {TimeoutError} from '../common/Errors.js';
+import {assert} from '../../../lib/cjs/puppeteer/util/assert.js';
+import {Connection} from '../../../lib/cjs/puppeteer/common/Connection.js';
+import {debug} from '../../../lib/cjs/puppeteer/common/Debug.js';
+import {TimeoutError} from '../../../lib/cjs/puppeteer/common/Errors.js';
 import {
   debugError,
   addEventListener,
   PuppeteerEventListener,
   removeEventListeners,
-} from '../common/util.js';
-import {isErrnoException, isErrorLike} from '../util/ErrorLike.js';
-import {Product} from '../common/Product.js';
-import {NodeWebSocketTransport as WebSocketTransport} from '../node/NodeWebSocketTransport.js';
+} from '../../../lib/cjs/puppeteer/common/util.js';
+import {isErrnoException, isErrorLike} from '../../../lib/cjs/puppeteer/util/ErrorLike.js';
+import {Product} from '../../../lib/cjs/puppeteer/common/Product.js';
+import {NodeWebSocketTransport as WebSocketTransport} from './NodeWebSocketTransport.js';
 import {LaunchOptions} from './LaunchOptions.js';
 import {PipeTransport} from './PipeTransport.js';
 

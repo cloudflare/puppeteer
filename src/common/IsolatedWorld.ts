@@ -34,7 +34,6 @@ import {EvaluateFunc, HandleFor, NodeFor} from './types.js';
 import {
   createJSHandle,
   debugError,
-  importFS,
   isNumber,
   isString,
   makePredicateString,
@@ -447,7 +446,7 @@ export class IsolatedWorld {
     path?: string;
     content?: string;
   }): Promise<ElementHandle<HTMLStyleElement | HTMLLinkElement>> {
-    const {url = null, path = null, content = null} = options;
+    const {url = null, content = null} = options;
     if (url !== null) {
       try {
         const context = await this.executionContext();
@@ -460,27 +459,29 @@ export class IsolatedWorld {
       }
     }
 
-    if (path !== null) {
-      let fs: typeof import('fs').promises;
-      try {
-        fs = (await importFS()).promises;
-      } catch (error) {
-        if (error instanceof TypeError) {
-          throw new Error(
-            'Cannot pass a filepath to addStyleTag in the browser environment.'
-          );
-        }
-        throw error;
-      }
-
-      let contents = await fs.readFile(path, 'utf8');
-      contents += '/*# sourceURL=' + path.replace(/\n/g, '') + '*/';
-      const context = await this.executionContext();
-      return (await context.evaluateHandle(
-        addStyleContent,
-        contents
-      )) as ElementHandle<HTMLStyleElement>;
-    }
+    /**
+     * if (path !== null) {
+     * let fs: typeof import('fs').promises;
+     * try {
+     * fs = (await importFS()).promises;
+     * } catch (error) {
+     * if (error instanceof TypeError) {
+     * throw new Error(
+     * 'Cannot pass a filepath to addStyleTag in the browser environment.'
+     * );
+     * }
+     * throw error;
+     * }
+     *
+     * let contents = await fs.readFile(path, 'utf8');
+     * contents += '/ _# sourceURL=' + path.replace(/\n/g, '') + '_ /';
+     * const context = await this.executionContext();
+     * return (await context.evaluateHandle(
+     * addStyleContent,
+     * contents
+     * )) as ElementHandle<HTMLStyleElement>;
+     * }
+     */
 
     if (content !== null) {
       const context = await this.executionContext();

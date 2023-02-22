@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 import NodeWebSocket from 'ws';
-import {ConnectionTransport} from '../common/ConnectionTransport.js';
-import {packageVersion} from '../generated/version.js';
+import {ConnectionTransport} from '../../../lib/cjs/puppeteer/common/ConnectionTransport.js';
+import {packageVersion} from '../../../lib/cjs/puppeteer/generated/version.js';
 
 /**
  * @internal

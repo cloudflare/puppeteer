@@ -18,7 +18,7 @@ import https, {RequestOptions} from 'https';
 import ProgressBar from 'progress';
 import URL from 'url';
 import puppeteer from '../puppeteer.js';
-import {PUPPETEER_REVISIONS} from '../revisions.js';
+import {PUPPETEER_REVISIONS} from '../../../lib/cjs/puppeteer/revisions.js';
 import {PuppeteerNode} from './Puppeteer.js';
 import createHttpsProxyAgent, {HttpsProxyAgentOptions} from 'https-proxy-agent';
 import {getProxyForUrl} from 'proxy-from-env';

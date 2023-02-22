@@ -16,7 +16,6 @@
 
 import {debugError} from './util.js';
 import {isErrorLike} from '../util/ErrorLike.js';
-import {isNode} from '../environment.js';
 import {assert} from '../util/assert.js';
 import {
   Browser,
@@ -25,6 +24,7 @@ import {
 } from './Browser.js';
 import {Connection} from './Connection.js';
 import {ConnectionTransport} from './ConnectionTransport.js';
+import {BrowserWebSocketTransport} from './BrowserWebSocketTransport.js';
 import {getFetch} from './fetch.js';
 import {Viewport} from './PuppeteerViewport.js';
 /**
@@ -58,10 +58,7 @@ export interface BrowserConnectOptions {
 }
 
 const getWebSocketTransportClass = async () => {
-  return isNode
-    ? (await import('../node/NodeWebSocketTransport.js')).NodeWebSocketTransport
-    : (await import('./BrowserWebSocketTransport.js'))
-        .BrowserWebSocketTransport;
+  return BrowserWebSocketTransport;
 };
 
 /**
@@ -75,6 +72,7 @@ export async function _connectToBrowser(
     browserWSEndpoint?: string;
     browserURL?: string;
     transport?: ConnectionTransport;
+    sessionId?: string;
   }
 ): Promise<Browser> {
   const {
@@ -86,6 +84,7 @@ export async function _connectToBrowser(
     slowMo = 0,
     targetFilter,
     _isPageTarget: isPageTarget,
+    sessionId = "unknown",
   } = options;
 
   assert(
@@ -129,7 +128,8 @@ export async function _connectToBrowser(
       return connection.send('Browser.close').catch(debugError);
     },
     targetFilter,
-    isPageTarget
+    isPageTarget,
+    sessionId
   );
   await browser.pages();
   return browser;

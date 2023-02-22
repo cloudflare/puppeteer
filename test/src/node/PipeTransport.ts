@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {assert} from '../util/assert.js';
-import {ConnectionTransport} from '../common/ConnectionTransport.js';
+import {assert} from '../../../lib/cjs/puppeteer/util/assert.js';
+import {ConnectionTransport} from '../../../lib/cjs/puppeteer/common/ConnectionTransport.js';
 import {
   addEventListener,
   debugError,
   PuppeteerEventListener,
   removeEventListeners,
-} from '../common/util.js';
+} from '../../../lib/cjs/puppeteer/common/util.js';
 
 /**
  * @internal

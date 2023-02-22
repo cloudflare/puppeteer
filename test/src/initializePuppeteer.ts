@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import {Product} from './common/Product.js';
-import {rootDirname} from './constants.js';
+import {Product} from '../../lib/cjs/puppeteer/common/Product.js';
+import {rootDirname} from '../../lib/cjs/puppeteer/constants.js';
 import {PuppeteerNode} from './node/Puppeteer.js';
-import {PUPPETEER_REVISIONS} from './revisions.js';
-import {getPackageDirectory} from './util/getPackageDirectory.js';
+import {PUPPETEER_REVISIONS} from '../../lib/cjs/puppeteer/revisions.js';
+import {getPackageDirectory} from '../../lib/cjs/puppeteer/util/getPackageDirectory.js';
 
 /**
  * @internal
@@ -26,7 +26,7 @@ import {getPackageDirectory} from './util/getPackageDirectory.js';
 export const initializePuppeteer = (packageName: string): PuppeteerNode => {
   const isPuppeteerCore = packageName === 'puppeteer-core';
   const puppeteerRootDirectory = getPackageDirectory(rootDirname);
-  let preferredRevision = PUPPETEER_REVISIONS.chromium;
+  let preferredRevision: string = PUPPETEER_REVISIONS.chromium;
   // puppeteer-core ignores environment variables
   const productName = !isPuppeteerCore
     ? ((process.env['PUPPETEER_PRODUCT'] ||
