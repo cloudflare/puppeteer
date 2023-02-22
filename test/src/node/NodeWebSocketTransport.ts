@@ -4,8 +4,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import NodeWebSocket from 'ws';
+<<<<<<<< HEAD:packages/puppeteer-core/src/node/NodeWebSocketTransport.ts
+
+import type {ConnectionTransport} from '../common/ConnectionTransport.js';
+import {packageVersion} from '../generated/version.js';
+========
 import {ConnectionTransport} from '../../../lib/cjs/puppeteer/common/ConnectionTransport.js';
 import {packageVersion} from '../../../lib/cjs/puppeteer/generated/version.js';
+>>>>>>>> c80de5c8cbe (Setup puppeteer-core fork):test/src/node/NodeWebSocketTransport.ts
 
 /**
  * @internal

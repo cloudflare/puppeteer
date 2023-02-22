@@ -1,9 +1,31 @@
 {
-  "name": "puppeteer-repo",
-  "private": true,
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/puppeteer/puppeteer"
+  "name": "@cloudflare/puppeteer",
+  "version": "0.0.0-alpha.6",
+  "description": "A high-level API to control headless Chrome over the DevTools Protocol for use in Workers",
+  "keywords": [
+    "puppeteer",
+    "chrome",
+    "headless",
+    "automation",
+    "workers"
+  ],
+  "type": "commonjs",
+  "main": "./lib/cjs/puppeteer/puppeteer-core.js",
+  "exports": {
+    ".": {
+      "types": "./lib/types.d.ts",
+      "import": "./lib/esm/puppeteer/puppeteer-core.js",
+      "require": "./lib/cjs/puppeteer/puppeteer-core.js"
+    },
+    "./*": {
+      "import": "./*",
+      "require": "./*"
+    }
+  },
+  "types": "lib/types.d.ts",
+  "repository": "github:puppeteer/puppeteer",
+  "engines": {
+    "node": ">=14.1.0"
   },
   "scripts": {
     "build": "wireit",

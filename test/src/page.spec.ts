@@ -2014,6 +2014,7 @@ describe('Page', function () {
       expect(error).toBeInstanceOf(TimeoutError);
     });
   });
+  */
 
   describe('Page.title', function () {
     it('should return the page title', async () => {
