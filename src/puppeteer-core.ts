@@ -60,11 +60,8 @@ class PuppeteerWorkers extends Puppeteer {
     this.launch = this.launch.bind(this);
   }
 
-  public async launch(endpoint: BrowserWorker | string): Promise<Browser> {
-    const res =
-      typeof endpoint === 'string'
-        ? await fetch(endpoint)
-        : await endpoint.fetch('/acquire');
+  public async launch(endpoint: BrowserWorker): Promise<Browser> {
+    const res = await endpoint.fetch('/acquire');
     const status = res.status;
     if (status != 200) {
       const message = await res.text();
