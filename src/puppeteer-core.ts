@@ -61,7 +61,7 @@ class PuppeteerWorkers extends Puppeteer {
   }
 
   public async launch(endpoint: BrowserWorker): Promise<Browser> {
-    const res = await endpoint.fetch('/acquire');
+    const res = await endpoint.fetch('/v1/acquire');
     const status = res.status;
     if (status != 200) {
       const message = await res.text();
