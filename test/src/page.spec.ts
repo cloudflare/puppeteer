@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import assert from 'assert';
-import fs from 'fs';
 import type {ServerResponse} from 'http';
 import path from 'path';
 
@@ -1971,50 +1970,6 @@ describe('Page', function () {
       expect(nonCachedRequest.headers['if-modified-since']).toBe(undefined);
     });
   });
-
-  describe('Page.pdf', function () {
-    it('can print to PDF and save to file', async () => {
-      const {page, server} = await getTestState();
-
-      const outputFile = __dirname + '/../assets/output.pdf';
-      await page.goto(server.PREFIX + '/pdf.html');
-      await page.pdf({path: outputFile});
-      try {
-        expect(fs.readFileSync(outputFile).byteLength).toBeGreaterThan(0);
-      } finally {
-        fs.unlinkSync(outputFile);
-      }
-    });
-
-    it('can print to PDF and stream the result', async () => {
-      const {page} = await getTestState();
-
-      const stream = await page.createPDFStream();
-      let size = 0;
-      const reader = stream.getReader();
-      while (true) {
-        const {done, value} = await reader.read();
-        if (done) {
-          break;
-        }
-        size += value.length;
-      }
-
-      expect(size).toBeGreaterThan(0);
-    });
-
-    it('should respect timeout', async () => {
-      const {page, server} = await getTestState();
-
-      await page.goto(server.PREFIX + '/pdf.html');
-
-      const error = await page.pdf({timeout: 1}).catch(err => {
-        return err;
-      });
-      expect(error).toBeInstanceOf(TimeoutError);
-    });
-  });
-  */
 
   describe('Page.title', function () {
     it('should return the page title', async () => {
