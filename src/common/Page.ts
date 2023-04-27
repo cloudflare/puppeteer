@@ -3116,19 +3116,6 @@ export class Page extends EventEmitter {
   }
 
   /**
-   * @param options -
-   * @returns
-   *
-  async pdf(options: PDFOptions = {}): Promise<Buffer> {
-    const {path = undefined} = options;
-    const readable = await this.createPDFStream(options);
-    const buffer = await getReadableAsBuffer(readable, path);
-    assert(buffer, 'Could not create buffer');
-    return buffer;
-  }
-  */
-
-  /**
    * @returns The page's title
    * @remarks
    * Shortcut for {@link Frame.title | page.mainFrame().title()}.

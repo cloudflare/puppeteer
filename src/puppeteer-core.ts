@@ -63,7 +63,7 @@ class PuppeteerWorkers extends Puppeteer {
   public async launch(endpoint: BrowserWorker): Promise<Browser> {
     const res = await endpoint.fetch('/v1/acquire');
     const status = res.status;
-    if (status != 200) {
+    if (status !== 200) {
       const message = await res.text();
       throw new Error(
         `Unabled to create new browser: code: ${status}: message: ${message}`

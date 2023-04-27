@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 import expect from 'expect';
-//import fs from 'fs';
 import {ServerResponse} from 'http';
 import path from 'path';
 import sinon from 'sinon';
@@ -1972,55 +1971,6 @@ describe('Page', function () {
       }
     );
   });
-
-  /*
-  describe('printing to PDF', function () {
-    it('can print to PDF and save to file', async () => {
-      // Printing to pdf is currently only supported in headless
-      const {isHeadless, page} = getTestState();
-
-      if (!isHeadless) {
-        return;
-      }
-
-      const outputFile = __dirname + '/../assets/output.pdf';
-      await page.pdf({path: outputFile});
-      expect(fs.readFileSync(outputFile).byteLength).toBeGreaterThan(0);
-      fs.unlinkSync(outputFile);
-    });
-
-    it('can print to PDF and stream the result', async () => {
-      // Printing to pdf is currently only supported in headless
-      const {isHeadless, page} = getTestState();
-
-      if (!isHeadless) {
-        return;
-      }
-
-      const stream = await page.createPDFStream();
-      let size = 0;
-      for await (const chunk of stream) {
-        size += chunk.length;
-      }
-      expect(size).toBeGreaterThan(0);
-    });
-
-    it('should respect timeout', async () => {
-      const {isHeadless, page, server, puppeteer} = getTestState();
-      if (!isHeadless) {
-        return;
-      }
-
-      await page.goto(server.PREFIX + '/pdf.html');
-
-      let error!: Error;
-      await page.pdf({timeout: 1}).catch(_error => {
-        return (error = _error);
-      });
-      expect(error).toBeInstanceOf(puppeteer.errors.TimeoutError);
-    });
-  });
-  */
 
   describe('Page.title', function () {
     it('should return the page title', async () => {

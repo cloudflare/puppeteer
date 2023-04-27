@@ -1,5 +1,5 @@
 import {ConnectionTransport} from './ConnectionTransport.js';
-import {messageToChunks, chunksToMessage} from './chunking';
+import {messageToChunks, chunksToMessage} from './chunking.js';
 
 export class WorkersWebSocketTransport implements ConnectionTransport {
   ws: WebSocket;
