@@ -20,10 +20,7 @@ import os from 'os';
 import path from 'path';
 import rimraf from 'rimraf';
 import {promisify} from 'util';
-import {
-  PuppeteerLaunchOptions,
-  PuppeteerNode,
-} from './node/Puppeteer.js';
+import {PuppeteerLaunchOptions, PuppeteerNode} from './node/Puppeteer.js';
 import {
   describeChromeOnly,
   getTestState,

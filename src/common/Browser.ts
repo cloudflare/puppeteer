@@ -242,7 +242,7 @@ export class Browser extends EventEmitter {
       closeCallback,
       targetFilterCallback,
       isPageTargetCallback,
-      sessionId,
+      sessionId
     );
     await browser._attach();
     return browser;
@@ -317,7 +317,7 @@ export class Browser extends EventEmitter {
         new BrowserContext(this.#connection, this, contextId)
       );
     }
-    this.#sessionId = sessionId || 'unknown'
+    this.#sessionId = sessionId || 'unknown';
   }
 
   #emitDisconnected = () => {
@@ -754,13 +754,12 @@ export class Browser extends EventEmitter {
    * Get the BISO session ID associated with this browser
    */
   sessionId(): string {
-    return this.#sessionId
+    return this.#sessionId;
   }
 
   #getVersion(): Promise<Protocol.Browser.GetVersionResponse> {
     return this.#connection.send('Browser.getVersion');
   }
-
 }
 /**
  * @public

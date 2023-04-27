@@ -27,10 +27,7 @@ import {
 } from '../../lib/cjs/puppeteer/common/Browser.js';
 import {Page} from '../../lib/cjs/puppeteer/common/Page.js';
 import {isErrorLike} from '../../lib/cjs/puppeteer/util/ErrorLike.js';
-import {
-  PuppeteerLaunchOptions,
-  PuppeteerNode,
-} from './node/Puppeteer.js';
+import {PuppeteerLaunchOptions, PuppeteerNode} from './node/Puppeteer.js';
 import puppeteer from './puppeteer.js';
 import {TestServer} from '../../utils/testserver/lib/index.js';
 import {extendExpectWithToBeGolden} from './utils.js';

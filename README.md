@@ -1,14 +1,14 @@
 # Workers version of Puppeteer Core
 
-This repo is a fork of main puppeteer project.  It creates a version of
+This repo is a fork of main puppeteer project. It creates a version of
 puppeteer core specialized for use in Cloudflare workers.
 
 The goals of the fork are:
 
-  * Support as much of the existing puppeteer core lib as possible.
-  * Minimize the size of the library for workers developers, since library
-    space is at a premium in workers projects.
-  * Make library use as seamless as possible in workers.
+- Support as much of the existing puppeteer core lib as possible.
+- Minimize the size of the library for workers developers, since library
+  space is at a premium in workers projects.
+- Make library use as seamless as possible in workers.
 
 Note that the main branch in this repo is branched off of version 17.0.0 of
 the library, to match the currently deployed version of Chromium on the

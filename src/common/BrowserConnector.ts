@@ -84,7 +84,7 @@ export async function _connectToBrowser(
     slowMo = 0,
     targetFilter,
     _isPageTarget: isPageTarget,
-    sessionId = "unknown",
+    sessionId = 'unknown',
   } = options;
 
   assert(

@@ -30,7 +30,10 @@ import {
   PuppeteerEventListener,
   removeEventListeners,
 } from '../../../lib/cjs/puppeteer/common/util.js';
-import {isErrnoException, isErrorLike} from '../../../lib/cjs/puppeteer/util/ErrorLike.js';
+import {
+  isErrnoException,
+  isErrorLike,
+} from '../../../lib/cjs/puppeteer/util/ErrorLike.js';
 import {Product} from '../../../lib/cjs/puppeteer/common/Product.js';
 import {NodeWebSocketTransport as WebSocketTransport} from './NodeWebSocketTransport.js';
 import {LaunchOptions} from './LaunchOptions.js';
