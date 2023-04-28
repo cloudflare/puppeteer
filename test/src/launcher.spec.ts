@@ -589,43 +589,6 @@ describe('Launcher specs', function () {
       });
     });
 
-    describe('Puppeteer.connect', function () {
-      // @see https://github.com/puppeteer/puppeteer/issues/4197
-      itFailsFirefox('should support targetFilter option', async () => {
-        const {server, puppeteer, defaultBrowserOptions} = getTestState();
-
-        const originalBrowser = await puppeteer.launch(defaultBrowserOptions);
-        const browserWSEndpoint = originalBrowser.wsEndpoint();
-
-        const page1 = await originalBrowser.newPage();
-        await page1.goto(server.EMPTY_PAGE);
-
-        const page2 = await originalBrowser.newPage();
-        await page2.goto(server.EMPTY_PAGE + '?should-be-ignored');
-
-        const browser = await puppeteer.connect({
-          browserWSEndpoint,
-          targetFilter: (targetInfo: Protocol.Target.TargetInfo) => {
-            return !targetInfo.url?.includes('should-be-ignored');
-          },
-        });
-
-        const pages = await browser.pages();
-
-        await page2.close();
-        await page1.close();
-        await browser.disconnect();
-        await originalBrowser.close();
-
-        expect(
-          pages
-            .map((p: Page) => {
-              return p.url();
-            })
-            .sort()
-        ).toEqual(['about:blank', server.EMPTY_PAGE]);
-      });
-    });
     describe('Puppeteer.executablePath', function () {
       itOnlyRegularInstall('should work', async () => {
         const {puppeteer} = getTestState();

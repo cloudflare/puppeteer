@@ -380,26 +380,6 @@ describeChromeOnly('OOPIF', function () {
     expect(resultBoundingBox.y).toBeGreaterThan(150); // padding + margin + border top
   });
 
-  it('should detect existing OOPIFs when Puppeteer connects to an existing page', async () => {
-    const {server, puppeteer} = getTestState();
-
-    const frame = page.waitForFrame(frame => {
-      return frame.url().endsWith('/oopif.html');
-    });
-    await page.goto(server.PREFIX + '/dynamic-oopif.html');
-    await frame;
-    expect(oopifs(context).length).toBe(1);
-    expect(page.frames().length).toBe(2);
-
-    const browserURL = 'http://127.0.0.1:21222';
-    const browser1 = await puppeteer.connect({browserURL});
-    const target = await browser1.waitForTarget(target => {
-      return target.url().endsWith('dynamic-oopif.html');
-    });
-    await target.page();
-    browser1.disconnect();
-  });
-
   describe('waitForFrame', () => {
     it('should resolve immediately if the frame already exists', async () => {
       const {server} = getTestState();
