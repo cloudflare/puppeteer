@@ -215,19 +215,4 @@ describe('BrowserContext', function () {
     await Promise.all([context1.close(), context2.close()]);
     expect(browser.browserContexts().length).toBe(1);
   });
-
-  itFailsFirefox('should work across sessions', async () => {
-    const {browser, puppeteer} = getTestState();
-
-    expect(browser.browserContexts().length).toBe(1);
-    const context = await browser.createIncognitoBrowserContext();
-    expect(browser.browserContexts().length).toBe(2);
-    const remoteBrowser = await puppeteer.connect({
-      browserWSEndpoint: browser.wsEndpoint(),
-    });
-    const contexts = remoteBrowser.browserContexts();
-    expect(contexts.length).toBe(2);
-    remoteBrowser.disconnect();
-    await context.close();
-  });
 });

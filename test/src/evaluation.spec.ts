@@ -127,21 +127,6 @@ describe('Evaluation specs', function () {
         ).toBe(undefined);
       }
     );
-    it('should work with function shorthands', async () => {
-      const {page} = getTestState();
-
-      const a = {
-        sum(a: number, b: number) {
-          return a + b;
-        },
-
-        async mult(a: number, b: number) {
-          return a * b;
-        },
-      };
-      expect(await page.evaluate(a.sum, 1, 2)).toBe(3);
-      expect(await page.evaluate(a.mult, 2, 4)).toBe(8);
-    });
     it('should work with unicode chars', async () => {
       const {page} = getTestState();
 

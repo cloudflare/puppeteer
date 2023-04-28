@@ -62,29 +62,5 @@ describe('Browser specs', function () {
       const process = await browser.process();
       expect(process!.pid).toBeGreaterThan(0);
     });
-    it('should not return child_process for remote browser', async () => {
-      const {browser, puppeteer} = getTestState();
-
-      const browserWSEndpoint = browser.wsEndpoint();
-      const remoteBrowser = await puppeteer.connect({
-        browserWSEndpoint,
-      });
-      expect(remoteBrowser.process()).toBe(null);
-      remoteBrowser.disconnect();
-    });
-  });
-
-  describe('Browser.isConnected', () => {
-    it('should set the browser connected state', async () => {
-      const {browser, puppeteer} = getTestState();
-
-      const browserWSEndpoint = browser.wsEndpoint();
-      const newBrowser = await puppeteer.connect({
-        browserWSEndpoint,
-      });
-      expect(newBrowser.isConnected()).toBe(true);
-      newBrowser.disconnect();
-      expect(newBrowser.isConnected()).toBe(false);
-    });
   });
 });

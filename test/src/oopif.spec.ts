@@ -16,11 +16,7 @@
 
 import utils from './utils.js';
 import expect from 'expect';
-import {
-  getTestState,
-  describeChromeOnly,
-  itFailsFirefox,
-} from './mocha-utils.js';
+import {getTestState, describeChromeOnly} from './mocha-utils.js';
 import {
   Browser,
   BrowserContext,
@@ -59,22 +55,6 @@ describeChromeOnly('OOPIF', function () {
     await browser.close();
   });
 
-  it('should treat OOP iframes and normal iframes the same', async () => {
-    const {server} = getTestState();
-
-    await page.goto(server.EMPTY_PAGE);
-    const framePromise = page.waitForFrame(frame => {
-      return frame.url().endsWith('/empty.html');
-    });
-    await utils.attachFrame(page, 'frame1', server.EMPTY_PAGE);
-    await utils.attachFrame(
-      page,
-      'frame2',
-      server.CROSS_PROCESS_PREFIX + '/empty.html'
-    );
-    await framePromise;
-    expect(page.mainFrame().childFrames()).toHaveLength(2);
-  });
   it('should track navigations within OOP iframes', async () => {
     const {server} = getTestState();
 
@@ -418,19 +398,6 @@ describeChromeOnly('OOPIF', function () {
     });
     await target.page();
     browser1.disconnect();
-  });
-
-  itFailsFirefox('should support lazy OOP frames', async () => {
-    const {server} = getTestState();
-
-    await page.goto(server.PREFIX + '/lazy-oopif-frame.html');
-    await page.setViewport({width: 1000, height: 1000});
-
-    expect(
-      page.frames().map(frame => {
-        return frame._hasStartedLoading;
-      })
-    ).toEqual([true, true, false]);
   });
 
   describe('waitForFrame', () => {

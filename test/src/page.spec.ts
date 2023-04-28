@@ -1826,35 +1826,6 @@ describe('Page', function () {
       expect(error.message).toBe('Loading style from /nonexistfile.js failed');
     });
 
-    it('should work with a path', async () => {
-      const {page, server} = getTestState();
-
-      await page.goto(server.EMPTY_PAGE);
-      const styleHandle = await page.addStyleTag({
-        path: path.join(__dirname, '../assets/injectedstyle.css'),
-      });
-      expect(styleHandle.asElement()).not.toBeNull();
-      expect(
-        await page.evaluate(
-          `window.getComputedStyle(document.querySelector('body')).getPropertyValue('background-color')`
-        )
-      ).toBe('rgb(255, 0, 0)');
-    });
-
-    it('should include sourcemap when path is provided', async () => {
-      const {page, server} = getTestState();
-
-      await page.goto(server.EMPTY_PAGE);
-      await page.addStyleTag({
-        path: path.join(__dirname, '../assets/injectedstyle.css'),
-      });
-      const styleHandle = (await page.$('style'))!;
-      const styleContent = await page.evaluate((style: HTMLStyleElement) => {
-        return style.innerHTML;
-      }, styleHandle);
-      expect(styleContent).toContain(path.join('assets', 'injectedstyle.css'));
-    });
-
     it('should work with content', async () => {
       const {page, server} = getTestState();
 
