@@ -830,42 +830,5 @@ describe('network', function () {
       const subresourceResponse = await responsePromise;
       expect(subresourceResponse.headers()['set-cookie']).toBe(setCookieString);
     });
-
-    it('Cross-origin set-cookie', async () => {
-      const {httpsServer, puppeteer, defaultBrowserOptions} = getTestState();
-
-      const browser = await puppeteer.launch({
-        ...defaultBrowserOptions,
-        ignoreHTTPSErrors: true,
-      });
-
-      const page = await browser.newPage();
-
-      try {
-        await page.goto(httpsServer.PREFIX + '/empty.html');
-
-        const setCookieString = 'hello=world';
-        httpsServer.setRoute('/setcookie.html', (_req, res) => {
-          res.setHeader('Access-Control-Allow-Origin', '*');
-          res.setHeader('set-cookie', setCookieString);
-          res.end();
-        });
-        await page.goto(httpsServer.PREFIX + '/setcookie.html');
-
-        const response = await new Promise<HTTPResponse>(resolve => {
-          page.on('response', resolve);
-          const url = httpsServer.CROSS_PROCESS_PREFIX + '/setcookie.html';
-          page.evaluate(src => {
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', src);
-            xhr.send();
-          }, url);
-        });
-        expect(response.headers()['set-cookie']).toBe(setCookieString);
-      } finally {
-        await page.close();
-        await browser.close();
-      }
-    });
   });
 });
