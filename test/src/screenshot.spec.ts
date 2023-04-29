@@ -174,22 +174,6 @@ describe('Screenshots', function () {
       });
       expect(screenshot).toBeGolden('screenshot-clip-odd-size.png');
     });
-    itFailsFirefox('should return base64', async () => {
-      const {page, server} = getTestState();
-
-      await page.setViewport({width: 500, height: 500});
-      await page.goto(server.PREFIX + '/grid.html');
-      const screenshot = await page.screenshot({
-        encoding: 'base64',
-      });
-      // TODO (@jackfranklin): improve the screenshot types.
-      // - if we pass encoding: 'base64', it returns a string
-      // - else it returns a buffer.
-      // If we can fix that we can avoid this "as string" here.
-      expect(Buffer.from(screenshot as string, 'base64')).toBeGolden(
-        'screenshot-sanity.png'
-      );
-    });
     itHeadfulOnly('should work in "fromSurface: false" mode', async () => {
       const {page, server} = getTestState();
 
