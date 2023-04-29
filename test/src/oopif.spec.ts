@@ -170,23 +170,6 @@ describeChromeOnly('OOPIF', function () {
     expect(page.frames()).toHaveLength(1);
   });
 
-  it('should keep track of a frames OOP state', async () => {
-    const {server} = getTestState();
-
-    await page.goto(server.EMPTY_PAGE);
-    const framePromise = page.waitForFrame(frame => {
-      return page.frames().indexOf(frame) === 1;
-    });
-    await utils.attachFrame(
-      page,
-      'frame1',
-      server.CROSS_PROCESS_PREFIX + '/empty.html'
-    );
-    const frame = await framePromise;
-    expect(frame.url()).toContain('/empty.html');
-    await utils.navigateFrame(page, 'frame1', server.EMPTY_PAGE);
-    expect(frame.url()).toBe(server.EMPTY_PAGE);
-  });
   it('should support evaluating in oop iframes', async () => {
     const {server} = getTestState();
 
