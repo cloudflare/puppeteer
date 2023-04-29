@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import Protocol from 'devtools-protocol';
 import expect from 'expect';
 import fs from 'fs';
 import os from 'os';
@@ -21,7 +20,6 @@ import path from 'path';
 import rimraf from 'rimraf';
 import sinon from 'sinon';
 import {promisify} from 'util';
-import {Page} from '../../lib/cjs/puppeteer/common/Page.js';
 import {Product} from '../../lib/cjs/puppeteer/common/Product.js';
 import {
   getTestState,
