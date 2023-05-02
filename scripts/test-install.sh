@@ -18,6 +18,7 @@ echo "Testing... Chrome CommonJS"
 TMPDIR="$(mktemp -d)"
 cd $TMPDIR
 npm install --loglevel silent "${tarball}"
+node install.js
 node --eval="require('puppeteer')"
 node --eval="require('puppeteer/lib/cjs/puppeteer/revisions.js');"
 ls $TMPDIR/node_modules/puppeteer/.local-chromium/
@@ -27,6 +28,7 @@ TMPDIR="$(mktemp -d)"
 cd $TMPDIR
 echo '{"type":"module"}' >>$TMPDIR/package.json
 npm install --loglevel silent "${tarball}"
+node install.js
 node --input-type="module" --eval="import puppeteer from 'puppeteer'"
 node --input-type="module" --eval="import 'puppeteer/lib/esm/puppeteer/revisions.js';"
 node --input-type="module" --eval="
@@ -45,6 +47,7 @@ TMPDIR="$(mktemp -d)"
 cd $TMPDIR
 echo '{"type":"module"}' >>$TMPDIR/package.json
 npm install --loglevel silent "${tarball}"
+node install.js
 node --input-type="module" --eval="import puppeteer from 'puppeteer'"
 node --input-type="module" --eval="import 'puppeteer/lib/esm/puppeteer/revisions.js';"
 node --input-type="module" --eval="
@@ -64,6 +67,7 @@ cd $TMPDIR
 echo '{"type": "module"}' >>$TMPDIR/package.json
 npm install --loglevel silent "${tarball}"
 npm install -D --loglevel silent webpack webpack-cli@4.9.2
+node install.js
 echo 'export default {
   mode: "production",
   entry: "./index.js",
@@ -91,6 +95,7 @@ echo "Testing... Firefox CommonJS"
 TMPDIR="$(mktemp -d)"
 cd $TMPDIR
 PUPPETEER_PRODUCT=firefox npm install --loglevel silent "${tarball}"
+PUPPETEER_PRODUCT=firefox node install.js
 node --eval="require('puppeteer')"
 node --eval="require('puppeteer/lib/cjs/puppeteer/revisions.js');"
 ls $TMPDIR/node_modules/puppeteer/.local-firefox/linux-*/firefox/firefox
@@ -100,6 +105,7 @@ TMPDIR="$(mktemp -d)"
 cd $TMPDIR
 echo '{"type":"module"}' >>$TMPDIR/package.json
 PUPPETEER_PRODUCT=firefox npm install --loglevel silent "${tarball}"
+PUPPETEER_PRODUCT=firefox node install.js
 node --input-type="module" --eval="import puppeteer from 'puppeteer'"
 node --input-type="module" --eval="import 'puppeteer/lib/esm/puppeteer/revisions.js';"
 ls $TMPDIR/node_modules/puppeteer/.local-firefox/linux-*/firefox/firefox
@@ -117,6 +123,7 @@ echo "Testing... Puppeteer Core CommonJS"
 TMPDIR="$(mktemp -d)"
 cd $TMPDIR
 npm install --loglevel silent "${tarball}"
+node install.js
 node --eval="require('puppeteer-core')"
 node --eval="require('puppeteer-core/lib/cjs/puppeteer/revisions.js');"
 
@@ -125,5 +132,6 @@ TMPDIR="$(mktemp -d)"
 cd $TMPDIR
 echo '{"type":"module"}' >>$TMPDIR/package.json
 npm install --loglevel silent "${tarball}"
+node install.js
 node --input-type="module" --eval="import puppeteer from 'puppeteer-core'"
 node --input-type="module" --eval="import 'puppeteer-core/lib/esm/puppeteer/revisions.js';"
