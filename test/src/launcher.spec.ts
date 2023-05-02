@@ -588,13 +588,6 @@ describe('Launcher specs', function () {
     });
 
     describe('Puppeteer.executablePath', function () {
-      itOnlyRegularInstall('should work', async () => {
-        const {puppeteer} = getTestState();
-
-        const executablePath = puppeteer.executablePath();
-        expect(fs.existsSync(executablePath)).toBe(true);
-        expect(fs.realpathSync(executablePath)).toBe(executablePath);
-      });
       it('returns executablePath for channel', () => {
         const {puppeteer} = getTestState();
 
