@@ -23,7 +23,7 @@
     }
   },
   "types": "lib/types.d.ts",
-  "repository": "github:puppeteer/puppeteer",
+  "repository": "github:cloudflare/puppeteer",
   "engines": {
     "node": ">=14.1.0"
   },
