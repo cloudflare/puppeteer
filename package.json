@@ -30,7 +30,7 @@
   "scripts": {
     "test": "c8 --check-coverage --lines 93 run-s test:chrome:* test:firefox",
     "test:types": "tsd",
-    "test:install": "node install.js && scripts/test-install.sh",
+    "test:install": "scripts/test-install.sh",
     "test:firefox": "PUPPETEER_PRODUCT=firefox node install.js && cross-env PUPPETEER_PRODUCT=firefox MOZ_WEBRENDER=0 PUPPETEER_DEFERRED_PROMISE_DEBUG_TIMEOUT=20000 mocha",
     "test:chrome": "node install.js && run-s test:chrome:*",
     "test:chrome:headless": "node install.js && cross-env HEADLESS=true PUPPETEER_DEFERRED_PROMISE_DEBUG_TIMEOUT=20000 mocha",

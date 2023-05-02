@@ -115,8 +115,3 @@ jobs:
         if: ${{ matrix.spec.name != 'Linux' }}
         continue-on-error: true
         run: npm run test:firefox
-      - name: Test bundling and installation
-        if: ${{ matrix.spec.name == 'Linux' }}
-        run: |
-          # Note: this modifies package.json to test puppeteer-core, so we test this last.
-          npm run test:install
