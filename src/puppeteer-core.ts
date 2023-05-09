@@ -16,6 +16,7 @@
 
 // import {initializePuppeteer} from './initializePuppeteer.js';
 import {Browser} from './common/Browser.js';
+import {BrowserWorker} from './common/BrowserWorker.js';
 import {Puppeteer} from './common/Puppeteer.js';
 import {WorkersWebSocketTransport} from './common/WorkersWebSocketTransport.js';
 
@@ -23,6 +24,7 @@ export * from './common/NetworkConditions.js';
 export * from './common/QueryHandler.js';
 export * from './common/DeviceDescriptors.js';
 export * from './common/Errors.js';
+export {BrowserWorker} from './common/BrowserWorker.js';
 
 // initializePuppeteer('puppeteer-core');
 
@@ -49,10 +51,6 @@ declare global {
   }
 }
 
-export interface BrowserWorker {
-  fetch: typeof fetch;
-}
-
 class PuppeteerWorkers extends Puppeteer {
   public constructor() {
     super({isPuppeteerCore: true});
@@ -63,26 +61,19 @@ class PuppeteerWorkers extends Puppeteer {
   public async launch(endpoint: BrowserWorker): Promise<Browser> {
     const res = await endpoint.fetch('/v1/acquire');
     const status = res.status;
+    const text = await res.text();
     if (status !== 200) {
-      const message = await res.text();
       throw new Error(
-        `Unabled to create new browser: code: ${status}: message: ${message}`
+        `Unabled to create new browser: code: ${status}: message: ${text}`
       );
     }
-    const wsUrl = await res.text();
-    const sessionId = this.extractSession(wsUrl);
-    const transport = await WorkersWebSocketTransport.create(wsUrl, sessionId);
+    // Got a 200, so response text is actually a session id
+    const sessionId = text;
+    const transport = await WorkersWebSocketTransport.create(
+      endpoint,
+      sessionId
+    );
     return this.connect({transport, sessionId});
-  }
-
-  public async connectLocal(wsUrl: string): Promise<Browser> {
-    const transport = await WorkersWebSocketTransport.create(wsUrl, 'local');
-    return this.connect({transport});
-  }
-
-  extractSession(wsUrl: string): string {
-    const u = new URL(wsUrl);
-    return u.searchParams.get('browser_session') || 'unknown';
   }
 }
 

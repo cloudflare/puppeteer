@@ -12,6 +12,7 @@ export * from './common/AriaQueryHandler.js';
 export * from './common/Browser.js';
 export * from './common/BrowserConnector.js';
 export * from './common/BrowserWebSocketTransport.js';
+export * from './common/BrowserWorker.js';
 export * from './common/ChromeTargetManager.js';
 export * from './common/Connection.js';
 export * from './common/ConnectionTransport.js';
