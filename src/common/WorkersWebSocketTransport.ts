@@ -1,5 +1,6 @@
 import {ConnectionTransport} from './ConnectionTransport.js';
 import {messageToChunks, chunksToMessage} from './chunking.js';
+import {BrowserWorker} from './BrowserWorker.js';
 
 export class WorkersWebSocketTransport implements ConnectionTransport {
   ws: WebSocket;
@@ -9,10 +10,11 @@ export class WorkersWebSocketTransport implements ConnectionTransport {
   onclose?: () => void;
 
   static async create(
-    url: string,
+    endpoint: BrowserWorker,
     sessionid: string
   ): Promise<WorkersWebSocketTransport> {
-    const response = await fetch(url, {
+    const path = `/v1/connectDevtools?browser_session=${sessionid}`;
+    const response = await endpoint.fetch(path, {
       headers: {Upgrade: 'websocket'},
     });
     response.webSocket!.accept();
