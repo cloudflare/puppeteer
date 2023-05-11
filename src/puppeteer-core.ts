@@ -51,6 +51,10 @@ declare global {
   }
 }
 
+interface AcquireResponse {
+  sessionId: string;
+}
+
 class PuppeteerWorkers extends Puppeteer {
   public constructor() {
     super({isPuppeteerCore: true});
@@ -67,13 +71,13 @@ class PuppeteerWorkers extends Puppeteer {
         `Unabled to create new browser: code: ${status}: message: ${text}`
       );
     }
-    // Got a 200, so response text is actually a session id
-    const sessionId = text;
+    // Got a 200, so response text is actually an AcquireResponse
+    const response: AcquireResponse = JSON.parse(text);
     const transport = await WorkersWebSocketTransport.create(
       endpoint,
-      sessionId
+      response.sessionId
     );
-    return this.connect({transport, sessionId});
+    return this.connect({transport, sessionId: response.sessionId});
   }
 }
 
