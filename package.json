@@ -69,6 +69,7 @@
   "author": "The Chromium Authors",
   "license": "Apache-2.0",
   "dependencies": {
+    "debug": "4.3.4",
     "devtools-protocol": "0.0.1019158",
     "events": "3.3.0",
     "stream": "0.0.2",
