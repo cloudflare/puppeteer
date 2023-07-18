@@ -52,6 +52,7 @@ import {
   debugError,
   evaluationString,
   getExceptionMessage,
+  getReadableAsBuffer,
   getReadableFromProtocolStream,
   isNumber,
   isString,
@@ -3113,6 +3114,19 @@ export class Page extends EventEmitter {
 
     assert(result.stream, '`stream` is missing from `Page.printToPDF');
     return getReadableFromProtocolStream(this.#client, result.stream);
+  }
+
+  /**
+   * @param options -
+   * @returns
+   */
+
+  async pdf(options: PDFOptions = {}): Promise<Buffer> {
+    const {path = undefined} = options;
+    const readable = await this.createPDFStream(options);
+    const buffer = await getReadableAsBuffer(readable, path);
+    assert(buffer, 'Could not create buffer');
+    return buffer;
   }
 
   /**
