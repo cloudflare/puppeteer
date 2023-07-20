@@ -764,9 +764,9 @@ export class ElementHandle<
     );
 
     // Locate all files and confirm that they exist.
-    let path: typeof import('path');
+    let path: typeof import('node:path');
     try {
-      path = await import('path');
+      path = await import('node:path');
     } catch (error) {
       if (error instanceof TypeError) {
         throw new Error(

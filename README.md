@@ -1,7 +1,7 @@
 # Workers version of Puppeteer Core
 
 This repo is a fork of main puppeteer project. It creates a version of
-puppeteer core specialized for use in Cloudflare workers.
+puppeteer core specialized for use in Cloudflare workers [Browser Rendering](https://developers.cloudflare.com/browser-rendering) API.
 
 The goals of the fork are:
 
@@ -13,6 +13,13 @@ The goals of the fork are:
 Note that the main branch in this repo is branched off of version 17.0.0 of
 the library, to match the currently deployed version of Chromium on the
 edge.
+
+### Requirements
+
+- You need [Wrangler](https://github.com/cloudflare/workers-sdk) 3.0.0 or higher.
+- Puppeteer requires a few Node.js APIs to work. Add `compatibility_flags = [ "nodejs_compat" ]` to your [wrangler.toml](https://developers.cloudflare.com/workers/wrangler/configuration/) configuration.
+
+Read our [Developer Documentation](https://developers.cloudflare.com/browser-rendering/platform/puppeteer/) for more information.
 
 Original README follows...
 
