@@ -71,6 +71,7 @@ import {
   DeferredPromise,
 } from '../util/DeferredPromise.js';
 import {WebWorker} from './WebWorker.js';
+import {Buffer} from 'node:buffer';
 
 /**
  * @public
