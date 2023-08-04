@@ -366,21 +366,9 @@ export class IsolatedWorld {
     }
 
     if (path !== null) {
-      let fs;
-      try {
-        fs = (await import('fs')).promises;
-      } catch (error) {
-        if (error instanceof TypeError) {
-          throw new Error(
-            'Can only pass a filepath to addScriptTag in a Node-like environment.'
-          );
-        }
-        throw error;
-      }
-      let contents = await fs.readFile(path, 'utf8');
-      contents += '//# sourceURL=' + path.replace(/\n/g, '');
-      const context = await this.executionContext();
-      return await context.evaluateHandle(addScriptContent, contents, id, type);
+      throw new Error(
+        'Can only pass a filepath to addScriptTag in a Node-like environment.'
+      );
     }
 
     if (content !== null) {
