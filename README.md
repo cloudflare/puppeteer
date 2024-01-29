@@ -14,6 +14,8 @@ Note that the main branch in this repo is branched off of version 17.0.0 of
 the library, to match the currently deployed version of Chromium on the
 edge.
 
+More information in the [developer docs](https://developers.cloudflare.com/browser-rendering/).
+
 Original README follows...
 
 # Puppeteer
