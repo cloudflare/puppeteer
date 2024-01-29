@@ -55,6 +55,25 @@ interface AcquireResponse {
   sessionId: string;
 }
 
+interface ActiveSession {
+  sessionId: string;
+  startTime: number; // timestamp
+}
+
+interface ClosedSession extends ActiveSession {
+  endTime: number; // timestamp
+  closeReason: number; // close reason code
+  closeReasonText: string; // close reason description
+}
+
+interface SessionsResponse {
+  sessions: ActiveSession[]
+}
+
+interface HistoryResponse {
+  history: ClosedSession[];
+}
+
 class PuppeteerWorkers extends Puppeteer {
   public constructor() {
     super({isPuppeteerCore: true});
@@ -68,16 +87,52 @@ class PuppeteerWorkers extends Puppeteer {
     const text = await res.text();
     if (status !== 200) {
       throw new Error(
-        `Unabled to create new browser: code: ${status}: message: ${text}`
+        `Unable to create new browser: code: ${status}: message: ${text}`
       );
     }
     // Got a 200, so response text is actually an AcquireResponse
     const response: AcquireResponse = JSON.parse(text);
-    const transport = await WorkersWebSocketTransport.create(
-      endpoint,
-      response.sessionId
-    );
-    return this.connect({transport, sessionId: response.sessionId});
+    return this.connect(endpoint, response.sessionId);
+  }
+
+  // Returns active sessions (may or may not have clients connected)
+  async sessions(endpoint: BrowserWorker) {
+    const res = await endpoint.fetch('/v1/sessions');
+    const status = res.status;
+    const text = await res.text();
+    if (status !== 200) {
+      throw new Error(
+        `Unable to fetch new sessions: code: ${status}: message: ${text}`
+      );
+    }
+    const data: SessionsResponse = JSON.parse(text);
+    return data.sessions;
+  }
+
+  // Returns recent sessions
+  async history(endpoint: BrowserWorker) {
+    const res = await endpoint.fetch('/v1/history');
+    const status = res.status;
+    const text = await res.text();
+    if (status !== 200) {
+      throw new Error(
+        `Unable to fetch session history: code: ${status}: message: ${text}`
+      );
+    }
+    const data: HistoryResponse = JSON.parse(text);
+    return data.history;
+}
+
+  // @ts-ignore
+  override async connect(endpoint: BrowserWorker, sessionId: string): Promise<Browser> {
+    try {
+      const transport = await WorkersWebSocketTransport.create(endpoint, sessionId);
+      return super.connect({ transport, sessionId: sessionId });
+    } catch (e) {
+      throw new Error(
+        `Unable to connect to existing session ${sessionId} (it may still be in use or not ready yet) - retry or launch a new browser: ${e}`
+      );
+    }
   }
 }
 
