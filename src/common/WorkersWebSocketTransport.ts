@@ -8,6 +8,7 @@ export class WorkersWebSocketTransport implements ConnectionTransport {
   chunks: Uint8Array[] = [];
   onmessage?: (message: string) => void;
   onclose?: () => void;
+  sessionId: string;
 
   static async create(
     endpoint: BrowserWorker,
@@ -26,6 +27,7 @@ export class WorkersWebSocketTransport implements ConnectionTransport {
       return this.ws.send('ping');
     }, 1000); // TODO more investigation
     this.ws = ws;
+    this.sessionId = sessionid;
     this.ws.addEventListener('message', event => {
       this.chunks.push(new Uint8Array(event.data as ArrayBuffer));
       const message = chunksToMessage(this.chunks, sessionid);
@@ -56,5 +58,9 @@ export class WorkersWebSocketTransport implements ConnectionTransport {
     console.log('closing websocket'); // TODO remove
     clearInterval(this.pingInterval);
     this.ws.close();
+  }
+
+  toString() {
+    return this.sessionId;
   }
 }
