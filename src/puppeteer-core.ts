@@ -51,15 +51,15 @@ declare global {
   }
 }
 
-interface LaunchOptions {
+export interface LaunchOptions {
   connectToActiveSession: boolean // connect to a randomly picked active session if available
 }
 
-interface AcquireResponse {
+export interface AcquireResponse {
   sessionId: string;
 }
 
-interface ActiveSession {
+export interface ActiveSession {
   sessionId: string;
   startTime: number; // timestamp
   // connection info, if present means there's a connection established
@@ -68,21 +68,21 @@ interface ActiveSession {
   connectionStartTime?: string
 }
 
-interface ClosedSession extends ActiveSession {
+export interface ClosedSession extends ActiveSession {
   endTime: number; // timestamp
   closeReason: number; // close reason code
   closeReasonText: string; // close reason description
 }
 
-interface SessionsResponse {
+export interface SessionsResponse {
   sessions: ActiveSession[]
 }
 
-interface HistoryResponse {
+export interface HistoryResponse {
   history: ClosedSession[];
 }
 
-interface LimitsResponse {
+export interface LimitsResponse {
   activeSessions: {
     sessionId: string
   }
@@ -102,6 +102,21 @@ class PuppeteerWorkers extends Puppeteer {
     this.limits = this.limits.bind(this);
   }
 
+  /**
+   * Launch a browser session.
+   *
+   * Optionally set it to reuse sessions automatically.
+   *
+   * @remarks
+   * If `opts.connectToActiveSession=true` it will first attempt
+   * to connect to an active session (randomly picked).
+   * If none are available, it will then attempt to launch a
+   * new session.
+   *
+   * @param endpoint - Cloudfllare worker binding
+   * @param opts - launch options
+   * @returns List of active sessions
+   */
   public async launch(endpoint: BrowserWorker, opts?: LaunchOptions): Promise<Browser> {
     opts = opts || {
       connectToActiveSession: false
@@ -122,7 +137,7 @@ class PuppeteerWorkers extends Puppeteer {
     return this.connect(endpoint, response.sessionId);
   }
 
-  public async connectOrLaunch(endpoint: BrowserWorker): Promise<Browser> {
+  async connectOrLaunch(endpoint: BrowserWorker): Promise<Browser> {
     // Do we have any active free session
     const sessions = await this.sessions(endpoint)
     const sessionsIds = sessions.filter(v => !v.connectionId).map(v => v.sessionId)
@@ -140,10 +155,16 @@ class PuppeteerWorkers extends Puppeteer {
     return this.launch(endpoint, launchOpts)
   }
 
-  // Returns active sessions
-  // Sessions with a connnectionId already have a worker connection
-  // established
-  async sessions(endpoint: BrowserWorker) {
+  /**
+   * Returns active sessions
+   *
+   *
+   * @remarks Sessions with a connnectionId already have a worker connection established
+   *
+   * @param endpoint - Cloudfllare worker binding
+   * @returns List of active sessions
+   */
+  public async sessions(endpoint: BrowserWorker) {
     const res = await endpoint.fetch('/v1/sessions');
     const status = res.status;
     const text = await res.text();
@@ -156,8 +177,14 @@ class PuppeteerWorkers extends Puppeteer {
     return data.sessions;
   }
 
-  // Returns recent sessions, active and closed
-  async history(endpoint: BrowserWorker) {
+  /**
+   * Returns recent sessions (active and closed)
+   *
+   *
+   * @param endpoint - Cloudfllare worker binding
+   * @returns List of recent sessions (active and closed)
+   */
+  public async history(endpoint: BrowserWorker) {
     const res = await endpoint.fetch('/v1/history');
     const status = res.status;
     const text = await res.text();
@@ -170,8 +197,14 @@ class PuppeteerWorkers extends Puppeteer {
     return data.history;
   }
 
-  // Returns recent sessions, active and closed
-  async limits(endpoint: BrowserWorker) {
+  /**
+   * Returns current limits
+   *
+   *
+   * @param endpoint - Cloudfllare worker binding
+   * @returns current limits
+   */
+  public async limits(endpoint: BrowserWorker) {
     const res = await endpoint.fetch('/v1/limits');
     const status = res.status;
     const text = await res.text();
@@ -184,8 +217,16 @@ class PuppeteerWorkers extends Puppeteer {
     return data;
   }
 
+  /**
+   * Establish a devtools connection to an existing session
+   *
+   *
+   * @param endpoint - Cloudfllare worker binding
+   * @param sessionId - sessionId obtained from a .sessions() call
+   * @returns a browser instance
+   */
   // @ts-ignore
-  override async connect(endpoint: BrowserWorker, sessionId: string): Promise<Browser> {
+  public override async connect(endpoint: BrowserWorker, sessionId: string): Promise<Browser> {
     try {
       const transport = await WorkersWebSocketTransport.create(endpoint, sessionId);
       return super.connect({ transport, sessionId: sessionId });
@@ -200,4 +241,4 @@ class PuppeteerWorkers extends Puppeteer {
 const puppeteer = new PuppeteerWorkers();
 export default puppeteer;
 
-export const {connect, launch} = puppeteer;
+export const {connect, launch, sessions, history, limits} = puppeteer;
