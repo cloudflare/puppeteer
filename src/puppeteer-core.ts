@@ -82,11 +82,24 @@ interface HistoryResponse {
   history: ClosedSession[];
 }
 
+interface LimitsResponse {
+  activeSessions: {
+    sessionId: string
+  }
+  maxConcurrentSessions: number
+  allowedBrowserAcquisitions: number // 1 if allowed, 0 otherwise
+  timeUntilNextAllowedBrowserAcquisition: number
+}
+
+
 class PuppeteerWorkers extends Puppeteer {
   public constructor() {
     super({isPuppeteerCore: true});
     this.connect = this.connect.bind(this);
     this.launch = this.launch.bind(this);
+    this.sessions = this.sessions.bind(this);
+    this.history = this.history.bind(this);
+    this.limits = this.limits.bind(this);
   }
 
   public async launch(endpoint: BrowserWorker, opts?: LaunchOptions): Promise<Browser> {
@@ -155,6 +168,20 @@ class PuppeteerWorkers extends Puppeteer {
     }
     const data: HistoryResponse = JSON.parse(text);
     return data.history;
+  }
+
+  // Returns recent sessions, active and closed
+  async limits(endpoint: BrowserWorker) {
+    const res = await endpoint.fetch('/v1/limits');
+    const status = res.status;
+    const text = await res.text();
+    if (status !== 200) {
+      throw new Error(
+        `Unable to fetch account limits: code: ${status}: message: ${text}`
+      );
+    }
+    const data: LimitsResponse = JSON.parse(text);
+    return data;
   }
 
   // @ts-ignore
