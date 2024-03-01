@@ -60,7 +60,7 @@ export class WorkersWebSocketTransport implements ConnectionTransport {
     this.ws.close();
   }
 
-  toString() {
+  toString(): string {
     return this.sessionId;
   }
 }
