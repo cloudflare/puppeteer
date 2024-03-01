@@ -27,7 +27,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3.4.1
         with:
-          node-version: 18
+          node-version: 18.18
       - name: Setup cache for Chromium binary
         uses: actions/cache@v3
         with:
@@ -58,7 +58,7 @@ jobs:
             node: 16
           - name: Linux
             machine: ubuntu-latest
-            node: 18
+            node: 18.18
           - name: macOS
             machine: macos-latest
             node: 14
