@@ -51,10 +51,6 @@ declare global {
   }
 }
 
-export interface LaunchOptions {
-  connectToActiveSession: boolean; // connect to a randomly picked active session if available
-}
-
 export interface AcquireResponse {
   sessionId: string;
 }
@@ -104,28 +100,10 @@ class PuppeteerWorkers extends Puppeteer {
   /**
    * Launch a browser session.
    *
-   * Optionally set it to reuse sessions automatically.
-   *
-   * @remarks
-   * If `opts.connectToActiveSession=true` it will first attempt
-   * to connect to an active session (randomly picked).
-   * If none are available, it will then attempt to launch a
-   * new session.
-   *
-   * @param endpoint - Cloudfllare worker binding
-   * @param opts - launch options
-   * @returns List of active sessions
+   * @param endpoint - Cloudflare worker binding
+   * @returns a browser session or throws
    */
-  public async launch(
-    endpoint: BrowserWorker,
-    opts?: LaunchOptions
-  ): Promise<Browser> {
-    opts = opts || {
-      connectToActiveSession: false,
-    };
-    if (opts.connectToActiveSession) {
-      return this.connectOrLaunch(endpoint);
-    }
+  public async launch(endpoint: BrowserWorker): Promise<Browser> {
     const res = await endpoint.fetch('/v1/acquire');
     const status = res.status;
     const text = await res.text();
@@ -139,38 +117,13 @@ class PuppeteerWorkers extends Puppeteer {
     return this.connect(endpoint, response.sessionId);
   }
 
-  async connectOrLaunch(endpoint: BrowserWorker): Promise<Browser> {
-    // Do we have any active free session
-    const sessions = await this.sessions(endpoint);
-    const sessionsIds = sessions
-      .filter(v => {
-        return !v.connectionId;
-      })
-      .map(v => {
-        return v.sessionId;
-      });
-    const launchOpts = {
-      connectToActiveSession: false,
-    };
-    if (sessionsIds) {
-      // get random session
-      const sessionId =
-        sessionsIds[Math.floor(Math.random() * sessionsIds.length)];
-      return this.connect(endpoint, sessionId!).catch(e => {
-        console.log(e);
-        return this.launch(endpoint, launchOpts);
-      });
-    }
-    return this.launch(endpoint, launchOpts);
-  }
-
   /**
    * Returns active sessions
    *
    * @remarks
    * Sessions with a connnectionId already have a worker connection established
    *
-   * @param endpoint - Cloudfllare worker binding
+   * @param endpoint - Cloudflare worker binding
    * @returns List of active sessions
    */
   public async sessions(endpoint: BrowserWorker) {
@@ -189,7 +142,7 @@ class PuppeteerWorkers extends Puppeteer {
   /**
    * Returns recent sessions (active and closed)
    *
-   * @param endpoint - Cloudfllare worker binding
+   * @param endpoint - Cloudflare worker binding
    * @returns List of recent sessions (active and closed)
    */
   public async history(endpoint: BrowserWorker) {
@@ -208,7 +161,7 @@ class PuppeteerWorkers extends Puppeteer {
   /**
    * Returns current limits
    *
-   * @param endpoint - Cloudfllare worker binding
+   * @param endpoint - Cloudflare worker binding
    * @returns current limits
    */
   public async limits(endpoint: BrowserWorker) {
@@ -227,7 +180,7 @@ class PuppeteerWorkers extends Puppeteer {
   /**
    * Establish a devtools connection to an existing session
    *
-   * @param endpoint - Cloudfllare worker binding
+   * @param endpoint - Cloudflare worker binding
    * @param sessionId - sessionId obtained from a .sessions() call
    * @returns a browser instance
    */
