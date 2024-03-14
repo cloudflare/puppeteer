@@ -67,6 +67,8 @@ jobs:
             exit 1
           fi
           rm $diff_file
+      - name: Lint commits
+        run: npm run commitlint
 
   check-changes:
     uses: ./.github/workflows/changed-packages.yml
