@@ -41,7 +41,6 @@ jobs:
         run: npm run lint
       - name: Lint commits
         run: npm run commitlint
-        if: github.event_name != 'pull_request'
 
   tests:
     name: ${{ matrix.spec.name }} tests (${{ matrix.spec.node }})
