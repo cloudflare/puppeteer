@@ -87,6 +87,10 @@ export interface LimitsResponse {
   timeUntilNextAllowedBrowserAcquisition: number;
 }
 
+export interface LaunchOptions {
+  keep_alive?: number; // milliseconds to keep browser alive even if it has no activity (from 10_000ms to 600_000ms, default is 60_000)
+}
+
 class PuppeteerWorkers extends Puppeteer {
   public constructor() {
     super({isPuppeteerCore: true});
@@ -103,8 +107,15 @@ class PuppeteerWorkers extends Puppeteer {
    * @param endpoint - Cloudflare worker binding
    * @returns a browser session or throws
    */
-  public async launch(endpoint: BrowserWorker): Promise<Browser> {
-    const res = await endpoint.fetch('/v1/acquire');
+  public async launch(
+    endpoint: BrowserWorker,
+    options?: LaunchOptions
+  ): Promise<Browser> {
+    let acquireUrl = '/v1/acquire';
+    if (options?.keep_alive) {
+      acquireUrl = `${acquireUrl}?keep_alive=${options.keep_alive}`;
+    }
+    const res = await endpoint.fetch(acquireUrl);
     const status = res.status;
     const text = await res.text();
     if (status !== 200) {
