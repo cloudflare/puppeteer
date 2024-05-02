@@ -59,7 +59,7 @@ jobs:
             machine: ubuntu-latest
             node: 18.18
           - name: macOS
-            machine: macos-latest
+            machine: macos-13
             node: 14
           - name: Windows
             machine: windows-latest
