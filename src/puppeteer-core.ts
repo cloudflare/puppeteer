@@ -95,6 +95,7 @@ class PuppeteerWorkers extends Puppeteer {
   public constructor() {
     super({isPuppeteerCore: true});
     this.connect = this.connect.bind(this);
+    this.connectOriginal = this.connectOriginal.bind(this);
     this.launch = this.launch.bind(this);
     this.sessions = this.sessions.bind(this);
     this.history = this.history.bind(this);
@@ -213,9 +214,20 @@ class PuppeteerWorkers extends Puppeteer {
       );
     }
   }
+
+  /**
+   * This method attaches Puppeteer to an existing browser instance.
+   *
+   * @param options - Set of configurable options to set on the browser.
+   * @returns Promise which resolves to browser instance.
+   */
+  public async connectOriginal(options: ConnectOptions): Promise<Browser> {
+    return super.connect(options);
+  }
 }
 
 const puppeteer = new PuppeteerWorkers();
 export default puppeteer;
 
-export const {connect, launch, sessions, history, limits} = puppeteer;
+export const {connect, connectOriginal, launch, sessions, history, limits} =
+ puppeteer;
