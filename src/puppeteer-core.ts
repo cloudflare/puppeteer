@@ -17,7 +17,7 @@
 // import {initializePuppeteer} from './initializePuppeteer.js';
 import {Browser} from './common/Browser.js';
 import {BrowserWorker} from './common/BrowserWorker.js';
-import {Puppeteer} from './common/Puppeteer.js';
+import {ConnectOptions, Puppeteer} from './common/Puppeteer.js';
 import {WorkersWebSocketTransport} from './common/WorkersWebSocketTransport.js';
 
 export * from './common/NetworkConditions.js';
@@ -230,4 +230,4 @@ const puppeteer = new PuppeteerWorkers();
 export default puppeteer;
 
 export const {connect, connectOriginal, launch, sessions, history, limits} =
- puppeteer;
+  puppeteer;
