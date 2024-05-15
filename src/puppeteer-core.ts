@@ -221,12 +221,12 @@ class PuppeteerWorkers extends Puppeteer {
     try {
       const transport = await WorkersWebSocketTransport.create(
         endpoint,
-        sessionId!
+        sessionId
       );
-      return super.connect({transport, sessionId: sessionId!});
+      return super.connect({transport, sessionId: sessionId});
     } catch (e) {
       throw new Error(
-        `Unable to connect to existing session ${sessionId!} (it may still be in use or not ready yet) - retry or launch a new browser: ${e}`
+        `Unable to connect to existing session ${sessionId} (it may still be in use or not ready yet) - retry or launch a new browser: ${e}`
       );
     }
   }
