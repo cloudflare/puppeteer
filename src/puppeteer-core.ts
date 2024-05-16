@@ -17,7 +17,7 @@
 // import {initializePuppeteer} from './initializePuppeteer.js';
 import {Browser} from './common/Browser.js';
 import {BrowserWorker} from './common/BrowserWorker.js';
-import {Puppeteer} from './common/Puppeteer.js';
+import {Puppeteer, ConnectOptions} from './common/Puppeteer.js';
 import {WorkersWebSocketTransport} from './common/WorkersWebSocketTransport.js';
 
 export * from './common/NetworkConditions.js';
@@ -195,12 +195,29 @@ class PuppeteerWorkers extends Puppeteer {
    * @param sessionId - sessionId obtained from a .sessions() call
    * @returns a browser instance
    */
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   public override async connect(
     endpoint: BrowserWorker,
     sessionId: string
+  ): Promise<Browser>;
+
+  /**
+   * Establish a devtools connection to an existing session
+   *
+   * @param options - ConnectOptions
+   * @returns a browser instance
+   */
+  public override async connect(options: ConnectOptions): Promise<Browser>;
+
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  public override async connect(
+    endpointOrOptions: BrowserWorker | ConnectOptions,
+    sessionId?: string
   ): Promise<Browser> {
+    if (!sessionId) {
+      return super.connect(endpointOrOptions as ConnectOptions);
+    }
+    const endpoint = endpointOrOptions as BrowserWorker;
     try {
       const transport = await WorkersWebSocketTransport.create(
         endpoint,
