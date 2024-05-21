@@ -80,8 +80,8 @@ export interface HistoryResponse {
 
 export interface LimitsResponse {
   activeSessions: {
-    sessionId: string;
-  };
+    id: string;
+}[];
   maxConcurrentSessions: number;
   allowedBrowserAcquisitions: number; // 1 if allowed, 0 otherwise
   timeUntilNextAllowedBrowserAcquisition: number;
