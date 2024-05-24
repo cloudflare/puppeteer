@@ -79,9 +79,7 @@ export interface HistoryResponse {
 }
 
 export interface LimitsResponse {
-  activeSessions: {
-    id: string;
-  }[];
+  activeSessions: Array<{id: string}>;
   maxConcurrentSessions: number;
   allowedBrowserAcquisitions: number; // 1 if allowed, 0 otherwise
   timeUntilNextAllowedBrowserAcquisition: number;
