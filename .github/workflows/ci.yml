@@ -40,7 +40,6 @@ jobs:
       - name: Lint code
         run: npm run lint
 
-
   tests:
     name: ${{ matrix.spec.name }} tests (${{ matrix.spec.node }})
     runs-on: ${{ matrix.spec.machine }}
