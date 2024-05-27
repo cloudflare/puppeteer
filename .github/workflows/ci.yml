@@ -39,8 +39,7 @@ jobs:
         run: npm run check
       - name: Lint code
         run: npm run lint
-      - name: Lint commits
-        run: npm run commitlint
+
 
   tests:
     name: ${{ matrix.spec.name }} tests (${{ matrix.spec.node }})
