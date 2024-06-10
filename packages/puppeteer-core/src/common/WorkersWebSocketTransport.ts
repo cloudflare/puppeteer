@@ -14,7 +14,7 @@ export class WorkersWebSocketTransport implements ConnectionTransport {
     endpoint: BrowserWorker,
     sessionid: string
   ): Promise<WorkersWebSocketTransport> {
-    const path = `/v1/connectDevtools?browser_session=${sessionid}`;
+    const path = `https://fake.host/v1/connectDevtools?browser_session=${sessionid}`;
     const response = await endpoint.fetch(path, {
       headers: {Upgrade: 'websocket'},
     });
