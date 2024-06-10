@@ -28,6 +28,8 @@ export {BrowserWorker} from './common/BrowserWorker.js';
 
 // initializePuppeteer('puppeteer-core');
 
+const FAKE_HOST = 'https://fake.host';
+
 /* Original singleton and exports
  * We redefine below
 export const {
@@ -109,7 +111,7 @@ class PuppeteerWorkers extends Puppeteer {
     endpoint: BrowserWorker,
     options?: LaunchOptions
   ): Promise<Browser> {
-    let acquireUrl = '/v1/acquire';
+    let acquireUrl = `${FAKE_HOST}/v1/acquire`;
     if (options?.keep_alive) {
       acquireUrl = `${acquireUrl}?keep_alive=${options.keep_alive}`;
     }
@@ -136,7 +138,7 @@ class PuppeteerWorkers extends Puppeteer {
    * @returns List of active sessions
    */
   public async sessions(endpoint: BrowserWorker) {
-    const res = await endpoint.fetch('/v1/sessions');
+    const res = await endpoint.fetch(`${FAKE_HOST}/v1/sessions`);
     const status = res.status;
     const text = await res.text();
     if (status !== 200) {
@@ -155,7 +157,7 @@ class PuppeteerWorkers extends Puppeteer {
    * @returns List of recent sessions (active and closed)
    */
   public async history(endpoint: BrowserWorker) {
-    const res = await endpoint.fetch('/v1/history');
+    const res = await endpoint.fetch(`${FAKE_HOST}/v1/history`);
     const status = res.status;
     const text = await res.text();
     if (status !== 200) {
@@ -174,7 +176,7 @@ class PuppeteerWorkers extends Puppeteer {
    * @returns current limits
    */
   public async limits(endpoint: BrowserWorker) {
-    const res = await endpoint.fetch('/v1/limits');
+    const res = await endpoint.fetch(`${FAKE_HOST}/v1/limits`);
     const status = res.status;
     const text = await res.text();
     if (status !== 200) {
