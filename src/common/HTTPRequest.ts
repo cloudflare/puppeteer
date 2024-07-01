@@ -21,6 +21,7 @@ import {EventEmitter} from './EventEmitter.js';
 import {Frame} from './Frame.js';
 import {debugError, isString} from './util.js';
 import {HTTPResponse} from './HTTPResponse.js';
+import {Buffer} from 'node:buffer';
 
 /**
  * @public
