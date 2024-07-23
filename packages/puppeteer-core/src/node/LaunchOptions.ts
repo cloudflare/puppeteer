@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {BrowserConnectOptions} from '../../../lib/cjs/puppeteer/common/BrowserConnector.js';
-import {Product} from '../../../lib/cjs/puppeteer/common/Product.js';
+import type {BrowserConnectOptions} from '../common/ConnectOptions.js';
+import type {Product} from '../common/Product.js';
 
 /**
  * Launcher options that only apply to Chrome.

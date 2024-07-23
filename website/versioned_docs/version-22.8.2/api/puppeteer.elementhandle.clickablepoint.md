@@ -17,6 +17,7 @@ class ElementHandle {
 ## Parameters
 
 <table><thead><tr><th>
+clickablepoint.md
 
 Parameter
 

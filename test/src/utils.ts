@@ -21,6 +21,12 @@ declare module 'expect' {
   }
 }
 
+declare module 'expect' {
+  interface Matchers<R> {
+    toBeGolden(pathOrBuffer: string | Buffer): R;
+  }
+}
+
 export const extendExpectWithToBeGolden = (
   goldenDir: string,
   outputDir: string

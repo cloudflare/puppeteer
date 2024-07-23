@@ -22,6 +22,7 @@ class Frame {
 ## Parameters
 
 <table><thead><tr><th>
+waitforfunction.md
 
 Parameter
 

@@ -402,8 +402,8 @@ export class CLI {
     return parts.length === 2
       ? parts[1]!
       : this.#pinnedBrowsers
-        ? 'pinned'
-        : 'latest';
+      ? 'pinned'
+      : 'latest';
   }
 }
 

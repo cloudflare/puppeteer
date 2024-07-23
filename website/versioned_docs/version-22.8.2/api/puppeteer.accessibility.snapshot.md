@@ -17,6 +17,7 @@ class Accessibility {
 ## Parameters
 
 <table><thead><tr><th>
+snapshot.md
 
 Parameter
 

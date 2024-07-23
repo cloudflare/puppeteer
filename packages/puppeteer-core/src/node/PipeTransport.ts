@@ -3,14 +3,11 @@
  * Copyright 2018 Google Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
-import {assert} from '../../../lib/cjs/puppeteer/util/assert.js';
-import {ConnectionTransport} from '../../../lib/cjs/puppeteer/common/ConnectionTransport.js';
-import {
-  addEventListener,
-  debugError,
-  PuppeteerEventListener,
-  removeEventListeners,
-} from '../../../lib/cjs/puppeteer/common/util.js';
+import type {ConnectionTransport} from '../common/ConnectionTransport.js';
+import {EventSubscription} from '../common/EventEmitter.js';
+import {debugError} from '../common/util.js';
+import {assert} from '../util/assert.js';
+import {DisposableStack} from '../util/disposable.js';
 
 /**
  * @internal

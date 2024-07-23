@@ -37,6 +37,11 @@ describe('headful tests', function () {
     headlessOptions = Object.assign({}, defaultBrowserOptions, {
       headless: true as const,
     });
+
+    devtoolsOptions = Object.assign({}, defaultBrowserOptions, {
+      headless: false,
+      devtools: true,
+    });
   });
 
   async function launchBrowser(options: any) {
