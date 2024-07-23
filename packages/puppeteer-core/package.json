@@ -9,13 +9,13 @@
     "automation"
   ],
   "type": "commonjs",
-  "main": "./lib/cjs/puppeteer/puppeteer-core.js",
+  "main": "./lib/cjs/puppeteer/puppeteer-cloudflare.js",
   "types": "./lib/types.d.ts",
   "exports": {
     ".": {
       "types": "./lib/types.d.ts",
-      "import": "./lib/esm/puppeteer/puppeteer-core.js",
-      "require": "./lib/cjs/puppeteer/puppeteer-core.js"
+      "import": "./lib/esm/puppeteer/puppeteer-cloudflare.js",
+      "require": "./lib/cjs/puppeteer/puppeteer-cloudflare.js"
     },
     "./internal/*": {
       "import": "./lib/esm/puppeteer/*",

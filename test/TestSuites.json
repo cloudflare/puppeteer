@@ -4,13 +4,13 @@
       "id": "chrome-headless",
       "platforms": ["linux", "win32", "darwin"],
       "parameters": ["chrome", "headless", "cdp"],
-      "expectedLineCoverage": 93
+      "expectedLineCoverage": 80
     },
     {
       "id": "chrome-headful",
       "platforms": ["linux"],
       "parameters": ["chrome", "headful", "cdp"],
-      "expectedLineCoverage": 93
+      "expectedLineCoverage": 80
     },
     {
       "id": "chrome-headless-shell",

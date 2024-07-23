@@ -4,7 +4,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type {Protocol} from 'devtools-protocol';
+import {Buffer} from 'node:buffer';
+import type {Readable} from 'node:stream';
+
+import {Protocol} from 'devtools-protocol';
 
 import {
   concat,

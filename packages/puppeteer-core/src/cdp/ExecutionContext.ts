@@ -398,7 +398,7 @@ export class ExecutionContext
         : this.#world.createCdpHandle(remoteObject);
     }
 
-    const functionDeclaration = stringifyFunction(pageFunction);
+    const functionDeclaration = pageFunction.toString();
     const functionDeclarationWithSourceUrl = SOURCE_URL_REGEX.test(
       functionDeclaration
     )

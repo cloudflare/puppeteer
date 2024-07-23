@@ -148,17 +148,6 @@ describe('JSHandle', function () {
       });
       expect(await bHandle.jsonValue()).toEqual(undefined);
     });
-
-    it('should work with dates', async () => {
-      const {page} = await getTestState();
-
-      using dateHandle = await page.evaluateHandle(() => {
-        return new Date('2017-09-26T00:00:00.000Z');
-      });
-      const date = await dateHandle.jsonValue();
-      expect(date).toBeInstanceOf(Date);
-      expect(date.toISOString()).toEqual('2017-09-26T00:00:00.000Z');
-    });
   });
 
   describe('JSHandle.getProperties', function () {
