@@ -15,30 +15,23 @@
  */
 
 import expect from 'expect';
-import {
-  getTestState,
-  setupTestBrowserHooks,
-  setupTestPageAndContextHooks,
-  itFailsFirefox,
-  itHeadfulOnly,
-  itChromeOnly,
-} from './mocha-utils.js';
+
+import {getTestState, launch, setupTestBrowserHooks} from './mocha-utils.js';
 
 describe('Screenshots', function () {
   setupTestBrowserHooks();
-  setupTestPageAndContextHooks();
 
   describe('Page.screenshot', function () {
-    itFailsFirefox('should work', async () => {
-      const {page, server} = getTestState();
+    it('should work', async () => {
+      const {page, server} = await getTestState();
 
       await page.setViewport({width: 500, height: 500});
       await page.goto(server.PREFIX + '/grid.html');
       const screenshot = await page.screenshot();
       expect(screenshot).toBeGolden('screenshot-sanity.png');
     });
-    itFailsFirefox('should clip rect', async () => {
-      const {page, server} = getTestState();
+    it('should clip rect', async () => {
+      const {page, server} = await getTestState();
 
       await page.setViewport({width: 500, height: 500});
       await page.goto(server.PREFIX + '/grid.html');
@@ -52,25 +45,38 @@ describe('Screenshots', function () {
       });
       expect(screenshot).toBeGolden('screenshot-clip-rect.png');
     });
-    itFailsFirefox(
-      'should get screenshot bigger than the viewport',
-      async () => {
-        const {page, server} = getTestState();
-        await page.setViewport({width: 50, height: 50});
-        await page.goto(server.PREFIX + '/grid.html');
-        const screenshot = await page.screenshot({
-          clip: {
-            x: 25,
-            y: 25,
-            width: 100,
-            height: 100,
-          },
-        });
-        expect(screenshot).toBeGolden('screenshot-offscreen-clip.png');
-      }
-    );
+    it('should use scale for clip', async () => {
+      const {page, server} = await getTestState();
+
+      await page.setViewport({width: 500, height: 500});
+      await page.goto(server.PREFIX + '/grid.html');
+      const screenshot = await page.screenshot({
+        clip: {
+          x: 50,
+          y: 100,
+          width: 150,
+          height: 100,
+          scale: 2,
+        },
+      });
+      expect(screenshot).toBeGolden('screenshot-clip-rect-scale2.png');
+    });
+    it('should get screenshot bigger than the viewport', async () => {
+      const {page, server} = await getTestState();
+      await page.setViewport({width: 50, height: 50});
+      await page.goto(server.PREFIX + '/grid.html');
+      const screenshot = await page.screenshot({
+        clip: {
+          x: 25,
+          y: 25,
+          width: 100,
+          height: 100,
+        },
+      });
+      expect(screenshot).toBeGolden('screenshot-offscreen-clip.png');
+    });
     it('should run in parallel', async () => {
-      const {page, server} = getTestState();
+      const {page, server} = await getTestState();
 
       await page.setViewport({width: 500, height: 500});
       await page.goto(server.PREFIX + '/grid.html');
@@ -88,10 +94,10 @@ describe('Screenshots', function () {
         );
       }
       const screenshots = await Promise.all(promises);
-      expect(screenshots[1]!).toBeGolden('grid-cell-1.png');
+      expect(screenshots[1]).toBeGolden('grid-cell-1.png');
     });
-    itFailsFirefox('should take fullPage screenshots', async () => {
-      const {page, server} = getTestState();
+    it('should take fullPage screenshots', async () => {
+      const {page, server} = await getTestState();
 
       await page.setViewport({width: 500, height: 500});
       await page.goto(server.PREFIX + '/grid.html');
@@ -101,7 +107,7 @@ describe('Screenshots', function () {
       expect(screenshot).toBeGolden('screenshot-grid-fullpage.png');
     });
     it('should run in parallel in multiple pages', async () => {
-      const {server, context} = getTestState();
+      const {server, context} = await getTestState();
 
       const N = 2;
       const pages = await Promise.all(
@@ -131,16 +137,16 @@ describe('Screenshots', function () {
         })
       );
     });
-    itFailsFirefox('should allow transparency', async () => {
-      const {page, server} = getTestState();
+    it('should allow transparency', async () => {
+      const {page, server} = await getTestState();
 
       await page.setViewport({width: 100, height: 100});
       await page.goto(server.EMPTY_PAGE);
       const screenshot = await page.screenshot({omitBackground: true});
       expect(screenshot).toBeGolden('transparent.png');
     });
-    itFailsFirefox('should render white background on jpeg file', async () => {
-      const {page, server} = getTestState();
+    it('should render white background on jpeg file', async () => {
+      const {page, server} = await getTestState();
 
       await page.setViewport({width: 100, height: 100});
       await page.goto(server.EMPTY_PAGE);
@@ -150,8 +156,8 @@ describe('Screenshots', function () {
       });
       expect(screenshot).toBeGolden('white.jpg');
     });
-    itFailsFirefox('should work with webp', async () => {
-      const {page, server} = getTestState();
+    it('should work with webp', async () => {
+      const {page, server} = await getTestState();
 
       await page.setViewport({width: 100, height: 100});
       await page.goto(server.PREFIX + '/grid.html');
@@ -162,7 +168,7 @@ describe('Screenshots', function () {
       expect(screenshot).toBeInstanceOf(Buffer);
     });
     it('should work with odd clip size on Retina displays', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const screenshot = await page.screenshot({
         clip: {
@@ -174,8 +180,20 @@ describe('Screenshots', function () {
       });
       expect(screenshot).toBeGolden('screenshot-clip-odd-size.png');
     });
-    itHeadfulOnly('should work in "fromSurface: false" mode', async () => {
-      const {page, server} = getTestState();
+    it('should return base64', async () => {
+      const {page, server} = await getTestState();
+
+      await page.setViewport({width: 500, height: 500});
+      await page.goto(server.PREFIX + '/grid.html');
+      const screenshot = await page.screenshot({
+        encoding: 'base64',
+      });
+      expect(Buffer.from(screenshot, 'base64')).toBeGolden(
+        'screenshot-sanity.png'
+      );
+    });
+    it('should work in "fromSurface: false" mode', async () => {
+      const {page, server} = await getTestState();
 
       await page.setViewport({width: 500, height: 500});
       await page.goto(server.PREFIX + '/grid.html');
@@ -188,7 +206,7 @@ describe('Screenshots', function () {
 
   describe('ElementHandle.screenshot', function () {
     it('should work', async () => {
-      const {page, server} = getTestState();
+      const {page, server} = await getTestState();
 
       await page.setViewport({width: 500, height: 500});
       await page.goto(server.PREFIX + '/grid.html');
@@ -199,11 +217,11 @@ describe('Screenshots', function () {
       const screenshot = await elementHandle.screenshot();
       expect(screenshot).toBeGolden('screenshot-element-bounding-box.png');
     });
-    itChromeOnly('should work with a null viewport', async () => {
-      const {defaultBrowserOptions, puppeteer, server} = getTestState();
-
-      const browser = await puppeteer.launch({
-        ...defaultBrowserOptions,
+    it('should work with a null viewport', async () => {
+      const {server} = await getTestState({
+        skipLaunch: true,
+      });
+      const {browser, close} = await launch({
         defaultViewport: null,
       });
 
@@ -217,11 +235,11 @@ describe('Screenshots', function () {
         const screenshot = await elementHandle.screenshot();
         expect(screenshot).toBeTruthy();
       } finally {
-        await browser.close();
+        await close();
       }
     });
     it('should take into account padding and border', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       await page.setViewport({width: 500, height: 500});
       await page.setContent(`
@@ -239,14 +257,12 @@ describe('Screenshots', function () {
       const screenshot = await elementHandle.screenshot();
       expect(screenshot).toBeGolden('screenshot-element-padding-border.png');
     });
-    itFailsFirefox(
-      'should capture full element when larger than viewport',
-      async () => {
-        const {page} = getTestState();
+    it('should capture full element when larger than viewport', async () => {
+      const {page} = await getTestState();
 
-        await page.setViewport({width: 500, height: 500});
+      await page.setViewport({width: 500, height: 500});
 
-        await page.setContent(`
+      await page.setContent(`
           something above
           <style>
           div.to-screenshot {
@@ -261,24 +277,23 @@ describe('Screenshots', function () {
           </style>
           <div class="to-screenshot"></div>
         `);
-        const elementHandle = (await page.$('div.to-screenshot'))!;
-        const screenshot = await elementHandle.screenshot();
-        expect(screenshot).toBeGolden(
-          'screenshot-element-larger-than-viewport.png'
-        );
+      const elementHandle = (await page.$('div.to-screenshot'))!;
+      const screenshot = await elementHandle.screenshot();
+      expect(screenshot).toBeGolden(
+        'screenshot-element-larger-than-viewport.png'
+      );
 
-        expect(
-          await page.evaluate(() => {
-            return {
-              w: window.innerWidth,
-              h: window.innerHeight,
-            };
-          })
-        ).toEqual({w: 500, h: 500});
-      }
-    );
+      expect(
+        await page.evaluate(() => {
+          return {
+            w: window.innerWidth,
+            h: window.innerHeight,
+          };
+        })
+      ).toEqual({w: 500, h: 500});
+    });
     it('should scroll element into view', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       await page.setViewport({width: 500, height: 500});
       await page.setContent(`
@@ -304,8 +319,8 @@ describe('Screenshots', function () {
         'screenshot-element-scrolled-into-view.png'
       );
     });
-    itFailsFirefox('should work with a rotated element', async () => {
-      const {page} = getTestState();
+    it('should work with a rotated element', async () => {
+      const {page} = await getTestState();
 
       await page.setViewport({width: 500, height: 500});
       await page.setContent(`<div style="position:absolute;
@@ -319,8 +334,8 @@ describe('Screenshots', function () {
       const screenshot = await elementHandle.screenshot();
       expect(screenshot).toBeGolden('screenshot-element-rotate.png');
     });
-    itFailsFirefox('should fail to screenshot a detached element', async () => {
-      const {page} = getTestState();
+    it('should fail to screenshot a detached element', async () => {
+      const {page} = await getTestState();
 
       await page.setContent('<h1>remove this</h1>');
       const elementHandle = (await page.$('h1'))!;
@@ -335,7 +350,7 @@ describe('Screenshots', function () {
       );
     });
     it('should not hang with zero width/height element', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       await page.setContent('<div style="width: 50px; height: 0"></div>');
       const div = (await page.$('div'))!;
@@ -345,7 +360,7 @@ describe('Screenshots', function () {
       expect(error.message).toBe('Node has 0 height.');
     });
     it('should work for an element with fractional dimensions', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       await page.setContent(
         '<div style="width:48.51px;height:19.8px;border:1px solid black;"></div>'
@@ -354,8 +369,8 @@ describe('Screenshots', function () {
       const screenshot = await elementHandle.screenshot();
       expect(screenshot).toBeGolden('screenshot-element-fractional.png');
     });
-    itFailsFirefox('should work for an element with an offset', async () => {
-      const {page} = getTestState();
+    it('should work for an element with an offset', async () => {
+      const {page} = await getTestState();
 
       await page.setContent(
         '<div style="position:absolute; top: 10.3px; left: 20.4px;width:50.3px;height:20.2px;border:1px solid black;"></div>'

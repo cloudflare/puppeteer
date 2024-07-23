@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 import assert from 'assert';
-import {diffLines} from 'diff';
 import fs from 'fs';
+import path from 'path';
+
+import {diffLines} from 'diff';
 import jpeg from 'jpeg-js';
 import mime from 'mime';
-import path from 'path';
 import pixelmatch from 'pixelmatch';
 import {PNG} from 'pngjs';
 
@@ -91,14 +92,20 @@ const compareText = (
     return;
   }
   const result = diffLines(expected, actual);
-  const html = result.reduce((text, change) => {
-    text += change.added
-      ? `<span class='ins'>${change.value}</span>`
-      : change.removed
-      ? `<span class='del'>${change.value}</span>`
-      : change.value;
-    return text;
-  }, `<link rel="stylesheet" href="file://${path.join(__dirname, 'diffstyle.css')}">`);
+  const html = result.reduce(
+    (text, change) => {
+      text += change.added
+        ? `<span class='ins'>${change.value}</span>`
+        : change.removed
+        ? `<span class='del'>${change.value}</span>`
+        : change.value;
+      return text;
+    },
+    `<link rel="stylesheet" href="file://${path.join(
+      __dirname,
+      'diffstyle.css'
+    )}">`
+  );
   return {
     diff: html,
     ext: '.html',

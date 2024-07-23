@@ -14,33 +14,25 @@
  * limitations under the License.
  */
 
-import utils from './utils.js';
 import expect from 'expect';
-import {
-  getTestState,
-  setupTestBrowserHooks,
-  setupTestPageAndContextHooks,
-  itFailsFirefox,
-  describeFailsFirefox,
-} from './mocha-utils.js';
 
-const bigint = typeof BigInt !== 'undefined';
+import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
+import {attachFrame} from './utils.js';
 
 describe('Evaluation specs', function () {
   setupTestBrowserHooks();
-  setupTestPageAndContextHooks();
 
   describe('Page.evaluate', function () {
     it('should work', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const result = await page.evaluate(() => {
         return 7 * 3;
       });
       expect(result).toBe(21);
     });
-    (bigint ? it : xit)('should transfer BigInt', async () => {
-      const {page} = getTestState();
+    it('should transfer BigInt', async () => {
+      const {page} = await getTestState();
 
       const result = await page.evaluate((a: bigint) => {
         return a;
@@ -48,7 +40,7 @@ describe('Evaluation specs', function () {
       expect(result).toBe(BigInt(42));
     });
     it('should transfer NaN', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const result = await page.evaluate(a => {
         return a;
@@ -56,7 +48,7 @@ describe('Evaluation specs', function () {
       expect(Object.is(result, NaN)).toBe(true);
     });
     it('should transfer -0', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const result = await page.evaluate(a => {
         return a;
@@ -64,7 +56,7 @@ describe('Evaluation specs', function () {
       expect(Object.is(result, -0)).toBe(true);
     });
     it('should transfer Infinity', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const result = await page.evaluate(a => {
         return a;
@@ -72,7 +64,7 @@ describe('Evaluation specs', function () {
       expect(Object.is(result, Infinity)).toBe(true);
     });
     it('should transfer -Infinity', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const result = await page.evaluate(a => {
         return a;
@@ -80,7 +72,7 @@ describe('Evaluation specs', function () {
       expect(Object.is(result, -Infinity)).toBe(true);
     });
     it('should transfer arrays', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const result = await page.evaluate(
         a => {
@@ -91,7 +83,7 @@ describe('Evaluation specs', function () {
       expect(result).toEqual([1, 2, 3]);
     });
     it('should transfer arrays as arrays, not objects', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const result = await page.evaluate(
         a => {
@@ -102,7 +94,7 @@ describe('Evaluation specs', function () {
       expect(result).toBe(true);
     });
     it('should modify global environment', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       await page.evaluate(() => {
         return ((globalThis as any).globalVar = 123);
@@ -110,25 +102,37 @@ describe('Evaluation specs', function () {
       expect(await page.evaluate('globalVar')).toBe(123);
     });
     it('should evaluate in the page context', async () => {
-      const {page, server} = getTestState();
+      const {page, server} = await getTestState();
 
       await page.goto(server.PREFIX + '/global-var.html');
       expect(await page.evaluate('globalVar')).toBe(123);
     });
-    itFailsFirefox(
-      'should return undefined for objects with symbols',
-      async () => {
-        const {page} = getTestState();
+    it('should return undefined for objects with symbols', async () => {
+      const {page} = await getTestState();
 
-        expect(
-          await page.evaluate(() => {
-            return [Symbol('foo4')];
-          })
-        ).toBe(undefined);
-      }
-    );
+      expect(
+        await page.evaluate(() => {
+          return [Symbol('foo4')];
+        })
+      ).toBe(undefined);
+    });
+    it('should work with function shorthands', async () => {
+      const {page} = await getTestState();
+
+      const a = {
+        sum(a: number, b: number) {
+          return a + b;
+        },
+
+        async mult(a: number, b: number) {
+          return a * b;
+        },
+      };
+      expect(await page.evaluate(a.sum, 1, 2)).toBe(3);
+      expect(await page.evaluate(a.mult, 2, 4)).toBe(8);
+    });
     it('should work with unicode chars', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const result = await page.evaluate(
         a => {
@@ -140,8 +144,8 @@ describe('Evaluation specs', function () {
       );
       expect(result).toBe(42);
     });
-    itFailsFirefox('should throw when evaluation triggers reload', async () => {
-      const {page} = getTestState();
+    it('should throw when evaluation triggers reload', async () => {
+      const {page} = await getTestState();
 
       let error!: Error;
       await page
@@ -155,7 +159,7 @@ describe('Evaluation specs', function () {
       expect(error.message).toContain('Protocol error');
     });
     it('should await promise', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const result = await page.evaluate(() => {
         return Promise.resolve(8 * 7);
@@ -163,7 +167,7 @@ describe('Evaluation specs', function () {
       expect(result).toBe(56);
     });
     it('should work right after framenavigated', async () => {
-      const {page, server} = getTestState();
+      const {page, server} = await getTestState();
 
       let frameEvaluation = null;
       page.on('framenavigated', async frame => {
@@ -174,8 +178,8 @@ describe('Evaluation specs', function () {
       await page.goto(server.EMPTY_PAGE);
       expect(await frameEvaluation).toBe(42);
     });
-    itFailsFirefox('should work from-inside an exposed function', async () => {
-      const {page} = getTestState();
+    it('should work from-inside an exposed function', async () => {
+      const {page} = await getTestState();
 
       // Setup inpage callback, which calls Page.evaluate
       await page.exposeFunction(
@@ -196,7 +200,7 @@ describe('Evaluation specs', function () {
       expect(result).toBe(27);
     });
     it('should reject promise with exception', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       let error!: Error;
       await page
@@ -211,7 +215,7 @@ describe('Evaluation specs', function () {
       expect(error.message).toContain('notExistingObject');
     });
     it('should support thrown strings as error messages', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       let error!: Error;
       await page
@@ -221,11 +225,10 @@ describe('Evaluation specs', function () {
         .catch(error_ => {
           return (error = error_);
         });
-      expect(error).toBeTruthy();
-      expect(error.message).toContain('qwerty');
+      expect(error).toEqual('qwerty');
     });
     it('should support thrown numbers as error messages', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       let error!: Error;
       await page
@@ -235,11 +238,10 @@ describe('Evaluation specs', function () {
         .catch(error_ => {
           return (error = error_);
         });
-      expect(error).toBeTruthy();
-      expect(error.message).toContain('100500');
+      expect(error).toEqual(100500);
     });
     it('should return complex objects', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const object = {foo: 'bar!'};
       const result = await page.evaluate(a => {
@@ -248,8 +250,8 @@ describe('Evaluation specs', function () {
       expect(result).not.toBe(object);
       expect(result).toEqual(object);
     });
-    (bigint ? it : xit)('should return BigInt', async () => {
-      const {page} = getTestState();
+    it('should return BigInt', async () => {
+      const {page} = await getTestState();
 
       const result = await page.evaluate(() => {
         return BigInt(42);
@@ -257,7 +259,7 @@ describe('Evaluation specs', function () {
       expect(result).toBe(BigInt(42));
     });
     it('should return NaN', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const result = await page.evaluate(() => {
         return NaN;
@@ -265,7 +267,7 @@ describe('Evaluation specs', function () {
       expect(Object.is(result, NaN)).toBe(true);
     });
     it('should return -0', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const result = await page.evaluate(() => {
         return -0;
@@ -273,7 +275,7 @@ describe('Evaluation specs', function () {
       expect(Object.is(result, -0)).toBe(true);
     });
     it('should return Infinity', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const result = await page.evaluate(() => {
         return Infinity;
@@ -281,7 +283,7 @@ describe('Evaluation specs', function () {
       expect(Object.is(result, Infinity)).toBe(true);
     });
     it('should return -Infinity', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const result = await page.evaluate(() => {
         return -Infinity;
@@ -289,7 +291,7 @@ describe('Evaluation specs', function () {
       expect(Object.is(result, -Infinity)).toBe(true);
     });
     it('should accept "null" as one of multiple parameters', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const result = await page.evaluate(
         (a, b) => {
@@ -301,7 +303,7 @@ describe('Evaluation specs', function () {
       expect(result).toBe(true);
     });
     it('should properly serialize null fields', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       expect(
         await page.evaluate(() => {
@@ -309,67 +311,60 @@ describe('Evaluation specs', function () {
         })
       ).toEqual({});
     });
-    itFailsFirefox(
-      'should return undefined for non-serializable objects',
-      async () => {
-        const {page} = getTestState();
+    it('should return undefined for non-serializable objects', async () => {
+      const {page} = await getTestState();
 
-        expect(
-          await page.evaluate(() => {
-            return window;
-          })
-        ).toBe(undefined);
-      }
-    );
-    itFailsFirefox('should fail for circular object', async () => {
-      const {page} = getTestState();
+      expect(
+        await page.evaluate(() => {
+          return window;
+        })
+      ).toBe(undefined);
+    });
+    it('should return promise as empty object', async () => {
+      const {page} = await getTestState();
 
       const result = await page.evaluate(() => {
-        const a: {[x: string]: any} = {};
+        return {
+          promise: new Promise(resolve => {
+            setTimeout(resolve, 1000);
+          }),
+        };
+      });
+      expect(result).toEqual({
+        promise: {},
+      });
+    });
+    it('should fail for circular object', async () => {
+      const {page} = await getTestState();
+
+      const result = await page.evaluate(() => {
+        const a: Record<string, any> = {};
         const b = {a};
         a['b'] = b;
         return a;
       });
       expect(result).toBe(undefined);
     });
-    itFailsFirefox('should be able to throw a tricky error', async () => {
-      const {page} = getTestState();
-
-      const windowHandle = await page.evaluateHandle(() => {
-        return window;
-      });
-      const errorText = await windowHandle.jsonValue().catch(error_ => {
-        return error_.message;
-      });
-      const error = await page
-        .evaluate(errorText => {
-          throw new Error(errorText);
-        }, errorText)
-        .catch(error_ => {
-          return error_;
-        });
-      expect(error.message).toContain(errorText);
-    });
     it('should accept a string', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const result = await page.evaluate('1 + 2');
       expect(result).toBe(3);
     });
     it('should accept a string with semi colons', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const result = await page.evaluate('1 + 5;');
       expect(result).toBe(6);
     });
     it('should accept a string with comments', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const result = await page.evaluate('2 + 5;\n// do some math!');
       expect(result).toBe(7);
     });
     it('should accept element handle as an argument', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       await page.setContent('<section>42</section>');
       const element = (await page.$('section'))!;
@@ -379,7 +374,7 @@ describe('Evaluation specs', function () {
       expect(text).toBe('42');
     });
     it('should throw if underlying element was disposed', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       await page.setContent('<section>39</section>');
       const element = (await page.$('section'))!;
@@ -395,29 +390,26 @@ describe('Evaluation specs', function () {
         });
       expect(error.message).toContain('JSHandle is disposed');
     });
-    itFailsFirefox(
-      'should throw if elementHandles are from other frames',
-      async () => {
-        const {page, server} = getTestState();
+    it('should throw if elementHandles are from other frames', async () => {
+      const {page, server} = await getTestState();
 
-        await utils.attachFrame(page, 'frame1', server.EMPTY_PAGE);
-        const bodyHandle = await page.frames()[1]!.$('body');
-        let error!: Error;
-        await page
-          .evaluate(body => {
-            return body?.innerHTML;
-          }, bodyHandle)
-          .catch(error_ => {
-            return (error = error_);
-          });
-        expect(error).toBeTruthy();
-        expect(error.message).toContain(
-          'JSHandles can be evaluated only in the context they were created'
-        );
-      }
-    );
-    itFailsFirefox('should simulate a user gesture', async () => {
-      const {page} = getTestState();
+      await attachFrame(page, 'frame1', server.EMPTY_PAGE);
+      const bodyHandle = await page.frames()[1]!.$('body');
+      let error!: Error;
+      await page
+        .evaluate(body => {
+          return body?.innerHTML;
+        }, bodyHandle)
+        .catch(error_ => {
+          return (error = error_);
+        });
+      expect(error).toBeTruthy();
+      expect(error.message).toContain(
+        'JSHandles can be evaluated only in the context they were created'
+      );
+    });
+    it('should simulate a user gesture', async () => {
+      const {page} = await getTestState();
 
       const result = await page.evaluate(() => {
         document.body.appendChild(document.createTextNode('test'));
@@ -426,8 +418,8 @@ describe('Evaluation specs', function () {
       });
       expect(result).toBe(true);
     });
-    itFailsFirefox('should throw a nice error after a navigation', async () => {
-      const {page} = getTestState();
+    it('should throw a nice error after a navigation', async () => {
+      const {page} = await getTestState();
 
       const executionContext = await page.mainFrame().executionContext();
 
@@ -446,29 +438,27 @@ describe('Evaluation specs', function () {
         });
       expect((error as Error).message).toContain('navigation');
     });
-    itFailsFirefox(
-      'should not throw an error when evaluation does a navigation',
-      async () => {
-        const {page, server} = getTestState();
+    it('should not throw an error when evaluation does a navigation', async () => {
+      const {page, server} = await getTestState();
 
-        await page.goto(server.PREFIX + '/one-style.html');
-        const result = await page.evaluate(() => {
-          (window as any).location = '/empty.html';
-          return [42];
-        });
-        expect(result).toEqual([42]);
-      }
-    );
+      await page.goto(server.PREFIX + '/one-style.html');
+      const result = await page.evaluate(() => {
+        (window as any).location = '/empty.html';
+        return [42];
+      });
+      expect(result).toEqual([42]);
+    });
     it('should transfer 100Mb of data from page to node.js', async function () {
-      const {page} = getTestState();
+      this.timeout(25_000);
+      const {page} = await getTestState();
 
       const a = await page.evaluate(() => {
         return Array(100 * 1024 * 1024 + 1).join('a');
       });
       expect(a.length).toBe(100 * 1024 * 1024);
     });
-    it('should throw error with detailed information on exception inside promise ', async () => {
-      const {page} = getTestState();
+    it('should throw error with detailed information on exception inside promise', async () => {
+      const {page} = await getTestState();
 
       let error!: Error;
       await page
@@ -484,9 +474,9 @@ describe('Evaluation specs', function () {
     });
   });
 
-  describeFailsFirefox('Page.evaluateOnNewDocument', function () {
+  describe('Page.evaluateOnNewDocument', function () {
     it('should evaluate before anything else on the page', async () => {
-      const {page, server} = getTestState();
+      const {page, server} = await getTestState();
 
       await page.evaluateOnNewDocument(function () {
         (globalThis as any).injected = 123;
@@ -499,7 +489,7 @@ describe('Evaluation specs', function () {
       ).toBe(123);
     });
     it('should work with CSP', async () => {
-      const {page, server} = getTestState();
+      const {page, server} = await getTestState();
 
       server.setCSP('/empty.html', 'script-src ' + server.PREFIX);
       await page.evaluateOnNewDocument(function () {
@@ -524,13 +514,37 @@ describe('Evaluation specs', function () {
     });
   });
 
+  describe('Page.removeScriptToEvaluateOnNewDocument', function () {
+    it('should remove new document script', async () => {
+      const {page, server} = await getTestState();
+
+      const {identifier} = await page.evaluateOnNewDocument(function () {
+        (globalThis as any).injected = 123;
+      });
+      await page.goto(server.PREFIX + '/tamperable.html');
+      expect(
+        await page.evaluate(() => {
+          return (globalThis as any).result;
+        })
+      ).toBe(123);
+
+      await page.removeScriptToEvaluateOnNewDocument(identifier);
+      await page.reload();
+      expect(
+        await page.evaluate(() => {
+          return (globalThis as any).result || null;
+        })
+      ).toBe(null);
+    });
+  });
+
   describe('Frame.evaluate', function () {
     it('should have different execution contexts', async () => {
-      const {page, server} = getTestState();
+      const {page, server} = await getTestState();
 
       await page.goto(server.EMPTY_PAGE);
-      await utils.attachFrame(page, 'frame1', server.EMPTY_PAGE);
-      expect(page.frames().length).toBe(2);
+      await attachFrame(page, 'frame1', server.EMPTY_PAGE);
+      expect(page.frames()).toHaveLength(2);
       await page.frames()[0]!.evaluate(() => {
         return ((globalThis as any).FOO = 'foo');
       });
@@ -549,10 +563,10 @@ describe('Evaluation specs', function () {
       ).toBe('bar');
     });
     it('should have correct execution contexts', async () => {
-      const {page, server} = getTestState();
+      const {page, server} = await getTestState();
 
       await page.goto(server.PREFIX + '/frames/one-frame.html');
-      expect(page.frames().length).toBe(2);
+      expect(page.frames()).toHaveLength(2);
       expect(
         await page.frames()[0]!.evaluate(() => {
           return document.body.textContent!.trim();
@@ -565,7 +579,7 @@ describe('Evaluation specs', function () {
       ).toBe(`Hi, I'm frame`);
     });
     it('should execute after cross-site navigation', async () => {
-      const {page, server} = getTestState();
+      const {page, server} = await getTestState();
 
       await page.goto(server.EMPTY_PAGE);
       const mainFrame = page.mainFrame();

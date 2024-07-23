@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "$id": "Puppeteer",
+  "title": "Puppeteer Install Schema",
+  "type": "object",
+  "properties": {
+    "isDefaultTester": {
+      "type": "boolean",
+      "default": true,
+      "alias": "d",
+      "x-prompt": "Use Puppeteer as default `ng e2e` command?"
+    },
+    "exportConfig": {
+      "type": "boolean",
+      "default": false,
+      "alias": "c",
+      "x-prompt": "Export default Puppeteer config file?"
+    },
+    "testingFramework": {
+      "type": "string",
+      "enum": ["jasmine", "jest", "mocha", "node"],
+      "default": "jasmine",
+      "alias": "t",
+      "x-prompt": {
+        "message": "With what Testing Library do you wish to integrate?",
+        "type": "list",
+        "items": [
+          {
+            "value": "jasmine",
+            "label": "Use Jasmine [https://jasmine.github.io/]"
+          },
+          {
+            "value": "jest",
+            "label": "Use Jest [https://jestjs.io/]"
+          },
+          {
+            "value": "mocha",
+            "label": "Use Mocha [https://mochajs.org/]"
+          },
+          {
+            "value": "node",
+            "label": "Use Node Test Runner [https://nodejs.org/api/test.html]"
+          }
+        ]
+      }
+    },
+    "port": {
+      "type": ["number"],
+      "default": 4200,
+      "alias": "p",
+      "x-prompt": "On which port to spawn test server on?"
+    }
+  },
+  "required": []
+}

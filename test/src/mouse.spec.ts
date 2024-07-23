@@ -14,14 +14,23 @@
  * limitations under the License.
  */
 import os from 'os';
+
 import expect from 'expect';
-import {
-  getTestState,
-  setupTestBrowserHooks,
-  setupTestPageAndContextHooks,
-  itFailsFirefox,
-} from './mocha-utils.js';
-import {KeyInput} from '../../lib/cjs/puppeteer/common/USKeyboardLayout.js';
+import {MouseButton} from 'puppeteer-core/internal/api/Input.js';
+import {Page} from 'puppeteer-core/internal/api/Page.js';
+import {KeyInput} from 'puppeteer-core/internal/common/USKeyboardLayout.js';
+
+import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
+
+interface ClickData {
+  type: string;
+  detail: number;
+  clientX: number;
+  clientY: number;
+  isTrusted: boolean;
+  button: number;
+  buttons: number;
+}
 
 interface Dimensions {
   x: number;
@@ -42,9 +51,9 @@ function dimensions(): Dimensions {
 
 describe('Mouse', function () {
   setupTestBrowserHooks();
-  setupTestPageAndContextHooks();
+
   it('should click the document', async () => {
-    const {page} = getTestState();
+    const {page} = await getTestState();
 
     await page.evaluate(() => {
       (globalThis as any).clickPromise = new Promise(resolve => {
@@ -72,7 +81,7 @@ describe('Mouse', function () {
     expect(event.button).toBe(0);
   });
   it('should resize the textarea', async () => {
-    const {page, server} = getTestState();
+    const {page, server} = await getTestState();
 
     await page.goto(server.PREFIX + '/input/textarea.html');
     const {x, y, width, height} = await page.evaluate(dimensions);
@@ -86,7 +95,7 @@ describe('Mouse', function () {
     expect(newDimensions.height).toBe(Math.round(height + 104));
   });
   it('should select the text with mouse', async () => {
-    const {page, server} = getTestState();
+    const {page, server} = await getTestState();
 
     await page.goto(server.PREFIX + '/input/textarea.html');
     await page.focus('textarea');
@@ -115,8 +124,8 @@ describe('Mouse', function () {
       })
     ).toBe(text);
   });
-  itFailsFirefox('should trigger hover state', async () => {
-    const {page, server} = getTestState();
+  it('should trigger hover state', async () => {
+    const {page, server} = await getTestState();
 
     await page.goto(server.PREFIX + '/input/scrollable.html');
     await page.hover('#button-6');
@@ -138,26 +147,23 @@ describe('Mouse', function () {
       })
     ).toBe('button-91');
   });
-  itFailsFirefox(
-    'should trigger hover state with removed window.Node',
-    async () => {
-      const {page, server} = getTestState();
+  it('should trigger hover state with removed window.Node', async () => {
+    const {page, server} = await getTestState();
 
-      await page.goto(server.PREFIX + '/input/scrollable.html');
+    await page.goto(server.PREFIX + '/input/scrollable.html');
+    await page.evaluate(() => {
+      // @ts-expect-error Expected.
+      return delete window.Node;
+    });
+    await page.hover('#button-6');
+    expect(
       await page.evaluate(() => {
-        // @ts-expect-error Expected.
-        return delete window.Node;
-      });
-      await page.hover('#button-6');
-      expect(
-        await page.evaluate(() => {
-          return document.querySelector('button:hover')!.id;
-        })
-      ).toBe('button-6');
-    }
-  );
+        return document.querySelector('button:hover')!.id;
+      })
+    ).toBe('button-6');
+  });
   it('should set modifier keys on click', async () => {
-    const {page, server, isFirefox} = getTestState();
+    const {page, server, isFirefox} = await getTestState();
 
     await page.goto(server.PREFIX + '/input/scrollable.html');
     await page.evaluate(() => {
@@ -202,8 +208,8 @@ describe('Mouse', function () {
       }
     }
   });
-  itFailsFirefox('should send mouse wheel events', async () => {
-    const {page, server} = getTestState();
+  it('should send mouse wheel events', async () => {
+    const {page, server} = await getTestState();
 
     await page.goto(server.PREFIX + '/input/wheel.html');
     const elem = (await page.$('div'))!;
@@ -225,8 +231,8 @@ describe('Mouse', function () {
       height: 230,
     });
   });
-  itFailsFirefox('should tween mouse movement', async () => {
-    const {page} = getTestState();
+  it('should tween mouse movement', async () => {
+    const {page} = await getTestState();
 
     await page.mouse.move(100, 100);
     await page.evaluate(() => {
@@ -246,7 +252,7 @@ describe('Mouse', function () {
   });
   // @see https://crbug.com/929806
   it('should work with mobile viewports and cross process navigations', async () => {
-    const {page, server} = getTestState();
+    const {page, server} = await getTestState();
 
     await page.goto(server.EMPTY_PAGE);
     await page.setViewport({width: 360, height: 640, isMobile: true});
@@ -260,5 +266,166 @@ describe('Mouse', function () {
     await page.mouse.click(30, 40);
 
     expect(await page.evaluate('result')).toEqual({x: 30, y: 40});
+  });
+  it('should throw if buttons are pressed incorrectly', async () => {
+    const {page, server} = await getTestState();
+
+    await page.goto(server.EMPTY_PAGE);
+
+    await page.mouse.down();
+    await expect(page.mouse.down()).rejects.toBeInstanceOf(Error);
+  });
+
+  interface AddMouseDataListenersOptions {
+    includeMove?: boolean;
+  }
+
+  const addMouseDataListeners = (
+    page: Page,
+    options: AddMouseDataListenersOptions = {}
+  ) => {
+    return page.evaluate(({includeMove}) => {
+      const clicks: ClickData[] = [];
+      const mouseEventListener = (event: MouseEvent) => {
+        clicks.push({
+          type: event.type,
+          detail: event.detail,
+          clientX: event.clientX,
+          clientY: event.clientY,
+          isTrusted: event.isTrusted,
+          button: event.button,
+          buttons: event.buttons,
+        });
+      };
+      document.addEventListener('mousedown', mouseEventListener);
+      if (includeMove) {
+        document.addEventListener('mousemove', mouseEventListener);
+      }
+      document.addEventListener('mouseup', mouseEventListener);
+      document.addEventListener('click', mouseEventListener);
+      (window as unknown as {clicks: ClickData[]}).clicks = clicks;
+    }, options);
+  };
+
+  it('should not throw if clicking in parallel', async () => {
+    const {page, server} = await getTestState();
+
+    await page.goto(server.EMPTY_PAGE);
+    await addMouseDataListeners(page);
+
+    await Promise.all([page.mouse.click(0, 5), page.mouse.click(6, 10)]);
+
+    const data = await page.evaluate(() => {
+      return (window as unknown as {clicks: ClickData[]}).clicks;
+    });
+    const commonAttrs = {
+      isTrusted: true,
+      detail: 1,
+      clientY: 5,
+      clientX: 0,
+      button: 0,
+    };
+    expect(data.splice(0, 3)).toMatchObject({
+      0: {
+        type: 'mousedown',
+        buttons: 1,
+        ...commonAttrs,
+      },
+      1: {
+        type: 'mouseup',
+        buttons: 0,
+        ...commonAttrs,
+      },
+      2: {
+        type: 'click',
+        buttons: 0,
+        ...commonAttrs,
+      },
+    });
+    Object.assign(commonAttrs, {
+      clientX: 6,
+      clientY: 10,
+    });
+    expect(data).toMatchObject({
+      0: {
+        type: 'mousedown',
+        buttons: 1,
+        ...commonAttrs,
+      },
+      1: {
+        type: 'mouseup',
+        buttons: 0,
+        ...commonAttrs,
+      },
+      2: {
+        type: 'click',
+        buttons: 0,
+        ...commonAttrs,
+      },
+    });
+  });
+
+  it('should reset properly', async () => {
+    const {page, server} = await getTestState();
+
+    await page.goto(server.EMPTY_PAGE);
+
+    await page.mouse.move(5, 5);
+    await Promise.all([
+      page.mouse.down({button: MouseButton.Left}),
+      page.mouse.down({button: MouseButton.Middle}),
+      page.mouse.down({button: MouseButton.Right}),
+    ]);
+
+    await addMouseDataListeners(page, {includeMove: true});
+    await page.mouse.reset();
+
+    const data = await page.evaluate(() => {
+      return (window as unknown as {clicks: ClickData[]}).clicks;
+    });
+    const commonAttrs = {
+      isTrusted: true,
+      clientY: 5,
+      clientX: 5,
+    };
+    expect(data).toMatchObject([
+      {
+        ...commonAttrs,
+        button: 0,
+        buttons: 6,
+        detail: 1,
+        type: 'mouseup',
+      },
+      {
+        ...commonAttrs,
+        button: 0,
+        buttons: 6,
+        detail: 1,
+        type: 'click',
+      },
+      {
+        ...commonAttrs,
+        button: 1,
+        buttons: 2,
+        detail: 0,
+        type: 'mouseup',
+      },
+      {
+        ...commonAttrs,
+        button: 2,
+        buttons: 0,
+        detail: 0,
+        type: 'mouseup',
+      },
+      {
+        ...commonAttrs,
+        button: 0,
+        buttons: 0,
+        clientX: 0,
+        clientY: 0,
+        detail: 0,
+        type: 'mousemove',
+      },
+    ]);
   });
 });
