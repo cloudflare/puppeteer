@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import fs from 'fs';
 import {ServerResponse} from 'http';
 import path from 'path';
 
@@ -2074,16 +2073,6 @@ describe('Page', function () {
   });
 
   describe('Page.pdf', function () {
-    it('can print to PDF and save to file', async () => {
-      const {page, server} = await getTestState();
-
-      const outputFile = __dirname + '/../assets/output.pdf';
-      await page.goto(server.PREFIX + '/pdf.html');
-      await page.pdf({path: outputFile});
-      expect(fs.readFileSync(outputFile).byteLength).toBeGreaterThan(0);
-      fs.unlinkSync(outputFile);
-    });
-
     it('can print to PDF and stream the result', async () => {
       const {page} = await getTestState();
 

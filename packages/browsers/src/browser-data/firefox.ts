@@ -37,7 +37,7 @@ function archive(platform: BrowserPlatform, buildId: string): string {
 export function resolveDownloadUrl(
   platform: BrowserPlatform,
   buildId: string,
-  baseUrl = 'https://archive.mozilla.org/pub/firefox/nightly/latest-mozilla-central'
+  baseUrl = 'https://archive.mozilla.org/pub/firefox/nightly/2023/08/2023-08-01-03-45-57-mozilla-central'
 ): string {
   return `${baseUrl}/${resolveDownloadPath(platform, buildId).join('/')}`;
 }

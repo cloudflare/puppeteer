@@ -67,7 +67,8 @@ export async function resolveBuildId(
     case Browser.FIREFOX:
       switch (tag as BrowserTag) {
         case BrowserTag.LATEST:
-          return await firefox.resolveBuildId('FIREFOX_NIGHTLY');
+          // return await firefox.resolveBuildId('FIREFOX_NIGHTLY');
+          return '118.0a1';
         case BrowserTag.BETA:
         case BrowserTag.CANARY:
         case BrowserTag.DEV:

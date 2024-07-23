@@ -65,7 +65,8 @@ export class CDPBrowser extends BrowserBase {
     closeCallback?: BrowserCloseCallback,
     targetFilterCallback?: TargetFilterCallback,
     isPageTargetCallback?: IsPageTargetCallback,
-    waitForInitiallyDiscoveredTargets = true
+    waitForInitiallyDiscoveredTargets = true,
+    sessionId?: string
   ): Promise<CDPBrowser> {
     const browser = new CDPBrowser(
       product,
@@ -77,7 +78,8 @@ export class CDPBrowser extends BrowserBase {
       closeCallback,
       targetFilterCallback,
       isPageTargetCallback,
-      waitForInitiallyDiscoveredTargets
+      waitForInitiallyDiscoveredTargets,
+      sessionId
     );
     await browser._attach();
     return browser;
@@ -93,6 +95,7 @@ export class CDPBrowser extends BrowserBase {
   #contexts = new Map<string, CDPBrowserContext>();
   #screenshotTaskQueue: TaskQueue;
   #targetManager: TargetManager;
+  #sessionId: string;
 
   /**
    * @internal
@@ -114,7 +117,8 @@ export class CDPBrowser extends BrowserBase {
     closeCallback?: BrowserCloseCallback,
     targetFilterCallback?: TargetFilterCallback,
     isPageTargetCallback?: IsPageTargetCallback,
-    waitForInitiallyDiscoveredTargets = true
+    waitForInitiallyDiscoveredTargets = true,
+    sessionId?: string
   ) {
     super();
     product = product || 'chrome';
@@ -151,6 +155,14 @@ export class CDPBrowser extends BrowserBase {
         new CDPBrowserContext(this.#connection, this, contextId)
       );
     }
+    this.#sessionId = sessionId || 'unknown';
+  }
+
+  /**
+   * Get the BISO session ID associated with this browser
+   */
+  sessionId(): string {
+    return this.#sessionId;
   }
 
   #emitDisconnected = () => {

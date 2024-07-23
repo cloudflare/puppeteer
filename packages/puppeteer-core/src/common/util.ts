@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-import type {Readable} from 'stream';
+import {Buffer} from 'node:buffer';
+import type {Readable} from 'node:stream';
 
 import type {Protocol} from 'devtools-protocol';
 
 import type {ElementHandle} from '../api/ElementHandle.js';
 import type {JSHandle} from '../api/JSHandle.js';
 import {Page} from '../api/Page.js';
-import {isNode} from '../environment.js';
+// import {isNode} from '../environment.js';
 import {assert} from '../util/assert.js';
 import {Deferred} from '../util/Deferred.js';
 import {isErrorLike} from '../util/ErrorLike.js';
@@ -532,7 +533,7 @@ export async function importFSPromises(): Promise<
     } catch (error) {
       if (error instanceof TypeError) {
         throw new Error(
-          'Cannot write to a path outside of a Node-like environment.'
+          'Cannot write to a path outside of a Node-like environment. fs'
         );
       }
       throw error;
@@ -550,16 +551,9 @@ export async function getReadableAsBuffer(
 ): Promise<Buffer | null> {
   const buffers = [];
   if (path) {
-    const fs = await importFSPromises();
-    const fileHandle = await fs.open(path, 'w+');
-    try {
-      for await (const chunk of readable) {
-        buffers.push(chunk);
-        await fileHandle.writeFile(chunk);
-      }
-    } finally {
-      await fileHandle.close();
-    }
+    throw new Error(
+      'Cannot write to a path outside of a Node-like environment.'
+    );
   } else {
     for await (const chunk of readable) {
       buffers.push(chunk);
@@ -568,6 +562,7 @@ export async function getReadableAsBuffer(
   try {
     return Buffer.concat(buffers);
   } catch (error) {
+    console.log(error);
     return null;
   }
 }
@@ -581,11 +576,11 @@ export async function getReadableFromProtocolStream(
 ): Promise<Readable> {
   // TODO: Once Node 18 becomes the lowest supported version, we can migrate to
   // ReadableStream.
-  if (!isNode) {
-    throw new Error('Cannot create a stream outside of Node.js environment.');
-  }
+  // if (!isNode) {
+  //   throw new Error('Cannot create a stream outside of Node.js environment.');
+  // }
 
-  const {Readable} = await import('stream');
+  const {Readable} = await import('node:stream');
 
   let eof = false;
   return new Readable({

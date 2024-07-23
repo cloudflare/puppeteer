@@ -20,5 +20,5 @@
  * @internal
  */
 export const getFetch = async (): Promise<typeof fetch> => {
-  return (globalThis as any).fetch || (await import('cross-fetch')).fetch;
+  return (globalThis as any).fetch;
 };

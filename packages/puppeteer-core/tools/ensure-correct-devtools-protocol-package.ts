@@ -59,9 +59,10 @@ async function main() {
     `https://chromiumdash.appspot.com/fetch_releases?channel=stable`
   );
   const stableReleases = await req.json();
-  const chromeRevision = stableReleases.find(release => {
-    return release.version === chromeVersion;
-  }).chromium_main_branch_position;
+  const chromeRevision =
+    stableReleases.find(release => {
+      return release.version === chromeVersion;
+    })?.chromium_main_branch_position || 1160321; // 1160321 is a default since `https://chromiumdash.appspot.com/fetch_releases?channel=stable` no longer returns this release
   console.log(`Revisions for ${chromeVersion}: ${chromeRevision}`);
 
   const command = `npm view "devtools-protocol@<=0.0.${chromeRevision}" version | tail -1`;

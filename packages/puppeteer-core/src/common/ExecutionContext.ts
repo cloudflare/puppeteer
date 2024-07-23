@@ -20,7 +20,7 @@ import type {ElementHandle} from '../api/ElementHandle.js';
 import {JSHandle} from '../api/JSHandle.js';
 import type PuppeteerUtil from '../injected/injected.js';
 import {AsyncIterableUtil} from '../util/AsyncIterableUtil.js';
-import {stringifyFunction} from '../util/Function.js';
+// import {stringifyFunction} from '../util/Function.js';
 
 import {ARIAQueryHandler} from './AriaQueryHandler.js';
 import {Binding} from './Binding.js';
@@ -306,7 +306,7 @@ export class ExecutionContext {
         : createJSHandle(this, remoteObject);
     }
 
-    const functionDeclaration = stringifyFunction(pageFunction);
+    const functionDeclaration = pageFunction.toString();
     const functionDeclarationWithSourceUrl = SOURCE_URL_REGEX.test(
       functionDeclaration
     )
