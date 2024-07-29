@@ -431,6 +431,15 @@ export class Browser extends EventEmitter {
   }
 
   /**
+   * Get the BISO session ID associated with this browser
+   *
+   * @public
+   */
+  sessionId(): string {
+    throw new Error('Not implemented');
+  }
+
+  /**
    * A string representing the browser name and version.
    *
    * @remarks

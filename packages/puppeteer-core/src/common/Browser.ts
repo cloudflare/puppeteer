@@ -160,8 +160,10 @@ export class CDPBrowser extends BrowserBase {
 
   /**
    * Get the BISO session ID associated with this browser
+   *
+   * @public
    */
-  sessionId(): string {
+  override sessionId(): string {
     return this.#sessionId;
   }
 
