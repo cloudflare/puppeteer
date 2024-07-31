@@ -41,6 +41,7 @@ jobs:
               - 'docker/**'
               - 'test/**'
               - 'test-d/**'
+              - 'test-workers/**'
               - 'tools/mochaRunner/**'
               - '.mocharc.cjs'
             website:

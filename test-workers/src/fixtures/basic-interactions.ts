@@ -17,7 +17,7 @@ export const test = async (browser: Browser): Promise<Response> => {
 
   // Locate the full title with a unique string.
   const textSelector = await page
-    .locator('a ::-p-text(Customize and automate)')
+    .locator('h1 ::-p-text(Search results)')
     .waitHandle();
   const fullTitle = await textSelector?.evaluate(el => {
     return el.textContent;

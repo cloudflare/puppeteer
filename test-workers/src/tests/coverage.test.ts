@@ -1,32 +1,14 @@
-import {resolve} from 'path';
-
 import {fetch} from 'undici';
-import {afterAll, beforeAll, describe, it} from 'vitest';
-
-import {runWranglerDev} from '../run-wrangler-long-lived.js';
+import {describe, it} from 'vitest';
 
 describe('browser does basic manipulations', () => {
-  let ip: string,
-    port: number,
-    stop: (() => Promise<unknown>) | undefined,
-    getOutput: () => string;
-
-  // @ts-expect-error not sure why this is not working
-  beforeAll(async () => {
-    return ({ip, port, stop, getOutput} = await runWranglerDev(
-      resolve(__dirname, '../..'),
-      ['--remote']
-    ));
-  });
-
-  afterAll(async () => {
-    await stop?.();
-    console.log(getOutput());
-  });
-
   it('gets the title of google developers website', async ({expect}) => {
-    const response = await fetch(`http://${ip}:${port}/coverage`);
-    console.log(response);
+    await new Promise(resolve => {
+      setTimeout(resolve, 30000);
+    });
+    const response = await fetch(
+      `https://test-workers.cloudflare-browser-rendering-085.workers.dev/coverage`
+    );
     expect(await response.text()).toMatchSnapshot();
   });
 });

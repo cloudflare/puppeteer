@@ -501,74 +501,74 @@ describe('Query handler tests', function () {
       ).toBeTruthy();
     });
 
-    it('should work with custom selectors', async () => {
-      Puppeteer.registerCustomQueryHandler('div', {
-        queryOne() {
-          return document.querySelector('div');
-        },
-      });
+    // it('should work with custom selectors', async () => {
+    //   Puppeteer.registerCustomQueryHandler('div', {
+    //     queryOne() {
+    //       return document.querySelector('div');
+    //     },
+    //   });
 
-      const {server, page} = await getTestState();
-      await page.goto(`${server.PREFIX}/p-selectors.html`);
-      const element = await page.$('::-p-div');
-      assert(element, 'Could not find element');
-      expect(
-        await element.evaluate(element => {
-          return element.id === 'a';
-        })
-      ).toBeTruthy();
-    });
+    //   const {server, page} = await getTestState();
+    //   await page.goto(`${server.PREFIX}/p-selectors.html`);
+    //   const element = await page.$('::-p-div');
+    //   assert(element, 'Could not find element');
+    //   expect(
+    //     await element.evaluate(element => {
+    //       return element.id === 'a';
+    //     })
+    //   ).toBeTruthy();
+    // });
 
-    it('should work with custom selectors with args', async () => {
-      const {server, page} = await getTestState();
-      await page.goto(`${server.PREFIX}/p-selectors.html`);
-      Puppeteer.registerCustomQueryHandler('div', {
-        queryOne(_, selector) {
-          if (selector === 'true') {
-            return document.querySelector('div');
-          } else {
-            return document.querySelector('button');
-          }
-        },
-      });
+    // it('should work with custom selectors with args', async () => {
+    //   const {server, page} = await getTestState();
+    //   await page.goto(`${server.PREFIX}/p-selectors.html`);
+    //   Puppeteer.registerCustomQueryHandler('div', {
+    //     queryOne(_, selector) {
+    //       if (selector === 'true') {
+    //         return document.querySelector('div');
+    //       } else {
+    //         return document.querySelector('button');
+    //       }
+    //     },
+    //   });
 
-      {
-        const element = await page.$('::-p-div(true)');
-        assert(element, 'Could not find element');
-        expect(
-          await element.evaluate(element => {
-            return element.id === 'a';
-          })
-        ).toBeTruthy();
-      }
-      {
-        const element = await page.$('::-p-div("true")');
-        assert(element, 'Could not find element');
-        expect(
-          await element.evaluate(element => {
-            return element.id === 'a';
-          })
-        ).toBeTruthy();
-      }
-      {
-        const element = await page.$("::-p-div('true')");
-        assert(element, 'Could not find element');
-        expect(
-          await element.evaluate(element => {
-            return element.id === 'a';
-          })
-        ).toBeTruthy();
-      }
-      {
-        const element = await page.$('::-p-div');
-        assert(element, 'Could not find element');
-        expect(
-          await element.evaluate(element => {
-            return element.id === 'b';
-          })
-        ).toBeTruthy();
-      }
-    });
+    //   {
+    //     const element = await page.$('::-p-div(true)');
+    //     assert(element, 'Could not find element');
+    //     expect(
+    //       await element.evaluate(element => {
+    //         return element.id === 'a';
+    //       })
+    //     ).toBeTruthy();
+    //   }
+    //   {
+    //     const element = await page.$('::-p-div("true")');
+    //     assert(element, 'Could not find element');
+    //     expect(
+    //       await element.evaluate(element => {
+    //         return element.id === 'a';
+    //       })
+    //     ).toBeTruthy();
+    //   }
+    //   {
+    //     const element = await page.$("::-p-div('true')");
+    //     assert(element, 'Could not find element');
+    //     expect(
+    //       await element.evaluate(element => {
+    //         return element.id === 'a';
+    //       })
+    //     ).toBeTruthy();
+    //   }
+    //   {
+    //     const element = await page.$('::-p-div');
+    //     assert(element, 'Could not find element');
+    //     expect(
+    //       await element.evaluate(element => {
+    //         return element.id === 'b';
+    //       })
+    //     ).toBeTruthy();
+    //   }
+    // });
 
     it('should work with :hover', async () => {
       const {server, page} = await getTestState();

@@ -1,5 +1,5 @@
 
-name = "ai-prices-scrapper"
+name = "test-workers"
 main = "src/index.ts"
 compatibility_date = "2024-06-20"
 compatibility_flags = ["nodejs_compat"]
