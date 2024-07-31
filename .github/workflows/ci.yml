@@ -63,54 +63,6 @@ jobs:
     with:
       check-mergeable-state: true
 
-  deploy-docs:
-    needs: check-changes
-    name: Deploy docs (if needed)
-    if: ${{ github.event_name != 'pull_request' && contains(fromJSON(needs.check-changes.outputs.changes), 'website') }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
-      - name: Set up Node.js
-        uses: actions/setup-node@e33196f7422957bea03ed53f6fbb155025ffc7b8 # v3.7.0
-        with:
-          cache: npm
-          node-version: lts/*
-      - name: Install dependencies
-        working-directory: ./website
-        run: npm ci
-      - name: Build website
-        working-directory: ./website
-        env:
-          NODE_OPTIONS: --max-old-space-size=6144
-        run: npm run build
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@373f7f263a76c20808c831209c920827a82a2847 # v3.9.3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./website/build
-          user_name: release-please[bot]
-          user_email: 55107282+release-please[bot]@users.noreply.github.com
-      - name: Test Algolia if Crawler is blocked
-        env:
-          CRAWLER_USER_ID: ${{secrets.ALGOLIA_CRAWLER_USER_ID}}
-          CRAWLER_API_KEY: ${{secrets.ALGOLIA_CRAWLER_API_KEY}}
-          CRAWLER_ID: ${{secrets.ALGOLIA_CRAWLER_ID}}
-        run: |
-          RESPONSE=$(curl -H "Content-Type: application/json" -X GET --user "$CRAWLER_USER_ID:$CRAWLER_API_KEY" \
-            "https://crawler.algolia.com/api/1/crawlers/$CRAWLER_ID" | grep "\"blocked\":true" || true ); \
-          if [ ! -z "$RESPONSE" ]; then echo "Please go to https://crawler.algolia.com/" && exit 1; fi
-      - name: Trigger Algolia reindexing
-        env:
-          CRAWLER_USER_ID: ${{secrets.ALGOLIA_CRAWLER_USER_ID}}
-          CRAWLER_API_KEY: ${{secrets.ALGOLIA_CRAWLER_API_KEY}}
-          CRAWLER_ID: ${{secrets.ALGOLIA_CRAWLER_ID}}
-        run: |
-          curl -H "Content-Type: application/json" -X POST --user "$CRAWLER_USER_ID:$CRAWLER_API_KEY" \
-            "https://crawler.algolia.com/api/1/crawlers/$CRAWLER_ID/reindex"
-
   chrome-tests:
     name: ${{ matrix.suite }} tests on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -323,3 +275,24 @@ jobs:
       - name: Run unit tests
         run: |
           npm run unit --w puppeteer-core -w puppeteer --if-present
+
+  workers-tests:
+    name: '[Required] Workers tests'
+    runs-on: ubuntu-latest
+    needs: check-changes
+    if: ${{ contains(fromJSON(needs.check-changes.outputs.changes), 'puppeteer') }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+      - name: Set up Node.js
+        uses: actions/setup-node@e33196f7422957bea03ed53f6fbb155025ffc7b8 # v3.7.0
+        with:
+          cache: npm
+          node-version: lts/*
+      - name: Install dependencies
+        run: npm ci
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: true
+      - name: Run worker tests
+        run: |
+          cd ./test-workers && npx wrangler dev --remote

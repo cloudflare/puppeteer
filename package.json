@@ -24,6 +24,7 @@
     "postinstall": "npm run postinstall --workspaces --if-present",
     "test-install": "npm run test --workspace @puppeteer-test/installation",
     "test-types": "tsd -t packages/puppeteer",
+    "test-workers": "wireit",
     "test:chrome:headful": "wireit",
     "test:chrome:new-headless": "wireit",
     "test:chrome:headless": "wireit",
@@ -56,6 +57,9 @@
         "./packages/puppeteer:build:docs",
         "./packages/puppeteer-core:build:docs"
       ]
+    },
+    "test-workers": {
+      "command": "cd test-workers && npx run wrangler --remote"
     },
     "test:chrome:headful": {
       "command": "npm test -- --test-suite chrome-headful"
