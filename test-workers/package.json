@@ -12,33 +12,23 @@
   },
   "wireit": {
     "build": {
-      "command": "tsc -b",
-      "clean": "if-file-deleted",
+      "command": "tsc",
       "dependencies": [
         "../packages/puppeteer:build"
-      ],
-      "files": [
-        "../tools/mochaRunner/**",
-        "src/**"
-      ],
-      "output": [
-        "build/**",
-        "tsconfig.tsbuildinfo"
       ]
     },
     "test": {
+      "dependencies": [
+        "../packages/puppeteer:build"
+      ],
       "command": "vitest"
     }
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.4.16",
-    "@cloudflare/workers-types": "^4.20240725.0",
-    "typescript": "^5.4.5",
-    "vitest": "1.5.0",
+    "typescript": "^5.5.4",
     "wrangler": "^3.60.3"
   },
   "dependencies": {
-    "puppeteer": "file:../packages/puppeteer",
-    "undici": "^6.19.4"
+    "puppeteer-core": "file:../packages/puppeteer-core"
   }
 }
