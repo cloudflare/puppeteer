@@ -3,9 +3,9 @@
  * Copyright 2018 Google Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
+import type {CustomQueryHandler} from '@cloudflare/puppeteer/internal/common/CustomQueryHandler.js';
 import expect from 'expect';
 import {Puppeteer} from 'puppeteer';
-import type {CustomQueryHandler} from 'puppeteer-core/internal/common/CustomQueryHandler.js';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
 

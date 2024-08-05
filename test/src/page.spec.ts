@@ -7,14 +7,12 @@ import assert from 'assert';
 import type {ServerResponse} from 'http';
 import path from 'path';
 
+import {Metrics, Page} from '@cloudflare/puppeteer/internal/api/Page.js';
+import {CDPSession} from '@cloudflare/puppeteer/internal/common/Connection.js';
+import {ConsoleMessage} from '@cloudflare/puppeteer/internal/common/ConsoleMessage.js';
+import {CDPPage} from '@cloudflare/puppeteer/internal/common/Page.js';
 import expect from 'expect';
 import {KnownDevices, TimeoutError} from 'puppeteer';
-import {CDPSession} from 'puppeteer-core/internal/api/CDPSession.js';
-import type {HTTPRequest} from 'puppeteer-core/internal/api/HTTPRequest.js';
-import type {Metrics, Page} from 'puppeteer-core/internal/api/Page.js';
-import type {CdpPage} from 'puppeteer-core/internal/cdp/Page.js';
-import type {ConsoleMessage} from 'puppeteer-core/internal/common/ConsoleMessage.js';
-import {Deferred} from 'puppeteer-core/internal/util/Deferred.js';
 import sinon from 'sinon';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';

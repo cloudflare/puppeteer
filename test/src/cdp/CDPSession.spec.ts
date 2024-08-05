@@ -4,9 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import {isErrorLike} from '@cloudflare/puppeteer/internal/util/ErrorLike.js';
 import expect from 'expect';
-import type {Target} from 'puppeteer-core/internal/api/Target.js';
-import {isErrorLike} from 'puppeteer-core/internal/util/ErrorLike.js';
 
 import {getTestState, setupTestBrowserHooks} from '../mocha-utils.js';
 import {waitEvent} from '../utils.js';

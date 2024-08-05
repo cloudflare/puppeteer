@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import {CDPBrowser} from '@cloudflare/puppeteer/internal/common/Browser.js';
 import expect from 'expect';
-import type {CdpBrowser} from 'puppeteer-core/internal/cdp/Browser.js';
 
 import {getTestState, launch} from '../mocha-utils.js';
 import {attachFrame} from '../utils.js';

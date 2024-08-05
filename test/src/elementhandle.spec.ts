@@ -4,13 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import {ElementHandle} from '@cloudflare/puppeteer/internal/api/ElementHandle.js';
 import expect from 'expect';
 import {Puppeteer} from 'puppeteer';
-import {ElementHandle} from 'puppeteer-core/internal/api/ElementHandle.js';
-import {
-  asyncDisposeSymbol,
-  disposeSymbol,
-} from 'puppeteer-core/internal/util/disposable.js';
 import sinon from 'sinon';
 
 import {

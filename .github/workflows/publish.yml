@@ -1,37 +1,33 @@
-name: Issue Analyzer
-
-permissions: read-all
-
-permissions: read-all
+name: Publish
 
 on:
   workflow_dispatch:
   push:
     tags:
-      - '*v*'
+      - v*
 
 jobs:
-  npm-publish:
-    name: Publish npm packages
+  publish:
     runs-on: ubuntu-latest
     permissions:
-      issues: write
+      contents: read
     steps:
-      - name: Check out repository
-        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b # v4.1.5
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3.4.1
+        with:
+          node-version: 18.18
       - name: Install dependencies
-        run: npm ci
-        env:
-          PUPPETEER_SKIP_DOWNLOAD: true
-      - name: Build packages
+        run: npm install
+      - name: Build puppeteer
         run: npm run build
-      - name: Set npm registry
-        run: npm config set registry 'https://wombat-dressing-room.appspot.com/'
-      - name: Publish packages
+      - name: Publish puppeteer
         env:
           NPM_TOKEN: ${{secrets.NPM_TOKEN}}
         run: |
           npm config set registry 'https://registry.npmjs.org/'
           npm config set '//registry.npmjs.org/:_authToken' '${NPM_TOKEN}'
-          echo "Publishing puppeteer"
+          echo "Publishing @cloudflare/puppeteer"
+          cd ./packages/puppeteer-core/
           npm publish

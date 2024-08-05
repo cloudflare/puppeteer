@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import {ConsoleMessage} from '@cloudflare/puppeteer/internal/common/ConsoleMessage.js';
+import {WebWorker} from '@cloudflare/puppeteer/internal/common/WebWorker.js';
 import expect from 'expect';
-import type {WebWorker} from 'puppeteer-core/internal/api/WebWorker.js';
-import type {ConsoleMessage} from 'puppeteer-core/internal/common/ConsoleMessage.js';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
 import {waitEvent} from './utils.js';

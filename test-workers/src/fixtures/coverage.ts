@@ -1,4 +1,4 @@
-import {Browser} from 'puppeteer-core';
+import {Browser} from '@cloudflare/puppeteer';
 
 export const test = async (browser: Browser): Promise<Response> => {
   const page = await browser.newPage();

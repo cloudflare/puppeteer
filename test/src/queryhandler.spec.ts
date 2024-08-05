@@ -5,9 +5,9 @@
  */
 import assert from 'assert';
 
+import {Puppeteer} from '@cloudflare/puppeteer';
+import {ElementHandle} from '@cloudflare/puppeteer/internal/api/ElementHandle.js';
 import expect from 'expect';
-import {Puppeteer} from 'puppeteer-core';
-import type {ElementHandle} from 'puppeteer-core/internal/api/ElementHandle.js';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
 

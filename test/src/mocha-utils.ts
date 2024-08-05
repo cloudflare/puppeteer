@@ -7,21 +7,24 @@
 import fs from 'fs';
 import path from 'path';
 
+import {Browser} from '@cloudflare/puppeteer/internal/api/Browser.js';
+import {BrowserContext} from '@cloudflare/puppeteer/internal/api/BrowserContext.js';
+import {Page} from '@cloudflare/puppeteer/internal/api/Page.js';
+import {
+  setLogCapture,
+  getCapturedLogs,
+} from '@cloudflare/puppeteer/internal/common/Debug.js';
+import {
+  PuppeteerLaunchOptions,
+  PuppeteerNode,
+} from '@cloudflare/puppeteer/internal/node/PuppeteerNode.js';
+import {rmSync} from '@cloudflare/puppeteer/internal/node/util/fs.js';
+import {Deferred} from '@cloudflare/puppeteer/internal/util/Deferred.js';
+import {isErrorLike} from '@cloudflare/puppeteer/internal/util/ErrorLike.js';
 import {TestServer} from '@pptr/testserver';
 import expect from 'expect';
 import type * as MochaBase from 'mocha';
 import puppeteer from 'puppeteer/lib/cjs/puppeteer/puppeteer.js';
-import type {Browser} from 'puppeteer-core/internal/api/Browser.js';
-import type {BrowserContext} from 'puppeteer-core/internal/api/BrowserContext.js';
-import type {Page} from 'puppeteer-core/internal/api/Page.js';
-import type {Cookie} from 'puppeteer-core/internal/common/Cookie.js';
-import type {
-  PuppeteerLaunchOptions,
-  PuppeteerNode,
-} from 'puppeteer-core/internal/node/PuppeteerNode.js';
-import {rmSync} from 'puppeteer-core/internal/node/util/fs.js';
-import {Deferred} from 'puppeteer-core/internal/util/Deferred.js';
-import {isErrorLike} from 'puppeteer-core/internal/util/ErrorLike.js';
 import sinon from 'sinon';
 
 import {extendExpectWithToBeGolden} from './utils.js';

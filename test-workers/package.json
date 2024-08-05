@@ -29,6 +29,6 @@
     "wrangler": "^3.60.3"
   },
   "dependencies": {
-    "puppeteer-core": "file:../packages/puppeteer-core"
+    "@cloudflare/puppeteer": "file:../packages/puppeteer-core"
   }
 }
