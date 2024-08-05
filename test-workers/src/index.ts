@@ -1,4 +1,4 @@
-import puppeteer from 'puppeteer-core';
+import puppeteer from '@cloudflare/puppeteer';
 
 import {test as basicInteractions} from './fixtures/basic-interactions.js';
 import {test as coverageTest} from './fixtures/coverage.js';

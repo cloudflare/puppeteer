@@ -19,10 +19,10 @@ import os from 'os';
 import path from 'path';
 import {TLSSocket} from 'tls';
 
+import {Page} from '@cloudflare/puppeteer/internal/api/Page.js';
+import {rmSync} from '@cloudflare/puppeteer/internal/node/util/fs.js';
 import expect from 'expect';
 import {TimeoutError} from 'puppeteer';
-import {Page} from 'puppeteer-core/internal/api/Page.js';
-import {rmSync} from 'puppeteer-core/internal/node/util/fs.js';
 import sinon from 'sinon';
 
 import {

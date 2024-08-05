@@ -16,8 +16,8 @@
 
 import os from 'os';
 
+import {KeyInput} from '@cloudflare/puppeteer/internal/common/USKeyboardLayout.js';
 import expect from 'expect';
-import {KeyInput} from 'puppeteer-core/internal/common/USKeyboardLayout.js';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
 import {attachFrame} from './utils.js';

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
+import {CDPBrowser} from '@cloudflare/puppeteer/internal/common/Browser.js';
 import expect from 'expect';
-import {CDPBrowser} from 'puppeteer-core/internal/common/Browser.js';
 
 import {getTestState, launch} from './mocha-utils.js';
 import {attachFrame} from './utils.js';

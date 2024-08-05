@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
+import {BrowserContext} from '@cloudflare/puppeteer/internal/api/BrowserContext.js';
+import {CDPTarget} from '@cloudflare/puppeteer/internal/common/Target.js';
 import expect from 'expect';
-import {BrowserContext} from 'puppeteer-core/internal/api/BrowserContext.js';
-import {CDPTarget} from 'puppeteer-core/internal/common/Target.js';
 
 import {describeWithDebugLogs, getTestState, launch} from './mocha-utils.js';
 import {attachFrame, detachFrame, navigateFrame} from './utils.js';

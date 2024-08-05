@@ -16,11 +16,11 @@
 
 import path from 'path';
 
+import {Frame} from '@cloudflare/puppeteer/internal/api/Frame.js';
+import {Page} from '@cloudflare/puppeteer/internal/api/Page.js';
+import {EventEmitter} from '@cloudflare/puppeteer/internal/common/EventEmitter.js';
+import {Deferred} from '@cloudflare/puppeteer/internal/util/Deferred.js';
 import expect from 'expect';
-import {Frame} from 'puppeteer-core/internal/api/Frame.js';
-import {Page} from 'puppeteer-core/internal/api/Page.js';
-import {EventEmitter} from 'puppeteer-core/internal/common/EventEmitter.js';
-import {Deferred} from 'puppeteer-core/internal/util/Deferred.js';
 
 import {compare} from './golden-utils.js';
 

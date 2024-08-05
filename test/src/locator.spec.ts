@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import expect from 'expect';
-import {TimeoutError} from 'puppeteer-core';
+import {TimeoutError} from '@cloudflare/puppeteer';
 import {
   Locator,
   LocatorEmittedEvents,
-} from 'puppeteer-core/internal/api/locators/locators.js';
+} from '@cloudflare/puppeteer/internal/api/locators/locators.js';
+import expect from 'expect';
 import sinon from 'sinon';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';

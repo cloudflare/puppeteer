@@ -16,10 +16,10 @@
 
 import {ServerResponse} from 'http';
 
+import {HTTPRequest} from '@cloudflare/puppeteer/internal/api/HTTPRequest.js';
+import {Deferred} from '@cloudflare/puppeteer/internal/util/Deferred.js';
 import expect from 'expect';
 import {Frame, TimeoutError} from 'puppeteer';
-import {HTTPRequest} from 'puppeteer-core/internal/api/HTTPRequest.js';
-import {Deferred} from 'puppeteer-core/internal/util/Deferred.js';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
 import {attachFrame, isFavicon, waitEvent} from './utils.js';

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
+import {Frame} from '@cloudflare/puppeteer/internal/api/Frame.js';
+import {CDPSession} from '@cloudflare/puppeteer/internal/common/Connection.js';
 import expect from 'expect';
-import {Frame} from 'puppeteer-core/internal/api/Frame.js';
-import {CDPSession} from 'puppeteer-core/internal/common/Connection.js';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
 import {

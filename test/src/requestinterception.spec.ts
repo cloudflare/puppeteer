@@ -17,9 +17,9 @@
 import fs from 'fs';
 import path from 'path';
 
+import {HTTPRequest} from '@cloudflare/puppeteer/internal/api/HTTPRequest.js';
+import {ConsoleMessage} from '@cloudflare/puppeteer/internal/common/ConsoleMessage.js';
 import expect from 'expect';
-import {HTTPRequest} from 'puppeteer-core/internal/api/HTTPRequest.js';
-import {ConsoleMessage} from 'puppeteer-core/internal/common/ConsoleMessage.js';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
 import {isFavicon, waitEvent} from './utils.js';

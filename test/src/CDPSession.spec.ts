@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
+import {isErrorLike} from '@cloudflare/puppeteer/internal/util/ErrorLike.js';
 import expect from 'expect';
-import {isErrorLike} from 'puppeteer-core/internal/util/ErrorLike.js';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
 import {waitEvent} from './utils.js';

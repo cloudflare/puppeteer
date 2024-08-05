@@ -18,9 +18,9 @@ import {mkdtemp} from 'fs/promises';
 import os from 'os';
 import path from 'path';
 
+import {PuppeteerLaunchOptions} from '@cloudflare/puppeteer/internal/node/PuppeteerNode.js';
+import {rmSync} from '@cloudflare/puppeteer/internal/node/util/fs.js';
 import expect from 'expect';
-import {PuppeteerLaunchOptions} from 'puppeteer-core/internal/node/PuppeteerNode.js';
-import {rmSync} from 'puppeteer-core/internal/node/util/fs.js';
 
 import {getTestState, isHeadless, launch} from './mocha-utils.js';
 

@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import type {CustomQueryHandler} from '@cloudflare/puppeteer/internal/common/CustomQueryHandler.js';
 import expect from 'expect';
 import {Puppeteer} from 'puppeteer';
-import type {CustomQueryHandler} from 'puppeteer-core/internal/common/CustomQueryHandler.js';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
 

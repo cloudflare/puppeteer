@@ -16,12 +16,12 @@
 import {ServerResponse} from 'http';
 import path from 'path';
 
+import {Metrics, Page} from '@cloudflare/puppeteer/internal/api/Page.js';
+import {CDPSession} from '@cloudflare/puppeteer/internal/common/Connection.js';
+import {ConsoleMessage} from '@cloudflare/puppeteer/internal/common/ConsoleMessage.js';
+import {CDPPage} from '@cloudflare/puppeteer/internal/common/Page.js';
 import expect from 'expect';
 import {KnownDevices, TimeoutError} from 'puppeteer';
-import {Metrics, Page} from 'puppeteer-core/internal/api/Page.js';
-import {CDPSession} from 'puppeteer-core/internal/common/Connection.js';
-import {ConsoleMessage} from 'puppeteer-core/internal/common/ConsoleMessage.js';
-import {CDPPage} from 'puppeteer-core/internal/common/Page.js';
 import sinon from 'sinon';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';

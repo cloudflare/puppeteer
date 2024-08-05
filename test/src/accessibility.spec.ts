@@ -16,8 +16,8 @@
 
 import assert from 'assert';
 
+import {SerializedAXNode} from '@cloudflare/puppeteer/internal/common/Accessibility.js';
 import expect from 'expect';
-import {SerializedAXNode} from 'puppeteer-core/internal/common/Accessibility.js';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
 

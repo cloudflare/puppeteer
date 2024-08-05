@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
+import {ElementHandle} from '@cloudflare/puppeteer/internal/api/ElementHandle.js';
+import {Page} from '@cloudflare/puppeteer/internal/api/Page.js';
 import expect from 'expect';
-import {ElementHandle} from 'puppeteer-core/internal/api/ElementHandle.js';
-import {Page} from 'puppeteer-core/internal/api/Page.js';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
 

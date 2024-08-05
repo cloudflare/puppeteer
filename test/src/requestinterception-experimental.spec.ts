@@ -17,13 +17,13 @@
 import fs from 'fs';
 import path from 'path';
 
-import expect from 'expect';
 import {
   ActionResult,
   HTTPRequest,
   InterceptResolutionAction,
-} from 'puppeteer-core/internal/api/HTTPRequest.js';
-import {ConsoleMessage} from 'puppeteer-core/internal/common/ConsoleMessage.js';
+} from '@cloudflare/puppeteer/internal/api/HTTPRequest.js';
+import {ConsoleMessage} from '@cloudflare/puppeteer/internal/common/ConsoleMessage.js';
+import expect from 'expect';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
 import {isFavicon, waitEvent} from './utils.js';

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
+import {Connection} from '@cloudflare/puppeteer/internal/common/bidi/Connection.js';
+import {ConnectionTransport} from '@cloudflare/puppeteer/internal/common/ConnectionTransport.js';
 import expect from 'expect';
-import {Connection} from 'puppeteer-core/internal/common/bidi/Connection.js';
-import {ConnectionTransport} from 'puppeteer-core/internal/common/ConnectionTransport.js';
 
 describe('WebDriver BiDi', () => {
   describe('Connection', () => {

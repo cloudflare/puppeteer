@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
+import {ElementHandle} from '@cloudflare/puppeteer/internal/api/ElementHandle.js';
 import expect from 'expect';
 import {Puppeteer} from 'puppeteer';
-import {ElementHandle} from 'puppeteer-core/internal/api/ElementHandle.js';
 import sinon from 'sinon';
 
 import {
