@@ -3,7 +3,8 @@ name: Publish
 on:
   workflow_dispatch:
   push:
-    tags: 'v[0-9]+.[0-9]+.[0-9]+'
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
 
 jobs:
   publish:
@@ -29,4 +30,4 @@ jobs:
           npm config set '//registry.npmjs.org/:_authToken' '${NPM_TOKEN}'
           echo "Publishing @cloudflare/puppeteer"
           cd ./packages/puppeteer-core/
-          npm publish
+          npm publish --tag next
