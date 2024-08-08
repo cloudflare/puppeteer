@@ -29,4 +29,4 @@ jobs:
           npm config set '//registry.npmjs.org/:_authToken' '${NPM_TOKEN}'
           echo "Publishing @cloudflare/puppeteer"
           cd ./packages/puppeteer-core/
-          npm publish --dry-run '${{ contains(github.ref, 'rc')  && '--tag next'}}'
+          npm publish ${{ contains(github.ref, 'rc')  && '--tag next' || ''}}
