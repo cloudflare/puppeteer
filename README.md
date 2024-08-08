@@ -10,7 +10,7 @@ The goals of the fork are:
   space is at a premium in workers projects.
 - Make library use as seamless as possible in workers.
 
-Note that the main branch in this repo is branched off of version 17.0.0 of
+Note that the main branch in this repo is branched off of version 21.1.0 of
 the library, to match the currently deployed version of Chromium on the
 edge.
 
