@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
+let timeout = process.platform === 'win32' ? 20_000 : 10_000;
+if (!!process.env.DEBUGGER_ATTACHED) {
+  timeout = 0;
+}
 module.exports = {
   reporter: 'dot',
   logLevel: 'debug',
   require: ['./test/build/mocha-utils.js', 'source-map-support/register'],
-  spec: 'test/build/*.spec.js',
+  spec: 'test/build/**/*.spec.js',
   exit: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI ? 3 : 0,
   parallel: !!process.env.PARALLEL,
-  timeout: 25 * 1000,
+  timeout: timeout,
   reporter: process.env.CI ? 'spec' : 'dot',
 };

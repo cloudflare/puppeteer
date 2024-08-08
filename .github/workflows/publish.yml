@@ -28,5 +28,6 @@ jobs:
         run: |
           npm config set registry 'https://registry.npmjs.org/'
           npm config set '//registry.npmjs.org/:_authToken' '${NPM_TOKEN}'
-          echo "Publishing puppeteer"
+          echo "Publishing @cloudflare/puppeteer"
+          cd ./packages/puppeteer-core/
           npm publish

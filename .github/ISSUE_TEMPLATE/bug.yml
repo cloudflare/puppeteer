@@ -5,54 +5,149 @@ labels: [bug]
 body:
   - type: markdown
     attributes:
-      value: |
-        Thanks for taking the time to fill out this bug report!
-  - type: textarea
-    id: summary
-    attributes:
-      label: Bug description
-      description: What did you do? What did you expect to happen? What actually happened instead?
-      value: |
-        Steps to reproduce the problem:
+      value: >
+        ### Thanks for taking the time to fill out this bug report!
 
-        1. …
+        **Before filling out this report**, please check our
+        [Troubleshooting](https://pptr.dev/troubleshooting) guide for solutions
+        to common issues.
+  - id: mvce
+    type: textarea
+    attributes:
+      label: Minimal, reproducible example
+      description: >
+        Provide a [minimal, reproducible
+        example](https://stackoverflow.com/help/minimal-reproducible-example) of
+        the bug you are facing.
+
+        This must not include external libraries since we will run this in a
+        [hermetic](https://www.oreilly.com/library/view/selenium-design-patterns/9781783982707/ch03s03.html#:~:text=The%20Hermetic%20test%20pattern%20is,be%20avoided%20at%20all%20costs.)
+        environment. You may use Node.js modules.
+
+        *No need for backticks — this automatically gets formatted into code.*
+      render: TypeScript
+      placeholder: |
+        import puppeteer from 'puppeteer'; // TS/ESM are all supported.
+
+        (async () => {
+          const browser = await puppeteer.launch();
+          const page = await browser.newPage();
+          try {
+            // Do something.
+          } catch {
+            throw new Error('Something went wrong');
+          }
+          await browser.close();
+        })();
     validations:
       required: true
-  - type: input
-    id: puppeteer-version
+  - id: error
+    type: input
+    attributes:
+      label: Error string
+      description: >
+        Provide the bug's error. For example, `throw new Error('Something went
+        wrong')` would have the error `Something went wrong`.
+
+        **If the script does not throw**, write `no error` (case insensitive).
+      placeholder: Something went wrong
+    validations:
+      required: true
+  - id: behavior
+    type: checkboxes
+    attributes:
+      label: Bug behavior
+      description: >
+        How does the bug behave? Does it happen very rarely (flaky)? If there is
+        a PDF problem, make sure the script writes the PDF somewhere in the
+        current working directory.
+      options:
+        - label: Flaky
+        - label: PDF
+  - id: background
+    type: textarea
+    attributes:
+      label: Background
+      description: >
+        Optional. Briefly describe your use-case that led to this issue. This can help us
+        understand the general situation to provide better, higher quality
+        feedback and help others in similar situations.
+      placeholder: |
+        I've been trying to ...
+  - id: expectation
+    type: textarea
+    attributes:
+      label: Expectation
+      description: What are you expecting the code to do?
+      placeholder: |
+        I expected ...
+    validations:
+      required: true
+  - id: reality
+    type: textarea
+    attributes:
+      label: Reality
+      description: What actually happens?
+      placeholder: |
+        In reality, ...
+    validations:
+      required: true
+  - id: puppeteer-configuration
+    type: textarea
+    attributes:
+      label: Puppeteer configuration file (if used)
+      description: >
+        Copy and paste your [configuration
+        file](https://pptr.dev/guides/configuration/) (if used).
+
+        *No need for backticks — this automatically gets formatted into code.*
+      render: TypeScript
+  - id: puppeteer-version
+    type: input
     attributes:
       label: Puppeteer version
-      description: What version of Puppeteer are you running?
+      description: >
+        What version of Puppeteer are you running? *This must be a valid semver
+        tag, for example, `20.8.1`.*
     validations:
       required: true
-  - type: input
-    id: node-version
+  - id: node-version
+    type: input
     attributes:
-      label: Node.js version
-      description: What version of Node.js are you running?
+      label: Node version
+      description: >
+        What supported version of Node.js are you running? *This must be a valid
+        semver tag, for example, `20.3.1`.*
     validations:
       required: true
-  - type: input
-    id: npm-version
+  - id: pkg-mgr
+    type: dropdown
     attributes:
-      label: npm version
-      description: What version of npm are you running?
-    validations:
-      required: true
-  - type: dropdown
-    id: operating-system
-    attributes:
-      label: What operating system are you seeing the problem on?
-      multiple: true
+      label: Package manager
+      description: What package manager are you running?
       options:
-        - Linux
-        - macOS
-        - Windows
+        - npm
+        - yarn
+        - pnpm
     validations:
       required: true
-  - type: textarea
-    id: logs
+  - id: pkg-mgr-version
+    type: input
     attributes:
-      label: Relevant log output
-      description: Please copy and paste any relevant log output. No need for backticks — this automatically gets formatted into code.
-      render: shell
+      label: Package manager version
+      description: >
+        What version of the package manager are you running? *This must be a
+        valid semver tag, for example, `9.6.7`.*
+    validations:
+      required: true
+  - id: operating-system
+    type: dropdown
+    attributes:
+      label: Operating system
+      description: What supported operating system are you running?
+      options:
+        - Windows
+        - macOS
+        - Linux
+    validations:
+      required: true

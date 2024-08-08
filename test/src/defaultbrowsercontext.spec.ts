@@ -14,25 +14,24 @@
  * limitations under the License.
  */
 import expect from 'expect';
+
 import {
   expectCookieEquals,
   getTestState,
   setupTestBrowserHooks,
-  setupTestPageAndContextHooks,
-  itFailsFirefox,
 } from './mocha-utils.js';
 
 describe('DefaultBrowserContext', function () {
   setupTestBrowserHooks();
-  setupTestPageAndContextHooks();
+
   it('page.cookies() should work', async () => {
-    const {page, server} = getTestState();
+    const {page, server} = await getTestState();
 
     await page.goto(server.EMPTY_PAGE);
     await page.evaluate(() => {
       document.cookie = 'username=John Doe';
     });
-    expectCookieEquals(await page.cookies(), [
+    await expectCookieEquals(await page.cookies(), [
       {
         name: 'username',
         value: 'John Doe',
@@ -48,8 +47,8 @@ describe('DefaultBrowserContext', function () {
       },
     ]);
   });
-  itFailsFirefox('page.setCookie() should work', async () => {
-    const {page, server} = getTestState();
+  it('page.setCookie() should work', async () => {
+    const {page, server} = await getTestState();
 
     await page.goto(server.EMPTY_PAGE);
     await page.setCookie({
@@ -61,7 +60,7 @@ describe('DefaultBrowserContext', function () {
         return document.cookie;
       })
     ).toBe('username=John Doe');
-    expectCookieEquals(await page.cookies(), [
+    await expectCookieEquals(await page.cookies(), [
       {
         name: 'username',
         value: 'John Doe',
@@ -78,8 +77,8 @@ describe('DefaultBrowserContext', function () {
       },
     ]);
   });
-  itFailsFirefox('page.deleteCookie() should work', async () => {
-    const {page, server} = getTestState();
+  it('page.deleteCookie() should work', async () => {
+    const {page, server} = await getTestState();
 
     await page.goto(server.EMPTY_PAGE);
     await page.setCookie(
@@ -95,7 +94,7 @@ describe('DefaultBrowserContext', function () {
     expect(await page.evaluate('document.cookie')).toBe('cookie1=1; cookie2=2');
     await page.deleteCookie({name: 'cookie2'});
     expect(await page.evaluate('document.cookie')).toBe('cookie1=1');
-    expectCookieEquals(await page.cookies(), [
+    await expectCookieEquals(await page.cookies(), [
       {
         name: 'cookie1',
         value: '1',

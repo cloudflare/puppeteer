@@ -2,7 +2,7 @@
 
 Assuming you have a checkout of the Puppeteer repo and have run npm i (or yarn) to install the dependencies, the examples can be run from the root folder like so:
 
-```sh
+```bash
 NODE_PATH=../ node examples/search.js
 ```
 
@@ -39,3 +39,4 @@ More complex and use case driven examples can be found at [github.com/GoogleChro
 ## Services
 
 - [Checkly](https://checklyhq.com) - Monitoring SaaS that uses Puppeteer to check availability and correctness of web pages and apps.
+- [Doppio](https://doppio.sh) - SaaS API to create screenshots or PDFs from HTML/CSS/JS

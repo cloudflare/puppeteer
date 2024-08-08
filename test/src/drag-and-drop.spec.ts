@@ -15,18 +15,14 @@
  */
 
 import expect from 'expect';
-import {
-  getTestState,
-  setupTestPageAndContextHooks,
-  setupTestBrowserHooks,
-  describeChromeOnly,
-} from './mocha-utils.js';
 
-describeChromeOnly('Input.drag', function () {
+import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
+
+describe('Input.drag', function () {
   setupTestBrowserHooks();
-  setupTestPageAndContextHooks();
+
   it('should throw an exception if not enabled before usage', async () => {
-    const {page, server} = getTestState();
+    const {page, server} = await getTestState();
 
     await page.goto(server.PREFIX + '/input/drag-and-drop.html');
     const draggable = (await page.$('#drag'))!;
@@ -40,7 +36,7 @@ describeChromeOnly('Input.drag', function () {
     }
   });
   it('should emit a dragIntercepted event when dragged', async () => {
-    const {page, server} = getTestState();
+    const {page, server} = await getTestState();
 
     await page.goto(server.PREFIX + '/input/drag-and-drop.html');
     expect(page.isDragInterceptionEnabled()).toBe(false);
@@ -49,7 +45,7 @@ describeChromeOnly('Input.drag', function () {
     const draggable = (await page.$('#drag'))!;
     const data = await draggable.drag({x: 1, y: 1});
 
-    expect(data.items.length).toBe(1);
+    expect(data.items).toHaveLength(1);
     expect(
       await page.evaluate(() => {
         return (globalThis as any).didDragStart;
@@ -57,7 +53,7 @@ describeChromeOnly('Input.drag', function () {
     ).toBe(true);
   });
   it('should emit a dragEnter', async () => {
-    const {page, server} = getTestState();
+    const {page, server} = await getTestState();
 
     await page.goto(server.PREFIX + '/input/drag-and-drop.html');
     expect(page.isDragInterceptionEnabled()).toBe(false);
@@ -80,7 +76,7 @@ describeChromeOnly('Input.drag', function () {
     ).toBe(true);
   });
   it('should emit a dragOver event', async () => {
-    const {page, server} = getTestState();
+    const {page, server} = await getTestState();
 
     await page.goto(server.PREFIX + '/input/drag-and-drop.html');
     expect(page.isDragInterceptionEnabled()).toBe(false);
@@ -109,7 +105,7 @@ describeChromeOnly('Input.drag', function () {
     ).toBe(true);
   });
   it('can be dropped', async () => {
-    const {page, server} = getTestState();
+    const {page, server} = await getTestState();
 
     await page.goto(server.PREFIX + '/input/drag-and-drop.html');
     expect(page.isDragInterceptionEnabled()).toBe(false);
@@ -144,7 +140,7 @@ describeChromeOnly('Input.drag', function () {
     ).toBe(true);
   });
   it('can be dragged and dropped with a single function', async () => {
-    const {page, server} = getTestState();
+    const {page, server} = await getTestState();
 
     await page.goto(server.PREFIX + '/input/drag-and-drop.html');
     expect(page.isDragInterceptionEnabled()).toBe(false);
@@ -176,7 +172,7 @@ describeChromeOnly('Input.drag', function () {
     ).toBe(true);
   });
   it('can be disabled', async () => {
-    const {page, server} = getTestState();
+    const {page, server} = await getTestState();
 
     await page.goto(server.PREFIX + '/input/drag-and-drop.html');
     expect(page.isDragInterceptionEnabled()).toBe(false);

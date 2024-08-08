@@ -1,6 +1,5 @@
+import {ElementHandle, JSHandle} from 'puppeteer';
 import {expectNotAssignable, expectNotType, expectType} from 'tsd';
-import {ElementHandle} from '../lib/esm/puppeteer/common/ElementHandle.js';
-import {JSHandle} from '../lib/esm/puppeteer/common/JSHandle.js';
 
 declare const handle: JSHandle;
 
@@ -77,7 +76,7 @@ declare const handle2: JSHandle<{test: number}>;
 }
 
 {
-  handle.evaluate((value, other) => {
+  void handle.evaluate((value, other) => {
     expectType<unknown>(value);
     expectType<{test: number}>(other);
   }, handle2);

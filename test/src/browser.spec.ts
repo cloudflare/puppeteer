@@ -15,26 +15,25 @@
  */
 
 import expect from 'expect';
+
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
 
 describe('Browser specs', function () {
   setupTestBrowserHooks();
 
   describe('Browser.version', function () {
-    it('should return whether we are in headless', async () => {
-      const {browser, isHeadless, headless} = getTestState();
+    it('should return version', async () => {
+      const {browser} = await getTestState();
 
       const version = await browser.version();
       expect(version.length).toBeGreaterThan(0);
-      expect(version.startsWith('Headless')).toBe(
-        isHeadless && headless !== 'chrome'
-      );
+      expect(version.toLowerCase()).atLeastOneToContain(['firefox', 'chrome']);
     });
   });
 
   describe('Browser.userAgent', function () {
     it('should include WebKit', async () => {
-      const {browser, isChrome} = getTestState();
+      const {browser, isChrome} = await getTestState();
 
       const userAgent = await browser.userAgent();
       expect(userAgent.length).toBeGreaterThan(0);
@@ -46,12 +45,45 @@ describe('Browser specs', function () {
     });
   });
 
+  describe('Browser.target', function () {
+    it('should return browser target', async () => {
+      const {browser} = await getTestState();
+
+      const target = browser.target();
+      expect(target.type()).toBe('browser');
+    });
+  });
+
   describe('Browser.process', function () {
     it('should return child_process instance', async () => {
-      const {browser} = getTestState();
+      const {browser} = await getTestState();
 
       const process = await browser.process();
       expect(process!.pid).toBeGreaterThan(0);
+    });
+    it('should not return child_process for remote browser', async () => {
+      const {browser, puppeteer} = await getTestState();
+
+      const browserWSEndpoint = browser.wsEndpoint();
+      const remoteBrowser = await puppeteer.connect({
+        browserWSEndpoint,
+      });
+      expect(remoteBrowser.process()).toBe(null);
+      remoteBrowser.disconnect();
+    });
+  });
+
+  describe('Browser.isConnected', () => {
+    it('should set the browser connected state', async () => {
+      const {browser, puppeteer} = await getTestState();
+
+      const browserWSEndpoint = browser.wsEndpoint();
+      const newBrowser = await puppeteer.connect({
+        browserWSEndpoint,
+      });
+      expect(newBrowser.isConnected()).toBe(true);
+      newBrowser.disconnect();
+      expect(newBrowser.isConnected()).toBe(false);
     });
   });
 });

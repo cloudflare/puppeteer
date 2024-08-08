@@ -15,21 +15,15 @@
  */
 
 import expect from 'expect';
-import {
-  getTestState,
-  itFailsFirefox,
-  setupTestBrowserHooks,
-  setupTestPageAndContextHooks,
-  shortWaitForArrayToHaveAtLeastNElements,
-} from './mocha-utils.js';
+
+import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
 
 describe('JSHandle', function () {
   setupTestBrowserHooks();
-  setupTestPageAndContextHooks();
 
   describe('Page.evaluateHandle', function () {
     it('should work', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const windowHandle = await page.evaluateHandle(() => {
         return window;
@@ -37,7 +31,7 @@ describe('JSHandle', function () {
       expect(windowHandle).toBeTruthy();
     });
     it('should return the RemoteObject', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const windowHandle = await page.evaluateHandle(() => {
         return window;
@@ -45,7 +39,7 @@ describe('JSHandle', function () {
       expect(windowHandle.remoteObject()).toBeTruthy();
     });
     it('should accept object handle as an argument', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const navigatorHandle = await page.evaluateHandle(() => {
         return navigator;
@@ -56,7 +50,7 @@ describe('JSHandle', function () {
       expect(text).toContain('Mozilla');
     });
     it('should accept object handle to primitive types', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const aHandle = await page.evaluateHandle(() => {
         return 5;
@@ -67,7 +61,7 @@ describe('JSHandle', function () {
       expect(isFive).toBeTruthy();
     });
     it('should warn about recursive objects', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const test: {obj?: unknown} = {};
       test.obj = test;
@@ -82,7 +76,7 @@ describe('JSHandle', function () {
       expect(error.message).toContain('Recursive objects are not allowed.');
     });
     it('should accept object handle to unserializable value', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const aHandle = await page.evaluateHandle(() => {
         return Infinity;
@@ -94,7 +88,7 @@ describe('JSHandle', function () {
       ).toBe(true);
     });
     it('should use the same JS wrappers', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const aHandle = await page.evaluateHandle(() => {
         (globalThis as any).FOO = 123;
@@ -110,7 +104,7 @@ describe('JSHandle', function () {
 
   describe('JSHandle.getProperty', function () {
     it('should work', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const aHandle = await page.evaluateHandle(() => {
         return {
@@ -126,7 +120,7 @@ describe('JSHandle', function () {
 
   describe('JSHandle.jsonValue', function () {
     it('should work', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const aHandle = await page.evaluateHandle(() => {
         return {foo: 'bar'};
@@ -136,7 +130,7 @@ describe('JSHandle', function () {
     });
 
     it('works with jsonValues that are not objects', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const aHandle = await page.evaluateHandle(() => {
         return ['a', 'b'];
@@ -146,7 +140,7 @@ describe('JSHandle', function () {
     });
 
     it('works with jsonValues that are primitives', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const aHandle = await page.evaluateHandle(() => {
         return 'foo';
@@ -158,21 +152,11 @@ describe('JSHandle', function () {
       });
       expect(await bHandle.jsonValue()).toEqual(undefined);
     });
-
-    itFailsFirefox('should not work with dates', async () => {
-      const {page} = getTestState();
-
-      const dateHandle = await page.evaluateHandle(() => {
-        return new Date('2017-09-26T00:00:00.000Z');
-      });
-      const json = await dateHandle.jsonValue();
-      expect(json).toEqual({});
-    });
   });
 
   describe('JSHandle.getProperties', function () {
     it('should work', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const aHandle = await page.evaluateHandle(() => {
         return {
@@ -185,7 +169,7 @@ describe('JSHandle', function () {
       expect(await foo.jsonValue()).toBe('bar');
     });
     it('should return even non-own properties', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const aHandle = await page.evaluateHandle(() => {
         class A {
@@ -211,7 +195,7 @@ describe('JSHandle', function () {
 
   describe('JSHandle.asElement', function () {
     it('should work', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const aHandle = await page.evaluateHandle(() => {
         return document.body;
@@ -220,7 +204,7 @@ describe('JSHandle', function () {
       expect(element).toBeTruthy();
     });
     it('should return null for non-elements', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const aHandle = await page.evaluateHandle(() => {
         return 2;
@@ -229,7 +213,7 @@ describe('JSHandle', function () {
       expect(element).toBeFalsy();
     });
     it('should return ElementHandle for TextNodes', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       await page.setContent('<div>ee!</div>');
       const aHandle = await page.evaluateHandle(() => {
@@ -247,7 +231,7 @@ describe('JSHandle', function () {
 
   describe('JSHandle.toString', function () {
     it('should work for primitives', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const numberHandle = await page.evaluateHandle(() => {
         return 2;
@@ -259,15 +243,18 @@ describe('JSHandle', function () {
       expect(stringHandle.toString()).toBe('JSHandle:a');
     });
     it('should work for complicated objects', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       const aHandle = await page.evaluateHandle(() => {
         return window;
       });
-      expect(aHandle.toString()).toBe('JSHandle@object');
+      expect(aHandle.toString()).atLeastOneToContain([
+        'JSHandle@object',
+        'JSHandle@window',
+      ]);
     });
     it('should work with different subtypes', async () => {
-      const {page} = getTestState();
+      const {page} = await getTestState();
 
       expect((await page.evaluateHandle('(function(){})')).toString()).toBe(
         'JSHandle@function'
@@ -321,107 +308,6 @@ describe('JSHandle', function () {
       expect((await page.evaluateHandle('new Proxy({}, {})')).toString()).toBe(
         'JSHandle@proxy'
       );
-    });
-  });
-
-  describe('JSHandle.clickablePoint', function () {
-    it('should work', async () => {
-      const {page} = getTestState();
-
-      await page.evaluate(() => {
-        document.body.style.padding = '0';
-        document.body.style.margin = '0';
-        document.body.innerHTML = `
-          <div style="cursor: pointer; width: 120px; height: 60px; margin: 30px; padding: 15px;"></div>
-        `;
-      });
-      await page.evaluate(async () => {
-        return new Promise(resolve => {
-          return window.requestAnimationFrame(resolve);
-        });
-      });
-      const divHandle = (await page.$('div'))!;
-      expect(await divHandle.clickablePoint()).toEqual({
-        x: 45 + 60, // margin + middle point offset
-        y: 45 + 30, // margin + middle point offset
-      });
-      expect(
-        await divHandle.clickablePoint({
-          x: 10,
-          y: 15,
-        })
-      ).toEqual({
-        x: 30 + 10, // margin + offset
-        y: 30 + 15, // margin + offset
-      });
-    });
-
-    it('should work for iframes', async () => {
-      const {page} = getTestState();
-      await page.evaluate(() => {
-        document.body.style.padding = '10px';
-        document.body.style.margin = '10px';
-        document.body.innerHTML = `
-          <iframe style="border: none; margin: 0; padding: 0;" seamless sandbox srcdoc="<style>* { margin: 0; padding: 0;}</style><div style='cursor: pointer; width: 120px; height: 60px; margin: 30px; padding: 15px;' />"></iframe>
-        `;
-      });
-      await page.evaluate(async () => {
-        return new Promise(resolve => {
-          return window.requestAnimationFrame(resolve);
-        });
-      });
-      const frame = page.frames()[1]!;
-      const divHandle = (await frame.$('div'))!;
-      expect(await divHandle.clickablePoint()).toEqual({
-        x: 20 + 45 + 60, // iframe pos + margin + middle point offset
-        y: 20 + 45 + 30, // iframe pos + margin + middle point offset
-      });
-      expect(
-        await divHandle.clickablePoint({
-          x: 10,
-          y: 15,
-        })
-      ).toEqual({
-        x: 20 + 30 + 10, // iframe pos + margin + offset
-        y: 20 + 30 + 15, // iframe pos + margin + offset
-      });
-    });
-  });
-
-  describe('JSHandle.click', function () {
-    itFailsFirefox('should work', async () => {
-      const {page} = getTestState();
-
-      const clicks: Array<[x: number, y: number]> = [];
-
-      await page.exposeFunction('reportClick', (x: number, y: number): void => {
-        clicks.push([x, y]);
-      });
-
-      await page.evaluate(() => {
-        document.body.style.padding = '0';
-        document.body.style.margin = '0';
-        document.body.innerHTML = `
-          <div style="cursor: pointer; width: 120px; height: 60px; margin: 30px; padding: 15px;"></div>
-        `;
-        document.body.addEventListener('click', e => {
-          (window as any).reportClick(e.clientX, e.clientY);
-        });
-      });
-
-      const divHandle = (await page.$('div'))!;
-      await divHandle.click();
-      await divHandle.click({
-        offset: {
-          x: 10,
-          y: 15,
-        },
-      });
-      await shortWaitForArrayToHaveAtLeastNElements(clicks, 2);
-      expect(clicks).toEqual([
-        [45 + 60, 45 + 30], // margin + middle point offset
-        [30 + 10, 30 + 15], // margin + offset
-      ]);
     });
   });
 });

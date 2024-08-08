@@ -14,33 +14,53 @@
  * limitations under the License.
  */
 
-import expect from 'expect';
 import {ServerResponse} from 'http';
-import {Page} from '../../lib/cjs/puppeteer/common/Page.js';
-import {Target} from '../../lib/cjs/puppeteer/common/Target.js';
-import {
-  getTestState,
-  itFailsFirefox,
-  setupTestBrowserHooks,
-  setupTestPageAndContextHooks,
-} from './mocha-utils.js';
-import utils from './utils.js';
-const {waitEvent} = utils;
+
+import {Page} from '@cloudflare/puppeteer/internal/api/Page.js';
+import expect from 'expect';
+import {TimeoutError, Target} from 'puppeteer';
+
+import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
+import {waitEvent} from './utils.js';
 
 describe('Target', function () {
   setupTestBrowserHooks();
-  setupTestPageAndContextHooks();
 
+  it('Browser.targets should return all of the targets', async () => {
+    const {browser} = await getTestState();
+
+    // The pages will be the testing page and the original newtab page
+    const targets = browser.targets();
+    expect(
+      targets.some(target => {
+        return target.type() === 'page' && target.url() === 'about:blank';
+      })
+    ).toBeTruthy();
+    expect(
+      targets.some(target => {
+        return target.type() === 'browser';
+      })
+    ).toBeTruthy();
+  });
   it('Browser.pages should return all of the pages', async () => {
-    const {page, context} = getTestState();
+    const {page, context} = await getTestState();
 
     // The pages will be the testing page
     const allPages = await context.pages();
-    expect(allPages.length).toBe(1);
+    expect(allPages).toHaveLength(1);
     expect(allPages).toContain(page);
   });
+  it('should contain browser target', async () => {
+    const {browser} = await getTestState();
+
+    const targets = browser.targets();
+    const browserTarget = targets.find(target => {
+      return target.type() === 'browser';
+    });
+    expect(browserTarget).toBeTruthy();
+  });
   it('should be able to use the default page in the browser', async () => {
-    const {page, browser} = getTestState();
+    const {page, browser} = await getTestState();
 
     // The pages will be the testing page and the original newtab page
     const allPages = await browser.pages();
@@ -54,16 +74,21 @@ describe('Target', function () {
     ).toBe('Hello world');
     expect(await originalPage.$('body')).toBeTruthy();
   });
-  itFailsFirefox('should be able to use async waitForTarget', async () => {
-    const {page, server, context} = getTestState();
+  it('should be able to use async waitForTarget', async () => {
+    const {page, server, context} = await getTestState();
 
     const [otherPage] = await Promise.all([
       context
-        .waitForTarget(target => {
-          return target.page().then(page => {
-            return page!.url() === server.CROSS_PROCESS_PREFIX + '/empty.html';
-          });
-        })
+        .waitForTarget(
+          target => {
+            return target.page().then(page => {
+              return (
+                page!.url() === server.CROSS_PROCESS_PREFIX + '/empty.html'
+              );
+            });
+          },
+          {timeout: 3000}
+        )
         .then(target => {
           return target.page();
         }),
@@ -76,113 +101,107 @@ describe('Target', function () {
     );
     expect(page).not.toEqual(otherPage);
   });
-  itFailsFirefox(
-    'should report when a new page is created and closed',
-    async () => {
-      const {page, server, context} = getTestState();
+  it('should report when a new page is created and closed', async () => {
+    const {page, server, context} = await getTestState();
 
-      const [otherPage] = await Promise.all([
-        context
-          .waitForTarget(target => {
+    const [otherPage] = await Promise.all([
+      context
+        .waitForTarget(
+          target => {
             return target.url() === server.CROSS_PROCESS_PREFIX + '/empty.html';
-          })
-          .then(target => {
-            return target.page();
-          }),
-        page.evaluate((url: string) => {
-          return window.open(url);
-        }, server.CROSS_PROCESS_PREFIX + '/empty.html'),
-      ]);
-      expect(otherPage!.url()).toContain(server.CROSS_PROCESS_PREFIX);
-      expect(
-        await otherPage!.evaluate(() => {
-          return ['Hello', 'world'].join(' ');
-        })
-      ).toBe('Hello world');
-      expect(await otherPage!.$('body')).toBeTruthy();
-
-      let allPages = await context.pages();
-      expect(allPages).toContain(page);
-      expect(allPages).toContain(otherPage);
-
-      const closePagePromise = new Promise(fulfill => {
-        return context.once('targetdestroyed', target => {
-          return fulfill(target.page());
-        });
-      });
-      await otherPage!.close();
-      expect(await closePagePromise).toBe(otherPage);
-
-      allPages = (await Promise.all(
-        context.targets().map(target => {
+          },
+          {timeout: 3000}
+        )
+        .then(target => {
           return target.page();
-        })
-      )) as Page[];
-      expect(allPages).toContain(page);
-      expect(allPages).not.toContain(otherPage);
-    }
-  );
-  itFailsFirefox(
-    'should report when a service worker is created and destroyed',
-    async () => {
-      const {page, server, context} = getTestState();
+        }),
+      page.evaluate((url: string) => {
+        return window.open(url);
+      }, server.CROSS_PROCESS_PREFIX + '/empty.html'),
+    ]);
+    expect(otherPage!.url()).toContain(server.CROSS_PROCESS_PREFIX);
+    expect(
+      await otherPage!.evaluate(() => {
+        return ['Hello', 'world'].join(' ');
+      })
+    ).toBe('Hello world');
+    expect(await otherPage!.$('body')).toBeTruthy();
 
-      await page.goto(server.EMPTY_PAGE);
-      const createdTarget = new Promise<Target>(fulfill => {
-        return context.once('targetcreated', target => {
-          return fulfill(target);
-        });
-      });
+    let allPages = await context.pages();
+    expect(allPages).toContain(page);
+    expect(allPages).toContain(otherPage);
 
-      await page.goto(server.PREFIX + '/serviceworkers/empty/sw.html');
+    const [closedTarget] = await Promise.all([
+      waitEvent<Target>(context, 'targetdestroyed'),
+      otherPage!.close(),
+    ]);
+    expect(await closedTarget.page()).toBe(otherPage);
 
-      expect((await createdTarget).type()).toBe('service_worker');
-      expect((await createdTarget).url()).toBe(
-        server.PREFIX + '/serviceworkers/empty/sw.js'
-      );
+    allPages = (await Promise.all(
+      context.targets().map(target => {
+        return target.page();
+      })
+    )) as Page[];
+    expect(allPages).toContain(page);
+    expect(allPages).not.toContain(otherPage);
+  });
+  it('should report when a service worker is created and destroyed', async () => {
+    const {page, server, context} = await getTestState();
 
-      const destroyedTarget = new Promise(fulfill => {
-        return context.once('targetdestroyed', target => {
-          return fulfill(target);
-        });
-      });
-      await page.evaluate(() => {
-        return (
-          globalThis as unknown as {
-            registrationPromise: Promise<{unregister: () => void}>;
-          }
-        ).registrationPromise.then((registration: any) => {
-          return registration.unregister();
-        });
-      });
-      expect(await destroyedTarget).toBe(await createdTarget);
-    }
-  );
-  itFailsFirefox('should create a worker from a service worker', async () => {
-    const {page, server, context} = getTestState();
+    await page.goto(server.EMPTY_PAGE);
+    const createdTarget = waitEvent(context, 'targetcreated');
 
     await page.goto(server.PREFIX + '/serviceworkers/empty/sw.html');
 
-    const target = await context.waitForTarget(target => {
-      return target.type() === 'service_worker';
+    expect((await createdTarget).type()).toBe('service_worker');
+    expect((await createdTarget).url()).toBe(
+      server.PREFIX + '/serviceworkers/empty/sw.js'
+    );
+
+    const destroyedTarget = waitEvent(context, 'targetdestroyed');
+    await page.evaluate(() => {
+      return (
+        globalThis as unknown as {
+          registrationPromise: Promise<{unregister: () => void}>;
+        }
+      ).registrationPromise.then((registration: any) => {
+        return registration.unregister();
+      });
     });
+    expect(await destroyedTarget).toBe(await createdTarget);
+  });
+  it('should create a worker from a service worker', async () => {
+    const {page, server, context} = await getTestState();
+
+    await page.goto(server.PREFIX + '/serviceworkers/empty/sw.html');
+
+    const target = await context.waitForTarget(
+      target => {
+        return target.type() === 'service_worker';
+      },
+      {timeout: 3000}
+    );
     const worker = (await target.worker())!;
+
     expect(
       await worker.evaluate(() => {
         return self.toString();
       })
     ).toBe('[object ServiceWorkerGlobalScope]');
   });
-  itFailsFirefox('should create a worker from a shared worker', async () => {
-    const {page, server, context} = getTestState();
+  it('should create a worker from a shared worker', async () => {
+    const {page, server, context} = await getTestState();
 
     await page.goto(server.EMPTY_PAGE);
     await page.evaluate(() => {
       new SharedWorker('data:text/javascript,console.log("hi")');
     });
-    const target = await context.waitForTarget(target => {
-      return target.type() === 'shared_worker';
-    });
+    const target = await context.waitForTarget(
+      target => {
+        return target.type() === 'shared_worker';
+      },
+      {timeout: 3000}
+    );
     const worker = (await target.worker())!;
     expect(
       await worker.evaluate(() => {
@@ -190,49 +209,33 @@ describe('Target', function () {
       })
     ).toBe('[object SharedWorkerGlobalScope]');
   });
-  itFailsFirefox('should report when a target url changes', async () => {
-    const {page, server, context} = getTestState();
+  it('should report when a target url changes', async () => {
+    const {page, server, context} = await getTestState();
 
     await page.goto(server.EMPTY_PAGE);
-    let changedTarget = new Promise<Target>(fulfill => {
-      return context.once('targetchanged', target => {
-        return fulfill(target);
-      });
-    });
+    let changedTarget = waitEvent(context, 'targetchanged');
     await page.goto(server.CROSS_PROCESS_PREFIX + '/');
     expect((await changedTarget).url()).toBe(server.CROSS_PROCESS_PREFIX + '/');
 
-    changedTarget = new Promise(fulfill => {
-      return context.once('targetchanged', target => {
-        return fulfill(target);
-      });
-    });
+    changedTarget = waitEvent(context, 'targetchanged');
     await page.goto(server.EMPTY_PAGE);
     expect((await changedTarget).url()).toBe(server.EMPTY_PAGE);
   });
-  itFailsFirefox('should not report uninitialized pages', async () => {
-    const {context} = getTestState();
+  it('should not report uninitialized pages', async () => {
+    const {context} = await getTestState();
 
     let targetChanged = false;
     const listener = () => {
       return (targetChanged = true);
     };
     context.on('targetchanged', listener);
-    const targetPromise = new Promise<Target>(fulfill => {
-      return context.once('targetcreated', target => {
-        return fulfill(target);
-      });
-    });
+    const targetPromise = waitEvent<Target>(context, 'targetcreated');
     const newPagePromise = context.newPage();
     const target = await targetPromise;
     expect(target.url()).toBe('about:blank');
 
     const newPage = await newPagePromise;
-    const targetPromise2 = new Promise<Target>(fulfill => {
-      return context.once('targetcreated', target => {
-        return fulfill(target);
-      });
-    });
+    const targetPromise2 = waitEvent<Target>(context, 'targetcreated');
     const evaluatePromise = newPage.evaluate(() => {
       return window.open('about:blank');
     });
@@ -241,48 +244,44 @@ describe('Target', function () {
     await evaluatePromise;
     await newPage.close();
     expect(targetChanged).toBe(false);
-    context.removeListener('targetchanged', listener);
+    context.off('targetchanged', listener);
   });
-  itFailsFirefox(
-    'should not crash while redirecting if original request was missed',
-    async () => {
-      const {page, server, context} = getTestState();
+  it('should not crash while redirecting if original request was missed', async () => {
+    const {page, server, context} = await getTestState();
 
-      let serverResponse!: ServerResponse;
-      server.setRoute('/one-style.css', (_req, res) => {
-        return (serverResponse = res);
-      });
-      // Open a new page. Use window.open to connect to the page later.
-      await Promise.all([
-        page.evaluate((url: string) => {
-          return window.open(url);
-        }, server.PREFIX + '/one-style.html'),
-        server.waitForRequest('/one-style.css'),
-      ]);
-      // Connect to the opened page.
-      const target = await context.waitForTarget(target => {
+    let serverResponse!: ServerResponse;
+    server.setRoute('/one-style.css', (_req, res) => {
+      return (serverResponse = res);
+    });
+    // Open a new page. Use window.open to connect to the page later.
+    await Promise.all([
+      page.evaluate((url: string) => {
+        return window.open(url);
+      }, server.PREFIX + '/one-style.html'),
+      server.waitForRequest('/one-style.css'),
+    ]);
+    // Connect to the opened page.
+    const target = await context.waitForTarget(
+      target => {
         return target.url().includes('one-style.html');
-      });
-      const newPage = (await target.page())!;
-      // Issue a redirect.
-      serverResponse.writeHead(302, {location: '/injectedstyle.css'});
-      serverResponse.end();
-      // Wait for the new page to load.
-      await waitEvent(newPage, 'load');
-      // Cleanup.
-      await newPage.close();
-    }
-  );
-  itFailsFirefox('should have an opener', async () => {
-    const {page, server, context} = getTestState();
+      },
+      {timeout: 3000}
+    );
+    const newPage = (await target.page())!;
+    // Issue a redirect.
+    serverResponse.writeHead(302, {location: '/injectedstyle.css'});
+    serverResponse.end();
+    // Wait for the new page to load.
+    await waitEvent(newPage, 'load');
+    // Cleanup.
+    await newPage.close();
+  });
+  it('should have an opener', async () => {
+    const {page, server, context} = await getTestState();
 
     await page.goto(server.EMPTY_PAGE);
     const [createdTarget] = await Promise.all([
-      new Promise<Target>(fulfill => {
-        return context.once('targetcreated', target => {
-          return fulfill(target);
-        });
-      }),
+      waitEvent<Target>(context, 'targetcreated'),
       page.goto(server.PREFIX + '/popup/window-open.html'),
     ]);
     expect((await createdTarget.page())!.url()).toBe(
@@ -293,20 +292,23 @@ describe('Target', function () {
   });
 
   describe('Browser.waitForTarget', () => {
-    itFailsFirefox('should wait for a target', async () => {
-      const {browser, puppeteer, server} = getTestState();
+    it('should wait for a target', async () => {
+      const {browser, server} = await getTestState();
 
       let resolved = false;
-      const targetPromise = browser.waitForTarget(target => {
-        return target.url() === server.EMPTY_PAGE;
-      });
+      const targetPromise = browser.waitForTarget(
+        target => {
+          return target.url() === server.EMPTY_PAGE;
+        },
+        {timeout: 3000}
+      );
       targetPromise
         .then(() => {
           return (resolved = true);
         })
         .catch(error => {
           resolved = true;
-          if (error instanceof puppeteer.errors.TimeoutError) {
+          if (error instanceof TimeoutError) {
             console.error(error);
           } else {
             throw error;
@@ -319,7 +321,7 @@ describe('Target', function () {
         const target = await targetPromise;
         expect(await target.page()).toBe(page);
       } catch (error) {
-        if (error instanceof puppeteer.errors.TimeoutError) {
+        if (error instanceof TimeoutError) {
           console.error(error);
         } else {
           throw error;
@@ -328,7 +330,7 @@ describe('Target', function () {
       await page.close();
     });
     it('should timeout waiting for a non-existent target', async () => {
-      const {browser, server, puppeteer} = getTestState();
+      const {browser, server} = await getTestState();
 
       let error!: Error;
       await browser
@@ -343,7 +345,7 @@ describe('Target', function () {
         .catch(error_ => {
           return (error = error_);
         });
-      expect(error).toBeInstanceOf(puppeteer.errors.TimeoutError);
+      expect(error).toBeInstanceOf(TimeoutError);
     });
   });
 });
