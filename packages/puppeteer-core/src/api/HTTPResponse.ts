@@ -4,8 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {Buffer} from 'node:buffer';
-
 import Protocol from 'devtools-protocol';
 
 import type {SecurityDetails} from '../common/SecurityDetails.js';

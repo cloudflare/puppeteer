@@ -3,7 +3,6 @@
  * Copyright 2020 Google Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
-import {Buffer} from 'node:buffer';
 
 import {Protocol} from 'devtools-protocol';
 
