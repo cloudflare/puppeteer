@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import {Buffer} from 'node:buffer';
 import type {Readable} from 'node:stream';
 
 import {Protocol} from 'devtools-protocol';

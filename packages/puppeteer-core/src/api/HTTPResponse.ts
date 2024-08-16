@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import {Buffer} from 'node:buffer';
-
 import Protocol from 'devtools-protocol';
 
 import {SecurityDetails} from '../common/SecurityDetails.js';

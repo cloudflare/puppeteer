@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import {Buffer} from 'node:buffer';
 import type {Readable} from 'node:stream';
 
 import {Protocol} from 'devtools-protocol';

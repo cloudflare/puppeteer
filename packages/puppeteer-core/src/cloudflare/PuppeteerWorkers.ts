@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import './globalPatcher.js';
+
 import {Browser} from '../api/Browser.js';
 import {ConnectionTransport} from '../common/ConnectionTransport.js';
 import {Puppeteer} from '../common/Puppeteer.js';
