@@ -15,25 +15,25 @@ export class WorkersWebSocketTransport implements ConnectionTransport {
 
   static async create(
     endpoint: BrowserWorker,
-    sessionid: string
+    sessionId: string
   ): Promise<WorkersWebSocketTransport> {
-    const path = `${FAKE_HOST}/v1/connectDevtools?browser_session=${sessionid}`;
+    const path = `${FAKE_HOST}/v1/connectDevtools?browser_session=${sessionId}`;
     const response = await endpoint.fetch(path, {
       headers: {Upgrade: 'websocket'},
     });
     response.webSocket!.accept();
-    return new WorkersWebSocketTransport(response.webSocket!, sessionid);
+    return new WorkersWebSocketTransport(response.webSocket!, sessionId);
   }
 
-  constructor(ws: WebSocket, sessionid: string) {
+  constructor(ws: WebSocket, sessionId: string) {
     this.pingInterval = setInterval(() => {
       return this.ws.send('ping');
     }, 1000); // TODO more investigation
     this.ws = ws;
-    this.sessionId = sessionid;
+    this.sessionId = sessionId;
     this.ws.addEventListener('message', event => {
       this.chunks.push(new Uint8Array(event.data as ArrayBuffer));
-      const message = chunksToMessage(this.chunks, sessionid);
+      const message = chunksToMessage(this.chunks, sessionId);
       if (message && this.onmessage) {
         this.onmessage!(message);
       }
@@ -45,7 +45,7 @@ export class WorkersWebSocketTransport implements ConnectionTransport {
       }
     });
     this.ws.addEventListener('error', e => {
-      console.error(`Websocket error: SessionID: ${sessionid}`, e);
+      console.error(`Websocket error: SessionID: ${sessionId}`, e);
       clearInterval(this.pingInterval as NodeJS.Timeout);
     });
   }

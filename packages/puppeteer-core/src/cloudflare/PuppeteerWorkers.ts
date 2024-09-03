@@ -18,7 +18,7 @@ import './globalPatcher.js';
 
 import {Browser} from '../api/Browser.js';
 import {ConnectionTransport} from '../common/ConnectionTransport.js';
-import {Puppeteer} from '../common/Puppeteer.js';
+import {ConnectOptions, Puppeteer} from '../common/Puppeteer.js';
 
 import {BrowserWorker} from './BrowserWorker.js';
 import {connectToCDPBrowser} from './utils.js';
@@ -194,10 +194,9 @@ export class PuppeteerWorkers extends Puppeteer {
    * @param sessionId - sessionId obtained from a .sessions() call
    * @returns a browser instance
    */
-  // @ts-expect-error we use a diferent input here and completly ignore the original class
   public override async connect(
-    endpoint: BrowserWorker,
-    sessionId: string
+    endpoint: BrowserWorker | ConnectOptions,
+    sessionId?: string
   ): Promise<Browser>;
 
   /**
@@ -206,14 +205,19 @@ export class PuppeteerWorkers extends Puppeteer {
    * @param borwserWorker - BrowserWorker
    * @returns a browser instance
    */
-  // @ts-expect-error we use a diferent input here and completly ignore the original class
   public override async connect(
-    endpoint: BrowserWorker,
-    sessionId: string
+    endpoint: BrowserWorker | ConnectOptions,
+    sessionId?: string
   ): Promise<Browser> {
     try {
+      if (!sessionId) {
+        return super.connect(endpoint as ConnectOptions);
+      }
       const connectionTransport: ConnectionTransport =
-        await WorkersWebSocketTransport.create(endpoint, sessionId);
+        await WorkersWebSocketTransport.create(
+          endpoint as BrowserWorker,
+          sessionId
+        );
       return connectToCDPBrowser(connectionTransport, {sessionId});
     } catch (e) {
       throw new Error(
