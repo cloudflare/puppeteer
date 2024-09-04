@@ -127,7 +127,7 @@
     "puppeteer-core": "22.8.2",
     "@puppeteer/browsers": "2.2.3",
     "devtools-protocol": "0.0.1273771",
-    "@cloudflare/puppeteer": "0.0.14-rc"
+    "@cloudflare/puppeteer": "0.0.14"
   },
   "devDependencies": {
     "@types/node": "18.17.15"
