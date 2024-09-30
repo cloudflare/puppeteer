@@ -79,7 +79,7 @@ jobs:
       PACKAGE_MANAGER: ${{ needs.analyze-issue.outputs.packageManager }}
       NODE_VERSION: ${{ needs.analyze-issue.outputs.nodeVersion }}
     steps:
-      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+      - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: issue-files
           path: '.'
