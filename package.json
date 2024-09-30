@@ -116,7 +116,7 @@
     "@prettier/sync": "0.2.1",
     "@rollup/plugin-node-resolve": "15.1.0",
     "@rollup/plugin-terser": "0.4.3",
-    "@types/debug": "4.1.8",
+    "@types/debug": "4.1.12",
     "@types/diff": "5.0.3",
     "@types/mime": "3.0.1",
     "@types/mocha": "10.0.1",

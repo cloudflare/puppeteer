@@ -146,7 +146,7 @@
   "dependencies": {
     "chromium-bidi": "0.4.20",
     "cross-fetch": "4.0.0",
-    "debug": "4.3.4",
+    "debug": "4.3.6",
     "devtools-protocol": "0.0.1159816",
     "ws": "8.13.0",
     "@puppeteer/browsers": "1.7.0"
