@@ -14,9 +14,36 @@ Note that the main branch in this repo is branched off of version 21.1.0 of
 the library, to match the currently deployed version of Chromium on the
 edge.
 
-More information in the [developer docs](https://developers.cloudflare.com/browser-rendering/).
+Install our forked package:
+
+```
+npm install @cloudflare/puppeteer --save-dev
+```
+
+Then use it in your worker:
+
+```js
+import puppeteer from "@cloudflare/puppeteer";
+
+export default {
+  async fetch(request, env) {
+    const browser = await puppeteer.launch(env.MYBROWSER);
+    const page = await browser.newPage();
+    await page.goto("https://example.com");
+    const metrics = await page.metrics();
+    await browser.close();
+    return Response.json(metrics);
+  },
+};
+```
+
+Find more information in the [developer docs](https://developers.cloudflare.com/browser-rendering/platform/puppeteer/).
 
 Original README follows...
+
+---
+---
+---
 
 # Puppeteer
 
