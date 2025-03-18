@@ -69,6 +69,8 @@ jobs:
           - os: windows-latest
             suite: chrome-bidi
     steps:
+      - name: Debug
+        run: echo "DEBUG changes=${{ needs.check-changes.outputs.changes }}"
       - name: Check out repository
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
       - name: Set up Node.js
