@@ -59,7 +59,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-latest
+          - ubuntu-22.04
           - windows-latest
         suite:
           - chrome-headless
@@ -104,22 +104,22 @@ jobs:
       - name: Tests types
         run: npm run test-types
       - name: Run all tests (for non-Linux)
-        if: ${{ matrix.os != 'ubuntu-latest' }}
+        if: ${{ matrix.os != 'ubuntu-22.04' }}
         run: npm run test -- --test-suite ${{ matrix.suite }} --save-stats-to /tmp/artifacts/${{ github.event_name }}_INSERTID.json
         env:
           PUPPETEER_EXECUTABLE_PATH: ${{ steps.browser.outputs.executablePath }}
       - name: Install linux dependencies.
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         run: sudo apt-get install xvfb
       - name: Run all tests (for Linux)
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         run: xvfb-run --auto-servernum npm run test -- --test-suite ${{ matrix.suite }} --save-stats-to /tmp/artifacts/${{ github.event_name }}_INSERTID.json
         env:
           PUPPETEER_EXECUTABLE_PATH: ${{ steps.browser.outputs.executablePath }}
       - uses: actions/upload-artifact@v4 # v3.1.2
         if: always()
         with:
-          name: test-results
+          name: test-results-${{ matrix.os }}-${{ matrix.suite }}
           path: /tmp/artifacts/*.json
 
   chrome-tests-required:
@@ -141,7 +141,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - ubuntu-latest
+          - ubuntu-22.04
         suite:
           - firefox-headful
           - firefox-headless
@@ -171,18 +171,18 @@ jobs:
       - name: Tests types
         run: npm run test-types
       - name: Run all tests (for non-Linux)
-        if: ${{ matrix.os != 'ubuntu-latest' }}
+        if: ${{ matrix.os != 'ubuntu-22.04' }}
         run: npm run test -- --test-suite ${{ matrix.suite }} --save-stats-to /tmp/artifacts/${{ github.event_name }}_INSERTID.json
       - name: Install linux dependencies.
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         run: sudo apt-get install xvfb
       - name: Run all tests (for Linux)
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         run: xvfb-run --auto-servernum npm run test -- --test-suite ${{ matrix.suite }} --save-stats-to /tmp/artifacts/${{ github.event_name }}_INSERTID.json
       - uses: actions/upload-artifact@v4 # v3.1.2
         if: always()
         with:
-          name: test-results
+          name: test-results-${{ matrix.os }}-${{ matrix.suite }}
           path: /tmp/artifacts/*.json
 
   firefox-tests-required:
