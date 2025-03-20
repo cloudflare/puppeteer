@@ -125,7 +125,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "cosmiconfig": "8.2.0",
-    "@cloudflare/puppeteer": "0.0.14",
+    "@cloudflare/puppeteer": "file:../puppeteer-core",
     "@puppeteer/browsers": "1.7.0"
   }
 }
