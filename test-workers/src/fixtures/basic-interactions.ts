@@ -13,7 +13,7 @@ export const test = async (browser: Browser): Promise<Response> => {
   await page.locator('.devsite-search-field').fill('automate beyond recorder');
 
   // Wait and click on first result.
-  await page.locator('.devsite-result-item-link').click();
+  await page.locator('.devsite-suggest-all-results').click();
 
   // Locate the full title with a unique string.
   const textSelector = await page
