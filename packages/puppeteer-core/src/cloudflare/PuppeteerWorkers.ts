@@ -21,7 +21,7 @@ import {ConnectionTransport} from '../common/ConnectionTransport.js';
 import {ConnectOptions, Puppeteer} from '../common/Puppeteer.js';
 
 import {BrowserWorker} from './BrowserWorker.js';
-import {connectToCDPBrowser} from './utils.js';
+import {connectToCDPBrowser, Locations} from './utils.js';
 import {WorkersWebSocketTransport} from './WorkersWebSocketTransport.js';
 
 const FAKE_HOST = 'https://fake.host';
@@ -86,6 +86,7 @@ export interface LimitsResponse {
  */
 export interface WorkersLaunchOptions {
   keep_alive?: number; // milliseconds to keep browser alive even if it has no activity (from 10_000ms to 600_000ms, default is 60_000)
+  location?: Locations;
 }
 /**
  * @public
@@ -110,10 +111,15 @@ export class PuppeteerWorkers extends Puppeteer {
     endpoint: BrowserWorker,
     options?: WorkersLaunchOptions
   ): Promise<Browser> {
-    let acquireUrl = `${FAKE_HOST}/v1/acquire`;
+    const searchParams = new URLSearchParams();
     if (options?.keep_alive) {
-      acquireUrl = `${acquireUrl}?keep_alive=${options.keep_alive}`;
+      searchParams.set('keep_alive', `${options.keep_alive}`);
     }
+    if (options?.location) {
+      searchParams.set('location', options.location);
+    }
+
+    const acquireUrl = `${FAKE_HOST}/v1/acquire?${searchParams.toString()}`;
     const res = await endpoint.fetch(acquireUrl);
     const status = res.status;
     const text = await res.text();
