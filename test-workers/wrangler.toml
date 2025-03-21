@@ -1,6 +1,7 @@
 
 name = "test-workers"
 main = "src/index.ts"
+compatibility_date = "2024-12-05"
 compatibility_flags = ["nodejs_compat"]
 
 browser = { binding = "BROWSER" }
