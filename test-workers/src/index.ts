@@ -7,6 +7,8 @@ import puppeteer from '@cloudflare/puppeteer';
 
 import {test as basicInteractions} from './fixtures/basic-interactions.js';
 import {test as coverageTest} from './fixtures/coverage.js';
+import {test as evaluateTest} from './fixtures/evaluate.js';
+import {test as evaluateOnNewDocumentTest} from './fixtures/evaluateOnNewDocument.js';
 import {test as htmlTest} from './fixtures/html.js';
 import {test as imageTest} from './fixtures/image.js';
 import {test as pdfTest} from './fixtures/pdf.js';
@@ -19,6 +21,8 @@ const testsMap = {
   'basic-interactions': basicInteractions,
   tracing: tracingTest,
   coverage: coverageTest,
+  evaluate: evaluateTest,
+  evaluateOnNewDocument: evaluateOnNewDocumentTest,
 };
 
 export default {
