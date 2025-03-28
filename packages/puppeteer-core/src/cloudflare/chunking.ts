@@ -1,3 +1,8 @@
+/**
+ * @license
+ * Copyright 2025 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 const HEADER_SIZE = 4; // Uint32
 const MAX_MESSAGE_SIZE = 1048575; // Workers size is < 1MB
 const FIRST_CHUNK_DATA_SIZE = MAX_MESSAGE_SIZE - HEADER_SIZE;

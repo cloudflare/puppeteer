@@ -1,4 +1,9 @@
-import {Browser} from '@cloudflare/puppeteer';
+/**
+ * @license
+ * Copyright 2025 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+import type {Browser} from '@cloudflare/puppeteer';
 
 export const test = async (browser: Browser): Promise<Response> => {
   const page = await browser.newPage();
@@ -16,6 +21,7 @@ export const test = async (browser: Browser): Promise<Response> => {
   await page.locator('.devsite-suggest-all-results').click();
 
   // Locate the full title with a unique string.
+  // eslint-disable-next-line rulesdir/use-using
   const textSelector = await page
     .locator('h1 ::-p-text(Search results)')
     .waitHandle();

@@ -1,10 +1,17 @@
+/**
+ * @license
+ * Copyright 2025 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 export const DEFAULT_VIEWPORT = Object.freeze({width: 800, height: 600});
 
-import {CDPBrowser} from '../common/Browser.js';
-import {BrowserConnectOptions} from '../common/BrowserConnector.js';
-import {Connection} from '../common/Connection.js';
-import {ConnectionTransport} from '../common/ConnectionTransport.js';
-import {ConnectOptions} from '../common/Puppeteer.js';
+import {CdpBrowser} from '../cdp/Browser.js';
+import {Connection} from '../cdp/Connection.js';
+import type {ConnectionTransport} from '../common/ConnectionTransport.js';
+import type {
+  BrowserConnectOptions,
+  ConnectOptions,
+} from '../common/ConnectOptions.js';
 /**
  * Users should never call this directly; it's called when calling
  * `puppeteer.connect` with `protocol: 'cdp'`.
@@ -14,7 +21,7 @@ import {ConnectOptions} from '../common/Puppeteer.js';
 export async function connectToCDPBrowser(
   connectionTransport: ConnectionTransport,
   options: BrowserConnectOptions & ConnectOptions & {sessionId?: string}
-): Promise<CDPBrowser> {
+): Promise<CdpBrowser> {
   const {
     ignoreHTTPSErrors = false,
     defaultViewport = DEFAULT_VIEWPORT,
@@ -40,7 +47,7 @@ export async function connectToCDPBrowser(
   const {browserContextIds} = await connection.send(
     'Target.getBrowserContexts'
   );
-  const browser = await CDPBrowser._create(
+  const browser = await CdpBrowser._create(
     product || 'chrome',
     connection,
     browserContextIds,

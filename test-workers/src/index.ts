@@ -1,3 +1,8 @@
+/**
+ * @license
+ * Copyright 2025 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import puppeteer from '@cloudflare/puppeteer';
 
 import {test as basicInteractions} from './fixtures/basic-interactions.js';
