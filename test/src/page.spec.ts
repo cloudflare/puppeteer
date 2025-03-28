@@ -7,10 +7,12 @@ import assert from 'assert';
 import type {ServerResponse} from 'http';
 import path from 'path';
 
-import {Metrics, Page} from '@cloudflare/puppeteer/internal/api/Page.js';
-import {CDPSession} from '@cloudflare/puppeteer/internal/common/Connection.js';
-import {ConsoleMessage} from '@cloudflare/puppeteer/internal/common/ConsoleMessage.js';
-import {CDPPage} from '@cloudflare/puppeteer/internal/common/Page.js';
+import {CDPSession} from '@cloudflare/puppeteer/internal/api/CDPSession.js';
+import type {HTTPRequest} from '@cloudflare/puppeteer/internal/api/HTTPRequest.js';
+import type {Metrics, Page} from '@cloudflare/puppeteer/internal/api/Page.js';
+import type {CdpPage} from '@cloudflare/puppeteer/internal/cdp/Page.js';
+import type {ConsoleMessage} from '@cloudflare/puppeteer/internal/common/ConsoleMessage.js';
+import {Deferred} from '@cloudflare/puppeteer/internal/util/Deferred.js';
 import expect from 'expect';
 import {KnownDevices, TimeoutError} from 'puppeteer';
 import sinon from 'sinon';

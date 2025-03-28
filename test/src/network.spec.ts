@@ -8,8 +8,8 @@ import fs from 'fs';
 import type {ServerResponse} from 'http';
 import path from 'path';
 
-import {HTTPRequest} from '@cloudflare/puppeteer/internal/api/HTTPRequest.js';
-import {HTTPResponse} from '@cloudflare/puppeteer/internal/api/HTTPResponse.js';
+import type {HTTPRequest} from '@cloudflare/puppeteer/internal/api/HTTPRequest.js';
+import type {HTTPResponse} from '@cloudflare/puppeteer/internal/api/HTTPResponse.js';
 import expect from 'expect';
 
 import {getTestState, launch, setupTestBrowserHooks} from './mocha-utils.js';

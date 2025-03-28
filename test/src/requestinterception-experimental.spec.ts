@@ -12,7 +12,7 @@ import {
   type HTTPRequest,
   InterceptResolutionAction,
 } from '@cloudflare/puppeteer/internal/api/HTTPRequest.js';
-import {ConsoleMessage} from '@cloudflare/puppeteer/internal/common/ConsoleMessage.js';
+import type {ConsoleMessage} from '@cloudflare/puppeteer/internal/common/ConsoleMessage.js';
 import expect from 'expect';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';

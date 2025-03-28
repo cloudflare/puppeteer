@@ -1,3 +1,8 @@
+/**
+ * @license
+ * Copyright 2025 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import {PuppeteerWorkers} from './cloudflare/PuppeteerWorkers.js';
 export * from './api/api.js';
 export * from './common/common.js';

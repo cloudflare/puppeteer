@@ -53,7 +53,8 @@ export class CdpBrowser extends BrowserBase {
     closeCallback?: BrowserCloseCallback,
     targetFilterCallback?: TargetFilterCallback,
     isPageTargetCallback?: IsPageTargetCallback,
-    waitForInitiallyDiscoveredTargets = true
+    waitForInitiallyDiscoveredTargets = true,
+    sessionId?: string
   ): Promise<CdpBrowser> {
     const browser = new CdpBrowser(
       product,
@@ -64,7 +65,8 @@ export class CdpBrowser extends BrowserBase {
       closeCallback,
       targetFilterCallback,
       isPageTargetCallback,
-      waitForInitiallyDiscoveredTargets
+      waitForInitiallyDiscoveredTargets,
+      sessionId
     );
     if (ignoreHTTPSErrors) {
       await connection.send('Security.setIgnoreCertificateErrors', {
@@ -83,6 +85,7 @@ export class CdpBrowser extends BrowserBase {
   #defaultContext: CdpBrowserContext;
   #contexts = new Map<string, CdpBrowserContext>();
   #targetManager: TargetManager;
+  #sessionId: string;
 
   constructor(
     product: 'chrome' | 'firefox' | undefined,
@@ -93,7 +96,8 @@ export class CdpBrowser extends BrowserBase {
     closeCallback?: BrowserCloseCallback,
     targetFilterCallback?: TargetFilterCallback,
     isPageTargetCallback?: IsPageTargetCallback,
-    waitForInitiallyDiscoveredTargets = true
+    waitForInitiallyDiscoveredTargets = true,
+    sessionId?: string
   ) {
     super();
     product = product || 'chrome';
@@ -128,6 +132,7 @@ export class CdpBrowser extends BrowserBase {
         new CdpBrowserContext(this.#connection, this, contextId)
       );
     }
+    this.#sessionId = sessionId || 'unknown';
   }
 
   #emitDisconnected = () => {
@@ -419,5 +424,13 @@ export class CdpBrowser extends BrowserBase {
     return {
       pendingProtocolErrors: this.#connection.getPendingProtocolErrors(),
     };
+  }
+
+  /**
+   * Get the BISO session ID associated with this browser
+   * @public
+   */
+  override sessionId(): string {
+    return this.#sessionId;
   }
 }

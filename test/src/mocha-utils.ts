@@ -7,14 +7,15 @@
 import fs from 'fs';
 import path from 'path';
 
-import {Browser} from '@cloudflare/puppeteer/internal/api/Browser.js';
-import {BrowserContext} from '@cloudflare/puppeteer/internal/api/BrowserContext.js';
-import {Page} from '@cloudflare/puppeteer/internal/api/Page.js';
+import type {Browser} from '@cloudflare/puppeteer/internal/api/Browser.js';
+import type {BrowserContext} from '@cloudflare/puppeteer/internal/api/BrowserContext.js';
+import type {Page} from '@cloudflare/puppeteer/internal/api/Page.js';
+import type {Cookie} from '@cloudflare/puppeteer/internal/common/Cookie.js';
 import {
   setLogCapture,
   getCapturedLogs,
 } from '@cloudflare/puppeteer/internal/common/Debug.js';
-import {
+import type {
   PuppeteerLaunchOptions,
   PuppeteerNode,
 } from '@cloudflare/puppeteer/internal/node/PuppeteerNode.js';

@@ -6,7 +6,7 @@
 
 import assert from 'assert';
 
-import {SerializedAXNode} from '@cloudflare/puppeteer/internal/common/Accessibility.js';
+import type {SerializedAXNode} from '@cloudflare/puppeteer/internal/cdp/Accessibility.js';
 import expect from 'expect';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
@@ -235,7 +235,7 @@ describe('Accessibility', function () {
     async function getAccessibleName(page: any, element: any) {
       return (await page.accessibility.snapshot({root: element})).name;
     }
-    const button = await page.$('button');
+    using button = await page.$('button');
     expect(await getAccessibleName(page, button)).toEqual('Show');
     await button?.click();
     await page.waitForSelector('aria/Hide');

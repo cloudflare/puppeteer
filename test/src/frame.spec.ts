@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {Frame} from '@cloudflare/puppeteer/internal/api/Frame.js';
-import {CDPSession} from '@cloudflare/puppeteer/internal/common/Connection.js';
+import {CDPSession} from '@cloudflare/puppeteer/internal/api/CDPSession.js';
+import type {Frame} from '@cloudflare/puppeteer/internal/api/Frame.js';
+import {assert} from '@cloudflare/puppeteer/internal/util/assert.js';
 import expect from 'expect';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';

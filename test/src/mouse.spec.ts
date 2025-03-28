@@ -6,8 +6,8 @@
 import os from 'os';
 
 import {MouseButton} from '@cloudflare/puppeteer/internal/api/Input.js';
-import {Page} from '@cloudflare/puppeteer/internal/api/Page.js';
-import {KeyInput} from '@cloudflare/puppeteer/internal/common/USKeyboardLayout.js';
+import type {Page} from '@cloudflare/puppeteer/internal/api/Page.js';
+import type {KeyInput} from '@cloudflare/puppeteer/internal/common/USKeyboardLayout.js';
 import expect from 'expect';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';

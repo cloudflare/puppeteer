@@ -2,8 +2,6 @@ name: Issue Analyzer
 
 permissions: read-all
 
-permissions: read-all
-
 on:
   issues:
     types: [opened, reopened, edited]

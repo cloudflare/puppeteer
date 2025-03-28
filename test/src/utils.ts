@@ -7,9 +7,9 @@
 import {rm} from 'fs/promises';
 import {tmpdir} from 'os';
 
-import {Frame} from '@cloudflare/puppeteer/internal/api/Frame.js';
-import {Page} from '@cloudflare/puppeteer/internal/api/Page.js';
-import {EventEmitter} from '@cloudflare/puppeteer/internal/common/EventEmitter.js';
+import type {Frame} from '@cloudflare/puppeteer/internal/api/Frame.js';
+import type {Page} from '@cloudflare/puppeteer/internal/api/Page.js';
+import type {EventEmitter} from '@cloudflare/puppeteer/internal/common/EventEmitter.js';
 import {Deferred} from '@cloudflare/puppeteer/internal/util/Deferred.js';
 import expect from 'expect';
 

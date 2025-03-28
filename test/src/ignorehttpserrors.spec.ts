@@ -6,7 +6,7 @@
 
 import type {TLSSocket} from 'tls';
 
-import {HTTPResponse} from '@cloudflare/puppeteer/internal/api/HTTPResponse.js';
+import type {HTTPResponse} from '@cloudflare/puppeteer/internal/api/HTTPResponse.js';
 import expect from 'expect';
 
 import {launch} from './mocha-utils.js';

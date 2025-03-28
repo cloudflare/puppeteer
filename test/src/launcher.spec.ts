@@ -10,7 +10,7 @@ import os from 'os';
 import path from 'path';
 import type {TLSSocket} from 'tls';
 
-import {Page} from '@cloudflare/puppeteer/internal/api/Page.js';
+import type {Page} from '@cloudflare/puppeteer/internal/api/Page.js';
 import {rmSync} from '@cloudflare/puppeteer/internal/node/util/fs.js';
 import expect from 'expect';
 import {TimeoutError} from 'puppeteer';

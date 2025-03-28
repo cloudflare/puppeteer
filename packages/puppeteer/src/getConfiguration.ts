@@ -7,7 +7,7 @@
 import {homedir} from 'os';
 import {join} from 'path';
 
-import {Configuration, Product} from '@cloudflare/puppeteer';
+import type {Configuration, Product} from '@cloudflare/puppeteer';
 import {cosmiconfigSync} from 'cosmiconfig';
 
 function getBooleanEnvVar(name: string) {

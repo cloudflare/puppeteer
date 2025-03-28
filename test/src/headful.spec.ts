@@ -8,7 +8,7 @@ import {mkdtemp} from 'fs/promises';
 import os from 'os';
 import path from 'path';
 
-import {PuppeteerLaunchOptions} from '@cloudflare/puppeteer/internal/node/PuppeteerNode.js';
+import type {PuppeteerLaunchOptions} from '@cloudflare/puppeteer/internal/node/PuppeteerNode.js';
 import {rmSync} from '@cloudflare/puppeteer/internal/node/util/fs.js';
 import expect from 'expect';
 
@@ -36,11 +36,6 @@ describe('headful tests', function () {
     });
     headlessOptions = Object.assign({}, defaultBrowserOptions, {
       headless: true as const,
-    });
-
-    devtoolsOptions = Object.assign({}, defaultBrowserOptions, {
-      headless: false,
-      devtools: true,
     });
   });
 

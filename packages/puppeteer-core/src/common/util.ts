@@ -5,6 +5,7 @@
  */
 
 import type FS from 'fs/promises';
+import {Buffer} from 'node:buffer';
 
 import type {OperatorFunction} from '../../third_party/rxjs/rxjs.js';
 import {
@@ -17,14 +18,6 @@ import {
   timer,
 } from '../../third_party/rxjs/rxjs.js';
 import type {CDPSession} from '../api/CDPSession.js';
-import {Buffer} from 'node:buffer';
-import type {Readable} from 'node:stream';
-
-import type {Protocol} from 'devtools-protocol';
-
-import type {ElementHandle} from '../api/ElementHandle.js';
-import type {JSHandle} from '../api/JSHandle.js';
-import {Page} from '../api/Page.js';
 // import {isNode} from '../environment.js';
 import {assert} from '../util/assert.js';
 

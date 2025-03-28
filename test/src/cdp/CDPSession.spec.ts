@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import type {Target} from '@cloudflare/puppeteer/internal/api/Target.js';
 import {isErrorLike} from '@cloudflare/puppeteer/internal/util/ErrorLike.js';
 import expect from 'expect';
 

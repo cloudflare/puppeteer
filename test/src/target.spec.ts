@@ -6,9 +6,10 @@
 
 import type {ServerResponse} from 'http';
 
-import {Page} from '@cloudflare/puppeteer/internal/api/Page.js';
+import type {Page} from '@cloudflare/puppeteer/internal/api/Page.js';
 import expect from 'expect';
-import {TimeoutError, Target} from 'puppeteer';
+import type {Target} from 'puppeteer';
+import {TimeoutError} from 'puppeteer';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
 import {waitEvent} from './utils.js';

@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import expect from 'expect';
-import {JSHandle} from 'puppeteer-core/internal/api/JSHandle.js';
+import {JSHandle} from '@cloudflare/puppeteer/internal/api/JSHandle.js';
 import {
   asyncDisposeSymbol,
   disposeSymbol,
-} from 'puppeteer-core/internal/util/disposable.js';
+} from '@cloudflare/puppeteer/internal/util/disposable.js';
+import expect from 'expect';
 import sinon from 'sinon';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';

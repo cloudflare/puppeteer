@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {Product} from '@cloudflare/puppeteer';
+import type {Product} from '@cloudflare/puppeteer';
 import {PUPPETEER_REVISIONS} from '@cloudflare/puppeteer/internal/revisions.js';
 import {
   install,

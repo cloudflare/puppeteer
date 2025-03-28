@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import Protocol from 'devtools-protocol';
+import type Protocol from 'devtools-protocol';
 
 import type {SecurityDetails} from '../common/SecurityDetails.js';
 

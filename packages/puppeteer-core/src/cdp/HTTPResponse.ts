@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {Protocol} from 'devtools-protocol';
+import type {Protocol} from 'devtools-protocol';
 
 import type {CDPSession} from '../api/CDPSession.js';
 import type {Frame} from '../api/Frame.js';

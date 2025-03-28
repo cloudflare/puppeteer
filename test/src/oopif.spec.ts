@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {BrowserContext} from '@cloudflare/puppeteer/internal/api/BrowserContext.js';
-import {CDPTarget} from '@cloudflare/puppeteer/internal/common/Target.js';
+import type {CDPSession} from '@cloudflare/puppeteer/internal/api/CDPSession.js';
+import {CDPSessionEvent} from '@cloudflare/puppeteer/internal/api/CDPSession.js';
+import type {Page} from '@cloudflare/puppeteer/internal/api/Page.js';
 import expect from 'expect';
 
 import {getTestState, launch} from './mocha-utils.js';

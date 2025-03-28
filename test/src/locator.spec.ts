@@ -7,7 +7,7 @@
 import {TimeoutError} from '@cloudflare/puppeteer';
 import {
   Locator,
-  LocatorEmittedEvents,
+  LocatorEvent,
 } from '@cloudflare/puppeteer/internal/api/locators/locators.js';
 import expect from 'expect';
 import sinon from 'sinon';

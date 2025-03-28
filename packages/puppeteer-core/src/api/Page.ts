@@ -3,9 +3,7 @@
  * Copyright 2017 Google Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
-import type {Readable} from 'node:stream';
-
-import {Protocol} from 'devtools-protocol';
+import type {Protocol} from 'devtools-protocol';
 
 import {
   concat,

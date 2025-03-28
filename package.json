@@ -5,32 +5,36 @@
     "type": "git",
     "url": "https://github.com/puppeteer/puppeteer"
   },
+  "workspaces": [
+    "packages/*",
+    "test",
+    "test/installation",
+    "tools/eslint",
+    "tools/doctest",
+    "tools/docgen",
+    "tools/mocha-runner"
+  ],
   "scripts": {
-    "test": "c8 --check-coverage --lines 93 run-s test:chrome:* test:firefox",
-    "test:types": "tsd",
-    "test:install": "scripts/test-install.sh",
-    "test:firefox": "PUPPETEER_PRODUCT=firefox node install.js && cross-env PUPPETEER_PRODUCT=firefox MOZ_WEBRENDER=0 PUPPETEER_DEFERRED_PROMISE_DEBUG_TIMEOUT=20000 mocha",
-    "test:chrome": "node install.js && run-s test:chrome:*",
-    "test:chrome:headless": "node install.js && cross-env HEADLESS=true PUPPETEER_DEFERRED_PROMISE_DEBUG_TIMEOUT=20000 mocha",
-    "test:chrome:headless-chrome": "node install.js && cross-env HEADLESS=chrome PUPPETEER_DEFERRED_PROMISE_DEBUG_TIMEOUT=20000 mocha",
-    "test:chrome:headful": "node install.js && cross-env HEADLESS=false PUPPETEER_DEFERRED_PROMISE_DEBUG_TIMEOUT=20000 mocha",
-    "prepublishOnly": "npm run build",
-    "prepare": "node typescript-if-required.js",
-    "lint": "run-s lint:prettier lint:eslint",
-    "lint:prettier": "prettier --check .",
-    "lint:eslint": "([ \"$CI\" = true ] && eslint --ext js --ext ts --quiet -f codeframe . || eslint --ext js --ext ts .)",
-    "generate:sources": "tsx utils/generate_sources.ts",
-    "generate:types": "node utils/export_all.js && api-extractor run --local --verbose && eslint --ext ts --no-ignore --no-eslintrc -c .eslintrc.types.cjs --fix lib/types.d.ts",
-    "generate:markdown": "tsx utils/generate_docs.ts && prettier --ignore-path none --write docs",
-    "generate:esm-package-json": "echo '{\"type\": \"module\"}' > lib/esm/package.json",
+    "build": "wireit",
+    "build:tools": "wireit",
+    "check": "npm run check --workspaces --if-present && run-p check:*",
+    "check:pinned-deps": "tsx tools/ensure-pinned-deps",
+    "clean": "npm run clean --workspaces --if-present",
+    "debug": "mocha --inspect-brk",
+    "docs": "wireit",
+    "doctest": "wireit",
     "format": "run-s format:*",
     "format:eslint": "eslint --ext js --ext mjs --ext ts --fix .",
     "format:expectations": "node tools/sort-test-expectations.mjs",
     "format:prettier": "prettier --write .",
+    "generate:esm-package-json": "echo '{\"type\": \"module\"}' > lib/esm/package.json",
+    "generate:markdown": "tsx utils/generate_docs.ts && prettier --ignore-path none --write docs",
+    "generate:sources": "tsx utils/generate_sources.ts",
+    "generate:types": "node utils/export_all.js && api-extractor run --local --verbose && eslint --ext ts --no-ignore --no-eslintrc -c .eslintrc.types.cjs --fix lib/types.d.ts",
     "lint": "run-s lint:*",
     "lint:eslint": "eslint --ext js --ext mjs --ext ts .",
-    "lint:prettier": "prettier --check .",
     "lint:expectations": "node tools/sort-test-expectations.mjs --lint",
+    "lint:prettier": "prettier --check .",
     "postinstall": "npm run postinstall --workspaces --if-present",
     "prepare": "npm run prepare --workspaces --if-present",
     "test": "wireit",
@@ -50,6 +54,46 @@
     "test:firefox:headless": "wireit",
     "validate-licenses": "tsx tools/third_party/validate-licenses.ts",
     "unit": "npm run unit --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@actions/core": "1.10.1",
+    "@types/mocha": "10.0.6",
+    "@types/node": "20.8.4",
+    "@types/semver": "7.5.8",
+    "@types/sinon": "17.0.3",
+    "@typescript-eslint/eslint-plugin": "7.8.0",
+    "@typescript-eslint/parser": "7.8.0",
+    "esbuild": "0.21.2",
+    "eslint": "8.57.0",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-import-resolver-typescript": "3.6.1",
+    "eslint-plugin-import": "2.29.1",
+    "eslint-plugin-mocha": "10.4.3",
+    "eslint-plugin-prettier": "5.1.3",
+    "eslint-plugin-rulesdir": "0.2.2",
+    "eslint-plugin-tsdoc": "0.2.17",
+    "eslint-plugin-unused-imports": "3.2.0",
+    "execa": "9.0.2",
+    "expect": "29.7.0",
+    "gts": "5.3.0",
+    "hereby": "1.8.9",
+    "license-checker": "25.0.1",
+    "mocha": "10.4.0",
+    "npm-run-all2": "6.1.2",
+    "prettier": "3.2.5",
+    "semver": "7.6.2",
+    "sinon": "17.0.2",
+    "source-map-support": "0.5.21",
+    "spdx-satisfies": "5.0.1",
+    "tsd": "0.31.0",
+    "tsx": "4.10.1",
+    "typescript": "5.3.3",
+    "wireit": "0.14.4"
+  },
+  "overrides": {
+    "@microsoft/api-extractor": {
+      "typescript": "$typescript"
+    }
   },
   "wireit": {
     "build": {
@@ -80,6 +124,13 @@
         "./packages/puppeteer:build:docs",
         "./packages/puppeteer-core:build:docs",
         "./tools/docgen:build"
+      ]
+    },
+    "doctest": {
+      "command": "npx ./tools/doctest 'packages/puppeteer-core/lib/esm/**/*.js'",
+      "dependencies": [
+        "./packages/puppeteer-core:build",
+        "./tools/doctest:build"
       ]
     },
     "test-workers": {
@@ -141,54 +192,5 @@
         "./packages/puppeteer:build"
       ]
     }
-  },
-  "devDependencies": {
-    "@actions/core": "1.10.1",
-    "@types/mocha": "10.0.6",
-    "@types/node": "20.8.4",
-    "@types/semver": "7.5.8",
-    "@types/sinon": "17.0.3",
-    "@typescript-eslint/eslint-plugin": "7.8.0",
-    "@typescript-eslint/parser": "7.8.0",
-    "esbuild": "0.21.2",
-    "eslint": "8.57.0",
-    "eslint-config-prettier": "9.1.0",
-    "eslint-import-resolver-typescript": "3.6.1",
-    "eslint-plugin-import": "2.29.1",
-    "eslint-plugin-mocha": "10.4.3",
-    "eslint-plugin-prettier": "5.1.3",
-    "eslint-plugin-rulesdir": "0.2.2",
-    "eslint-plugin-tsdoc": "0.2.17",
-    "eslint-plugin-unused-imports": "3.2.0",
-    "execa": "9.0.2",
-    "expect": "29.7.0",
-    "gts": "5.3.0",
-    "hereby": "1.8.9",
-    "license-checker": "25.0.1",
-    "mocha": "10.4.0",
-    "npm-run-all2": "6.1.2",
-    "prettier": "3.2.5",
-    "semver": "7.6.2",
-    "sinon": "17.0.2",
-    "source-map-support": "0.5.21",
-    "spdx-satisfies": "5.0.1",
-    "tsd": "0.31.0",
-    "tsx": "4.10.1",
-    "typescript": "5.3.3",
-    "wireit": "0.14.4"
-  },
-  "overrides": {
-    "@microsoft/api-extractor": {
-      "typescript": "$typescript"
-    }
-  },
-  "workspaces": [
-    "packages/*",
-    "test",
-    "test/installation",
-    "tools/eslint",
-    "tools/doctest",
-    "tools/docgen",
-    "tools/mocha-runner"
-  ]
+  }
 }

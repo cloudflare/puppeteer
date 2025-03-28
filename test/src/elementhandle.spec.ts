@@ -5,6 +5,10 @@
  */
 
 import {ElementHandle} from '@cloudflare/puppeteer/internal/api/ElementHandle.js';
+import {
+  asyncDisposeSymbol,
+  disposeSymbol,
+} from '@cloudflare/puppeteer/internal/util/disposable.js';
 import expect from 'expect';
 import {Puppeteer} from 'puppeteer';
 import sinon from 'sinon';
