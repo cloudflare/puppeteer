@@ -62,19 +62,17 @@ import {
   debugError,
   fromEmitterEvent,
   filterAsync,
-  importFSPromises,
   isString,
   NETWORK_IDLE_TIME,
   timeout,
   withSourcePuppeteerURLIfNone,
 } from '../common/util.js';
 import type {Viewport} from '../common/Viewport.js';
-import type {ScreenRecorder} from '../node/ScreenRecorder.js';
+// import type {ScreenRecorder} from '../node/ScreenRecorder.js';
 import {guarded} from '../util/decorators.js';
 import {
   AsyncDisposableStack,
   asyncDisposeSymbol,
-  DisposableStack,
   disposeSymbol,
 } from '../util/disposable.js';
 
@@ -2246,15 +2244,15 @@ export abstract class Page extends EventEmitter<PageEvents> {
    */
   async _maybeWriteBufferToFile(
     path: string | undefined,
-    buffer: Buffer
+    _: Buffer
   ): Promise<void> {
     if (!path) {
       return;
     }
 
-    const fs = await importFSPromises();
-
-    await fs.writeFile(path, buffer);
+    throw new Error(
+      'Cannot write to a path outside of a Node-like environment.'
+    );
   }
 
   /**
@@ -2297,79 +2295,79 @@ export abstract class Page extends EventEmitter<PageEvents> {
    *
    * You must have {@link https://ffmpeg.org/ | ffmpeg} installed on your system.
    */
-  async screencast(
-    options: Readonly<ScreencastOptions> = {}
-  ): Promise<ScreenRecorder> {
-    const [{ScreenRecorder}, [width, height, devicePixelRatio]] =
-      await Promise.all([
-        import('../node/ScreenRecorder.js'),
-        this.#getNativePixelDimensions(),
-      ]);
+  // async screencast(
+  //   options: Readonly<ScreencastOptions> = {}
+  // ): Promise<ScreenRecorder> {
+  //   const [{ScreenRecorder}, [width, height, devicePixelRatio]] =
+  //     await Promise.all([
+  //       import('../node/ScreenRecorder.js'),
+  //       this.#getNativePixelDimensions(),
+  //     ]);
 
-    let crop: BoundingBox | undefined;
-    if (options.crop) {
-      const {
-        x,
-        y,
-        width: cropWidth,
-        height: cropHeight,
-      } = roundRectangle(normalizeRectangle(options.crop));
-      if (x < 0 || y < 0) {
-        throw new Error(
-          `\`crop.x\` and \`crop.y\` must be greater than or equal to 0.`
-        );
-      }
-      if (cropWidth <= 0 || cropHeight <= 0) {
-        throw new Error(
-          `\`crop.height\` and \`crop.width\` must be greater than or equal to 0.`
-        );
-      }
+  //   let crop: BoundingBox | undefined;
+  //   if (options.crop) {
+  //     const {
+  //       x,
+  //       y,
+  //       width: cropWidth,
+  //       height: cropHeight,
+  //     } = roundRectangle(normalizeRectangle(options.crop));
+  //     if (x < 0 || y < 0) {
+  //       throw new Error(
+  //         `\`crop.x\` and \`crop.y\` must be greater than or equal to 0.`
+  //       );
+  //     }
+  //     if (cropWidth <= 0 || cropHeight <= 0) {
+  //       throw new Error(
+  //         `\`crop.height\` and \`crop.width\` must be greater than or equal to 0.`
+  //       );
+  //     }
 
-      const viewportWidth = width / devicePixelRatio;
-      const viewportHeight = height / devicePixelRatio;
-      if (x + cropWidth > viewportWidth) {
-        throw new Error(
-          `\`crop.width\` cannot be larger than the viewport width (${viewportWidth}).`
-        );
-      }
-      if (y + cropHeight > viewportHeight) {
-        throw new Error(
-          `\`crop.height\` cannot be larger than the viewport height (${viewportHeight}).`
-        );
-      }
+  //     const viewportWidth = width / devicePixelRatio;
+  //     const viewportHeight = height / devicePixelRatio;
+  //     if (x + cropWidth > viewportWidth) {
+  //       throw new Error(
+  //         `\`crop.width\` cannot be larger than the viewport width (${viewportWidth}).`
+  //       );
+  //     }
+  //     if (y + cropHeight > viewportHeight) {
+  //       throw new Error(
+  //         `\`crop.height\` cannot be larger than the viewport height (${viewportHeight}).`
+  //       );
+  //     }
 
-      crop = {
-        x: x * devicePixelRatio,
-        y: y * devicePixelRatio,
-        width: cropWidth * devicePixelRatio,
-        height: cropHeight * devicePixelRatio,
-      };
-    }
-    if (options.speed !== undefined && options.speed <= 0) {
-      throw new Error(`\`speed\` must be greater than 0.`);
-    }
-    if (options.scale !== undefined && options.scale <= 0) {
-      throw new Error(`\`scale\` must be greater than 0.`);
-    }
+  //     crop = {
+  //       x: x * devicePixelRatio,
+  //       y: y * devicePixelRatio,
+  //       width: cropWidth * devicePixelRatio,
+  //       height: cropHeight * devicePixelRatio,
+  //     };
+  //   }
+  //   if (options.speed !== undefined && options.speed <= 0) {
+  //     throw new Error(`\`speed\` must be greater than 0.`);
+  //   }
+  //   if (options.scale !== undefined && options.scale <= 0) {
+  //     throw new Error(`\`scale\` must be greater than 0.`);
+  //   }
 
-    const recorder = new ScreenRecorder(this, width, height, {
-      ...options,
-      path: options.ffmpegPath,
-      crop,
-    });
-    try {
-      await this._startScreencast();
-    } catch (error) {
-      void recorder.stop();
-      throw error;
-    }
-    if (options.path) {
-      const {createWriteStream} = await import('fs');
-      const stream = createWriteStream(options.path, 'binary');
-      recorder.pipe(stream);
-    }
-    return recorder;
-  }
+  //   const recorder = new ScreenRecorder(this, width, height, {
+  //     ...options,
+  //     path: options.ffmpegPath,
+  //     crop,
+  //   });
+  //   try {
+  //     await this._startScreencast();
+  //   } catch (error) {
+  //     void recorder.stop();
+  //     throw error;
+  //   }
+  //   if (options.path) {
+  //     const {createWriteStream} = await import('fs');
+  //     const stream = createWriteStream(options.path, 'binary');
+  //     recorder.pipe(stream);
+  //   }
+  //   return recorder;
+  // }
 
   #screencastSessionCount = 0;
   #startScreencastPromise: Promise<void> | undefined;
@@ -2411,27 +2409,27 @@ export abstract class Page extends EventEmitter<PageEvents> {
   /**
    * Gets the native, non-emulated dimensions of the viewport.
    */
-  async #getNativePixelDimensions(): Promise<
-    readonly [width: number, height: number, devicePixelRatio: number]
-  > {
-    const viewport = this.viewport();
-    using stack = new DisposableStack();
-    if (viewport && viewport.deviceScaleFactor !== 0) {
-      await this.setViewport({...viewport, deviceScaleFactor: 0});
-      stack.defer(() => {
-        void this.setViewport(viewport).catch(debugError);
-      });
-    }
-    return await this.mainFrame()
-      .isolatedRealm()
-      .evaluate(() => {
-        return [
-          window.visualViewport!.width * window.devicePixelRatio,
-          window.visualViewport!.height * window.devicePixelRatio,
-          window.devicePixelRatio,
-        ] as const;
-      });
-  }
+  // async #getNativePixelDimensions(): Promise<
+  //   readonly [width: number, height: number, devicePixelRatio: number]
+  // > {
+  //   const viewport = this.viewport();
+  //   using stack = new DisposableStack();
+  //   if (viewport && viewport.deviceScaleFactor !== 0) {
+  //     await this.setViewport({...viewport, deviceScaleFactor: 0});
+  //     stack.defer(() => {
+  //       void this.setViewport(viewport).catch(debugError);
+  //     });
+  //   }
+  //   return await this.mainFrame()
+  //     .isolatedRealm()
+  //     .evaluate(() => {
+  //       return [
+  //         window.visualViewport!.width * window.devicePixelRatio,
+  //         window.visualViewport!.height * window.devicePixelRatio,
+  //         window.devicePixelRatio,
+  //       ] as const;
+  //     });
+  // }
 
   /**
    * Captures a screenshot of this {@link Page | page}.
