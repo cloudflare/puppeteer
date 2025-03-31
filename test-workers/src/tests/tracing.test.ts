@@ -12,7 +12,7 @@ describe('browser takes screenshot', () => {
       setTimeout(resolve, 30000);
     });
     const response = await fetch(
-      `https://test-workers.cloudflare-browser-rendering-085.workers.dev/tracing`
+      `https://puppeteer-test-worker.cloudflare-browser-rendering-085.workers.dev/tracing`
     );
     expect(!!JSON.parse(await response.text())).toMatchSnapshot();
   });

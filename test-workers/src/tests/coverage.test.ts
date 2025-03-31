@@ -12,7 +12,7 @@ describe('browser does basic manipulations', () => {
       setTimeout(resolve, 30000);
     });
     const response = await fetch(
-      `https://test-workers.cloudflare-browser-rendering-085.workers.dev/coverage`
+      `https://puppeteer-test-worker.cloudflare-browser-rendering-085.workers.dev/coverage`
     );
     expect(await response.text()).toMatchSnapshot();
   });
