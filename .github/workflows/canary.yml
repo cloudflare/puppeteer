@@ -20,7 +20,6 @@ jobs:
           - chrome-headless
           - chrome-headful
           - chrome-headless-shell
-          - chrome-bidi
         os:
           - ubuntu-latest
           - windows-latest
@@ -32,8 +31,6 @@ jobs:
           - experimental
           - stable
         exclude:
-          - os: windows-latest
-            suite: chrome-bidi
           - os: macos-13
             suite: chrome-headful
     steps:

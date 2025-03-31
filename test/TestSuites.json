@@ -29,24 +29,6 @@
       "platforms": ["linux"],
       "parameters": ["firefox", "headful", "cdp"],
       "expectedLineCoverage": 80
-    },
-    {
-      "id": "firefox-bidi",
-      "platforms": ["linux"],
-      "parameters": ["firefox", "headless", "webDriverBiDi"],
-      "expectedLineCoverage": 56
-    },
-    {
-      "id": "firefox-bidi-headful",
-      "platforms": ["linux"],
-      "parameters": ["firefox", "headful", "webDriverBiDi"],
-      "expectedLineCoverage": 56
-    },
-    {
-      "id": "chrome-bidi",
-      "platforms": ["linux"],
-      "parameters": ["chrome", "headless", "webDriverBiDi"],
-      "expectedLineCoverage": 56
     }
   ],
   "parameterDefinitions": {
@@ -65,9 +47,6 @@
     },
     "chrome-headless-shell": {
       "HEADLESS": "shell"
-    },
-    "webDriverBiDi": {
-      "PUPPETEER_PROTOCOL": "webDriverBiDi"
     },
     "cdp": {}
   }

@@ -78,7 +78,6 @@ jobs:
           - chrome-headless
           - chrome-headful
           - chrome-headless-shell
-          - chrome-bidi
         os:
           - ubuntu-latest
           - windows-latest
@@ -94,8 +93,6 @@ jobs:
           - linux-only: true
             suite: chrome-headful
 
-          - os: windows-latest
-            suite: chrome-bidi
           - os: macos-13
             suite: chrome-headful
     steps:
@@ -115,24 +112,12 @@ jobs:
       - name: Build packages
         run: npm run build --workspace @puppeteer-test/test
       - name: Setup cache for Chrome binary
-        if: ${{ matrix.suite != 'chrome-bidi' }}
         uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
           path: ~/.cache/puppeteer/chrome
           key: Chrome-${{ runner.os }}-${{ hashFiles('packages/puppeteer-core/src/revisions.ts') }}-${{ hashFiles('packages/puppeteer/src/node/install.ts') }}
       - name: Install Chrome
-        if: ${{ matrix.suite != 'chrome-bidi' }}
         run: npm run postinstall
-      - name: Setup cache for Chrome Canary binary
-        if: ${{ matrix.suite == 'chrome-bidi' }}
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
-        with:
-          path: ~/.cache/puppeteer/chrome-canary
-          key: Chrome-Canary-${{ runner.os }}-${{ hashFiles('package.json') }}
-      - name: Install Chrome Canary
-        if: ${{ matrix.suite == 'chrome-bidi' }}
-        id: browser
-        run: node tools/download_chrome_bidi.mjs $HOME/.cache/puppeteer/chrome-canary
       - name: Run all tests (for non-Linux)
         if: ${{ matrix.os != 'ubuntu-latest' }}
         run: npm run test -- --shard '${{ matrix.shard }}' --test-suite ${{ matrix.suite }} --save-stats-to /tmp/artifacts/${{ github.event_name }}_INSERTID.json

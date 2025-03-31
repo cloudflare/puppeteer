@@ -76,9 +76,7 @@ const headless = (process.env['HEADLESS'] || 'true').trim().toLowerCase() as
 export const isHeadless = headless === 'true' || headless === 'shell';
 const isFirefox = product === 'firefox';
 const isChrome = product === 'chrome';
-const protocol = (process.env['PUPPETEER_PROTOCOL'] || 'cdp') as
-  | 'cdp'
-  | 'webDriverBiDi';
+const protocol = (process.env['PUPPETEER_PROTOCOL'] || 'cdp') as 'cdp';
 
 let extraLaunchOptions = {};
 try {
@@ -123,7 +121,7 @@ const processVariables: {
   isHeadless: boolean;
   isFirefox: boolean;
   isChrome: boolean;
-  protocol: 'cdp' | 'webDriverBiDi';
+  protocol: 'cdp';
   defaultBrowserOptions: PuppeteerLaunchOptions;
 } = {
   product,
