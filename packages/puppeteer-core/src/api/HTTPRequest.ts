@@ -406,7 +406,7 @@ export abstract class HTTPRequest {
    * Exception is immediately thrown if the request interception is not enabled.
    */
   async continue(
-    overrides?: ContinueRequestOverrides,
+    overrides: ContinueRequestOverrides = {},
     priority?: number
   ): Promise<void> {
     // Request interception is not supported for data: urls.

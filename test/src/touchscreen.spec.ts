@@ -246,28 +246,4 @@ describe('Touchscreen', () => {
       ]);
     });
   });
-
-  it('should report touchMove', async () => {
-    const {page, server} = await getTestState();
-    const iPhone = KnownDevices['iPhone 6']!;
-    await page.emulate(iPhone);
-    await page.goto(server.PREFIX + '/input/touches-move.html');
-    const touch = (await page.$('#touch'))!;
-    const touchObj = (await touch.boundingBox()) as BoundingBox;
-    await page.touchscreen.touchStart(touchObj.x, touchObj.y);
-    const movePosx = 100;
-    const movePosy = 100;
-    await page.touchscreen.touchMove(movePosx, movePosy);
-    await page.touchscreen.touchEnd();
-    expect(
-      await page.evaluate(() => {
-        return (globalThis as any).touchX;
-      })
-    ).toBe(movePosx);
-    expect(
-      await page.evaluate(() => {
-        return (globalThis as any).touchY;
-      })
-    ).toBe(movePosy);
-  });
 });

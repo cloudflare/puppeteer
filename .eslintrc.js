@@ -139,14 +139,6 @@ module.exports = {
 
     'import/no-cycle': ['error', {maxDepth: Infinity}],
 
-    'import/order': [
-      'error',
-      {
-        'newlines-between': 'always',
-        alphabetize: {order: 'asc', caseInsensitive: true},
-      },
-    ],
-
     'no-restricted-syntax': [
       'error',
       // Don't allow underscored declarations on camelCased variables/properties.

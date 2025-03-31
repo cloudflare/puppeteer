@@ -22,7 +22,6 @@ import {
   TargetManagerEvent,
   type TargetManagerEvents,
 } from './TargetManager.js';
-import {debugError} from './util.js';
 
 function isPageTargetBecomingPrimary(
   target: CdpTarget,

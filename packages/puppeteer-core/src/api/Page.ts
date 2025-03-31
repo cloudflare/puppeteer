@@ -2332,7 +2332,7 @@ export abstract class Page extends EventEmitter<PageEvents> {
   //     }
   //     if (y + cropHeight > viewportHeight) {
   //       throw new Error(
-  //         `\`crop.height\` cannot be larger than the viewport height (${viewportHeight}).`
+  //      `\`crop.height\` cannot be larger than the viewport height (${viewportHeight}).`
   //       );
   //     }
 

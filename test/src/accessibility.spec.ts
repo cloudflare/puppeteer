@@ -280,7 +280,7 @@ describe('Accessibility', function () {
     async function getAccessibleName(page: any, element: any) {
       return (await page.accessibility.snapshot({root: element})).name;
     }
-    const button = await page.$('button');
+    using button = await page.$('button');
     expect(await getAccessibleName(page, button)).toEqual('Show');
     await button?.click();
     await page.waitForSelector('aria/Hide');
