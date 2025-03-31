@@ -71,3 +71,85 @@ import puppeteer from 'puppeteer';
   await browser.close();
 })();
 ```
+
+### Default runtime settings
+
+**1. Uses Headless mode**
+
+By default Puppeteer launches Chrome in
+[old Headless mode](https://developer.chrome.com/articles/new-headless/).
+
+```ts
+const browser = await puppeteer.launch();
+// Equivalent to
+const browser = await puppeteer.launch({headless: true});
+```
+
+[Chrome 112 launched a new Headless mode](https://developer.chrome.com/articles/new-headless/) that might cause some differences in behavior compared to the old Headless implementation.
+In the future Puppeteer will start defaulting to new implementation.
+We recommend you try it out before the switch:
+
+```ts
+const browser = await puppeteer.launch({headless: 'new'});
+```
+
+To launch a "headful" version of Chrome, set the
+[`headless`](https://pptr.dev/api/puppeteer.browserlaunchargumentoptions) to `false`
+option when launching a browser:
+
+```ts
+const browser = await puppeteer.launch({headless: false});
+```
+
+**2. Runs a bundled version of Chrome**
+
+By default, Puppeteer downloads and uses a specific version of Chrome so its
+API is guaranteed to work out of the box. To use Puppeteer with a different
+version of Chrome or Chromium, pass in the executable's path when creating a
+`Browser` instance:
+
+```ts
+const browser = await puppeteer.launch({executablePath: '/path/to/Chrome'});
+```
+
+You can also use Puppeteer with Firefox. See
+[status of cross-browser support](https://pptr.dev/faq/#q-what-is-the-status-of-cross-browser-support) for
+more information.
+
+See
+[`this article`](https://www.howtogeek.com/202825/what%E2%80%99s-the-difference-between-chromium-and-chrome/)
+for a description of the differences between Chromium and Chrome.
+[`This article`](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/docs/chromium_browser_vs_google_chrome.md)
+describes some differences for Linux users.
+
+**3. Creates a fresh user profile**
+
+Puppeteer creates its own browser user profile which it **cleans up on every
+run**.
+
+#### Using Docker
+
+See our [Docker guide](https://pptr.dev/guides/docker).
+
+#### Using Chrome Extensions
+
+See our [Chrome extensions guide](https://pptr.dev/guides/chrome-extensions).
+
+## Resources
+
+- [API Documentation](https://pptr.dev/api)
+- [Guides](https://pptr.dev/category/guides)
+- [Examples](https://github.com/puppeteer/puppeteer/tree/main/examples)
+- [Community list of Puppeteer resources](https://github.com/transitive-bullshit/awesome-puppeteer)
+
+## Contributing
+
+Check out our [contributing guide](https://pptr.dev/contributing) to get an
+overview of Puppeteer development.
+
+## FAQ
+
+Our [FAQ](https://pptr.dev/faq) has migrated to
+[our site](https://pptr.dev/faq).
+
+> > > > > > > main

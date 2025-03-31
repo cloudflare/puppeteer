@@ -83,7 +83,6 @@ compared to WebDriver classic:
 - Puppeteer has event-driven architecture, which removes a lot of potential
   flakiness. There’s no need for “sleep(1000)” calls in puppeteer scripts.
 - Puppeteer exposes browser contexts, making it possible to efficiently
-  parallelize test execution.
 - Puppeteer shines when it comes to debugging: flip the “headless” bit to false,
   add “slowMo”, and you’ll see what the browser is doing. You can even open
   Chrome DevTools to inspect the test environment.

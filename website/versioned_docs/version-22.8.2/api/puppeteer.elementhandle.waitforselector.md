@@ -22,7 +22,6 @@ class ElementHandle {
 ## Parameters
 
 <table><thead><tr><th>
-waitforselector.md
 
 Parameter
 

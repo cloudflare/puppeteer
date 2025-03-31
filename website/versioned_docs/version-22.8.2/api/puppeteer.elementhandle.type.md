@@ -19,7 +19,6 @@ class ElementHandle {
 ## Parameters
 
 <table><thead><tr><th>
-type.md
 
 Parameter
 
