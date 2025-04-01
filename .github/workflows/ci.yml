@@ -79,7 +79,7 @@ jobs:
           - chrome-headful
           - chrome-headless-shell
         os:
-          - ubuntu-latest
+          - ubuntu-22.04
           - windows-latest
           - macos-13
         shard:
@@ -119,12 +119,12 @@ jobs:
       - name: Install Chrome
         run: npm run postinstall
       - name: Run all tests (for non-Linux)
-        if: ${{ matrix.os != 'ubuntu-latest' }}
+        if: ${{ matrix.os != 'ubuntu-22.04' }}
         run: npm run test -- --shard '${{ matrix.shard }}' --test-suite ${{ matrix.suite }} --save-stats-to /tmp/artifacts/${{ github.event_name }}_INSERTID.json
         env:
           PUPPETEER_EXECUTABLE_PATH: ${{ steps.browser.outputs.executablePath }}
       - name: Run all tests (for Linux)
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         run: xvfb-run --auto-servernum npm run test -- --shard '${{ matrix.shard }}' --test-suite ${{ matrix.suite }} --save-stats-to /tmp/artifacts/${{ github.event_name }}_INSERTID.json
         env:
           PUPPETEER_EXECUTABLE_PATH: ${{ steps.browser.outputs.executablePath }}
@@ -137,7 +137,7 @@ jobs:
   chrome-tests-required:
     name: '[Required] Chrome tests'
     needs: [check-changes, chrome-tests]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     if: ${{ always() }}
     steps:
       - if: ${{ needs.chrome-tests.result != 'success' && contains(fromJSON(needs.check-changes.outputs.changes), 'puppeteer') }}
@@ -158,7 +158,7 @@ jobs:
           - firefox-headful
           - firefox-headless
         os:
-          - ubuntu-latest
+          - ubuntu-22.04
           - macos-13
           - windows-latest
         shard:
@@ -206,10 +206,10 @@ jobs:
           PUPPETEER_PRODUCT: firefox
         run: npm run postinstall
       - name: Run all tests (for non-Linux)
-        if: ${{ matrix.os != 'ubuntu-latest' }}
+        if: ${{ matrix.os != 'ubuntu-22.04' }}
         run: npm run test -- --shard '${{ matrix.shard }}' --test-suite ${{ matrix.suite }} --save-stats-to /tmp/artifacts/${{ github.event_name }}_INSERTID.json
       - name: Run all tests (for Linux)
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         run: xvfb-run --auto-servernum npm run test -- --shard '${{ matrix.shard }}' --test-suite ${{ matrix.suite }} --save-stats-to /tmp/artifacts/${{ github.event_name }}_INSERTID.json
       - uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         if: always()
@@ -220,7 +220,7 @@ jobs:
   firefox-tests-required:
     name: '[Required] Firefox tests'
     needs: [check-changes, firefox-tests]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     if: ${{ always() }}
     steps:
       - if: ${{ needs.firefox-tests.result != 'success' && contains(fromJSON(needs.check-changes.outputs.changes), 'puppeteer') }}
