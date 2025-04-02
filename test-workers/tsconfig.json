@@ -10,7 +10,7 @@
     "allowSyntheticDefaultImports": true,
     "rootDir": "src",
     "types": [
-      "@cloudflare/workers-types/experimental",
+      "@cloudflare/workers-types",
       "./worker-configuration.d.ts"
     ]
   },
