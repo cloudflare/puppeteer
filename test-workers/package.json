@@ -25,12 +25,7 @@
     }
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250402.0",
     "typescript": "^5.5.4",
-    "vitest": "^3.0.9",
     "wrangler": "^3.60.3"
-  },
-  "dependencies": {
-    "@cloudflare/puppeteer": "file:../packages/puppeteer-core"
   }
 }

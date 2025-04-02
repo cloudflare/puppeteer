@@ -9,10 +9,7 @@
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
     "rootDir": "src",
-    "types": [
-      "@cloudflare/workers-types",
-      "./worker-configuration.d.ts"
-    ]
+    "types": ["./worker-configuration.d.ts"]
   },
   "include": ["./**/*.ts", "./**/*.d.ts"]
 }
