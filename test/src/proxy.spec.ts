@@ -1,25 +1,15 @@
 /**
- * Copyright 2021 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @license
+ * Copyright 2021 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
+import type {IncomingMessage, Server, ServerResponse} from 'http';
 import http from 'http';
-import type {Server, IncomingMessage, ServerResponse} from 'http';
 import type {AddressInfo} from 'net';
 import os from 'os';
 
-import {TestServer} from '@pptr/testserver';
+import type {TestServer} from '@pptr/testserver';
 import expect from 'expect';
 
 import {getTestState, launch} from './mocha-utils.js';
@@ -160,7 +150,7 @@ describe('request proxy', () => {
         args: [...defaultArgs, `--proxy-server=${proxyServerUrl}`],
       });
       try {
-        const context = await browser.createIncognitoBrowserContext();
+        const context = await browser.createBrowserContext();
         const page = await context.newPage();
         const response = (await page.goto(emptyPageUrl))!;
 
@@ -184,7 +174,7 @@ describe('request proxy', () => {
         ],
       });
       try {
-        const context = await browser.createIncognitoBrowserContext();
+        const context = await browser.createBrowserContext();
         const page = await context.newPage();
         const response = (await page.goto(emptyPageUrl))!;
 
@@ -207,7 +197,7 @@ describe('request proxy', () => {
         args: defaultArgs,
       });
       try {
-        const context = await browser.createIncognitoBrowserContext({
+        const context = await browser.createBrowserContext({
           proxyServer: proxyServerUrl,
         });
         const page = await context.newPage();
@@ -229,7 +219,7 @@ describe('request proxy', () => {
         args: defaultArgs,
       });
       try {
-        const context = await browser.createIncognitoBrowserContext({
+        const context = await browser.createBrowserContext({
           proxyServer: proxyServerUrl,
           proxyBypassList: [new URL(emptyPageUrl).host],
         });

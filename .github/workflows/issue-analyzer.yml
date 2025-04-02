@@ -14,7 +14,7 @@ jobs:
   analyze-issue:
     name: Analyze Issues
     runs-on: ubuntu-latest
-    if: ${{ contains(github.event.issue.labels.*.name, 'bug') && !contains(github.event.issue.labels.*.name, 'disable-analyzer') && !contains(github.event.issue.labels.*.name, 'confirmed') && !contains(github.event.issue.labels.*.name, '@puppeteer/browsers') && github.event.issue.number > 9481 }}
+    if: ${{ contains(github.event.issue.labels.*.name, 'bug') && !contains(github.event.issue.labels.*.name, 'disable-analyzer') && !contains(github.event.issue.labels.*.name, 'confirmed') && !contains(github.event.issue.labels.*.name, '@puppeteer/browsers') && !contains(github.event.issue.labels.*.name, '@puppeteer/ng-schematics') && github.event.issue.number > 9481 }}
     env:
       ISSUE_BODY: ${{ toJson(github.event.issue.body) }}
     outputs:
@@ -26,7 +26,7 @@ jobs:
       issues: write
     steps:
       - name: Remove labels
-        uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6.4.1
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
             if (${{ contains(github.event.issue.labels.*.name, 'not-reproducible') }}) {
@@ -54,17 +54,17 @@ jobs:
               })
             }
       - name: Check out repository
-        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b # v4.1.5
       - name: Set up Node.js
-        uses: actions/setup-node@e33196f7422957bea03ed53f6fbb155025ffc7b8 # v3.7.0
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
-          node-version: lts/*
+          node-version-file: '.nvmrc'
       - name: Install dependencies
         run: npm ci
       - name: Analyze issue
         id: issue-analysis
         run: echo $ISSUE_BODY | ./tools/analyze_issue.mjs >> $GITHUB_OUTPUT
-      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+      - uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
           name: issue-files
           path: out/
@@ -79,12 +79,12 @@ jobs:
       PACKAGE_MANAGER: ${{ needs.analyze-issue.outputs.packageManager }}
       NODE_VERSION: ${{ needs.analyze-issue.outputs.nodeVersion }}
     steps:
-      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+      - uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4.1.7
         with:
           name: issue-files
           path: '.'
       - name: Set up Node.js
-        uses: actions/setup-node@e33196f7422957bea03ed53f6fbb155025ffc7b8 # v3.7.0
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Enable corepack
@@ -94,7 +94,7 @@ jobs:
         env:
           YARN_ENABLE_IMMUTABLE_INSTALLS: false
       - name: Install dependencies Firefox
-        run: node ./node_modules/puppeteer/install.js
+        run: node ./node_modules/puppeteer/install.mjs
         env:
           PUPPETEER_PRODUCT: firefox
       - name: Verify issue
@@ -102,7 +102,7 @@ jobs:
         run: ${{ env.PACKAGE_MANAGER }} run verify
         env:
           DEBUG: 'puppeteer:*'
-      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+      - uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         if: success() || failure()
         with:
           name: runtime-output
@@ -120,7 +120,7 @@ jobs:
       issues: write
     steps:
       - name: Add labels
-        uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6.4.1
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
             github.rest.issues.addLabels({
@@ -130,13 +130,13 @@ jobs:
               labels: ["confirmed"]
             })
       - name: Find Comment Id
-        uses: peter-evans/find-comment@a54c31d7fa095754bfef525c0c8e5e5674c4b4b1 # v2.4.0
+        uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
         id: find-comment-id
         with:
           issue-number: ${{ github.event.issue.number }}
           comment-author: 'github-actions[bot]'
       - name: Upsert comment
-        uses: peter-evans/create-or-update-comment@c6c9a1a66007646a28c153e2a8580a5bad27bcfa # v3.0.2
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           comment-id: ${{ steps.find-comment-id.outputs.comment-id }}
           issue-number: ${{ github.event.issue.number }}
@@ -157,7 +157,7 @@ jobs:
       issues: write
     steps:
       - name: Add labels
-        uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6.4.1
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
             github.rest.issues.addLabels({
@@ -167,13 +167,13 @@ jobs:
               labels: ["invalid"]
             })
       - name: Find Comment Id
-        uses: peter-evans/find-comment@a54c31d7fa095754bfef525c0c8e5e5674c4b4b1 # v2.4.0
+        uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
         id: find-comment-id
         with:
           issue-number: ${{ github.event.issue.number }}
           comment-author: 'github-actions[bot]'
       - name: Upsert comment
-        uses: peter-evans/create-or-update-comment@c6c9a1a66007646a28c153e2a8580a5bad27bcfa # v3.0.2
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           comment-id: ${{ steps.find-comment-id.outputs.comment-id }}
           issue-number: ${{ github.event.issue.number }}
@@ -193,7 +193,7 @@ jobs:
       issues: write
     steps:
       - name: Add labels
-        uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6.4.1
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
             github.rest.issues.addLabels({
@@ -203,13 +203,13 @@ jobs:
               labels: ["not-reproducible", "needs-feedback"]
             })
       - name: Find Comment Id
-        uses: peter-evans/find-comment@a54c31d7fa095754bfef525c0c8e5e5674c4b4b1 # v2.4.0
+        uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
         id: find-comment-id
         with:
           issue-number: ${{ github.event.issue.number }}
           comment-author: 'github-actions[bot]'
       - name: Upsert comment
-        uses: peter-evans/create-or-update-comment@c6c9a1a66007646a28c153e2a8580a5bad27bcfa # v3.0.2
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           comment-id: ${{ steps.find-comment-id.outputs.comment-id }}
           issue-number: ${{ github.event.issue.number }}

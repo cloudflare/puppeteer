@@ -1,25 +1,14 @@
 /**
- * Copyright 2022 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @license
+ * Copyright 2022 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 import {relative, resolve} from 'path';
 
 import {getSystemPath, normalize, strings} from '@angular-devkit/core';
+import type {Rule} from '@angular-devkit/schematics';
 import {
-  SchematicContext,
-  Tree,
   apply,
   applyTemplates,
   chain,
@@ -28,15 +17,16 @@ import {
   url,
 } from '@angular-devkit/schematics';
 
-import {AngularProject, SchematicsOptions, TestingFramework} from './types.js';
+import type {AngularProject, TestRunner} from './types.js';
 
 export interface FilesOptions {
   options: {
-    testingFramework: TestingFramework;
+    testRunner: TestRunner;
     port: number;
     name?: string;
     exportConfig?: boolean;
     ext?: string;
+    route?: string;
   };
   applyPath: string;
   relativeToWorkspacePath: string;
@@ -44,31 +34,21 @@ export interface FilesOptions {
 }
 
 export function addFilesToProjects(
-  tree: Tree,
-  context: SchematicContext,
   projects: Record<string, AngularProject>,
   options: FilesOptions
-): any {
+): Rule {
   return chain(
     Object.keys(projects).map(name => {
-      return addFilesSingle(
-        tree,
-        context,
-        name,
-        projects[name] as AngularProject,
-        options
-      );
+      return addFilesSingle(name, projects[name] as AngularProject, options);
     })
-  )(tree, context);
+  );
 }
 
 export function addFilesSingle(
-  _tree: Tree,
-  _context: SchematicContext,
   name: string,
   project: AngularProject,
   {options, applyPath, movePath, relativeToWorkspacePath}: FilesOptions
-): any {
+): Rule {
   const projectPath = resolve(getSystemPath(normalize(project.root)));
   const workspacePath = resolve(getSystemPath(normalize('')));
 
@@ -96,7 +76,7 @@ export function addFilesSingle(
   );
 }
 
-function getProjectBaseUrl(project: any, port: number): string {
+function getProjectBaseUrl(project: AngularProject, port: number): string {
   let options = {protocol: 'http', port, host: 'localhost'};
 
   if (project.architect?.serve?.options) {
@@ -106,81 +86,66 @@ function getProjectBaseUrl(project: any, port: number): string {
     options.protocol = projectOptions.ssl ? 'https' : 'http';
   }
 
-  return `${options.protocol}://${options.host}:${options.port}`;
+  return `${options.protocol}://${options.host}:${options.port}/`;
 }
 
 function getTsConfigPath(project: AngularProject): string {
+  const filename = 'tsconfig.json';
+
   if (!project.root) {
-    return '../tsconfig.json';
+    return `../${filename}`;
   }
-  return `../tsconfig.app.json`;
+
+  const nested = project.root
+    .split('/')
+    .map(() => {
+      return '../';
+    })
+    .join('');
+
+  // Prepend a single `../` as we put the test inside `e2e` folder
+  return `../${nested}${filename}`;
 }
 
 export function addCommonFiles(
-  tree: Tree,
-  context: SchematicContext,
   projects: Record<string, AngularProject>,
   filesOptions: Omit<FilesOptions, 'applyPath' | 'relativeToWorkspacePath'>
-): any {
+): Rule {
   const options: FilesOptions = {
     ...filesOptions,
     applyPath: './files/common',
     relativeToWorkspacePath: `/`,
   };
 
-  return addFilesToProjects(tree, context, projects, options);
+  return addFilesToProjects(projects, options);
 }
 
 export function addFrameworkFiles(
-  tree: Tree,
-  context: SchematicContext,
   projects: Record<string, AngularProject>,
   filesOptions: Omit<FilesOptions, 'applyPath' | 'relativeToWorkspacePath'>
-): any {
-  const testingFramework = filesOptions.options.testingFramework;
+): Rule {
+  const testRunner = filesOptions.options.testRunner;
   const options: FilesOptions = {
     ...filesOptions,
-    applyPath: `./files/${testingFramework}`,
+    applyPath: `./files/${testRunner}`,
     relativeToWorkspacePath: `/`,
   };
 
-  return addFilesToProjects(tree, context, projects, options);
+  return addFilesToProjects(projects, options);
 }
 
-export function getScriptFromOptions(
-  options: SchematicsOptions,
-  root?: string
-): string[][] {
-  let path = 'node_modules/.bin';
-  if (root && root !== '') {
-    const nested = root
-      .split('/')
-      .map(() => {
-        return '../';
-      })
-      .join('');
-    path = `${nested}${path}`;
-  } else {
-    path = `./${path}`;
-  }
-
-  switch (options.testingFramework) {
-    case TestingFramework.Jasmine:
-      return [[`${path}/jasmine`, '--config=./e2e/support/jasmine.json']];
-    case TestingFramework.Jest:
-      return [[`${path}/jest`, '-c', 'e2e/jest.config.js']];
-    case TestingFramework.Mocha:
-      return [[`${path}/mocha`, '--config=./e2e/.mocharc.js']];
-    case TestingFramework.Node:
-      return [
-        [`${path}/tsc`, '-p', 'e2e/tsconfig.json'],
-        ['node', '--test', '--test-reporter', 'spec', 'e2e/build/'],
-      ];
-  }
+export function hasE2ETester(
+  projects: Record<string, AngularProject>
+): boolean {
+  return Object.values(projects).some((project: AngularProject) => {
+    return Boolean(project.architect?.e2e);
+  });
 }
 
-export function getNgCommandName(options: SchematicsOptions): string {
-  if (options.isDefaultTester) {
+export function getNgCommandName(
+  projects: Record<string, AngularProject>
+): string {
+  if (!hasE2ETester(projects)) {
     return 'e2e';
   }
   return 'puppeteer';

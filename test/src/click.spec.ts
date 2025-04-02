@@ -1,17 +1,7 @@
 /**
- * Copyright 2018 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @license
+ * Copyright 2018 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 import expect from 'expect';
@@ -117,7 +107,7 @@ describe('Page.click', function () {
 
     await page.setJavaScriptEnabled(false);
     await page.goto(server.PREFIX + '/wrappedlink.html');
-    const body = await page.waitForSelector('body');
+    using body = await page.waitForSelector('body');
     await body!.evaluate(el => {
       el.style.paddingTop = '3000px';
     });
@@ -177,7 +167,7 @@ describe('Page.click', function () {
     const {page, server} = await getTestState();
 
     await page.goto(server.PREFIX + '/offscreenbuttons.html');
-    const messages: any[] = [];
+    const messages: string[] = [];
     page.on('console', msg => {
       if (msg.type() === 'log') {
         return messages.push(msg.text());
@@ -332,7 +322,7 @@ describe('Page.click', function () {
         (globalThis as any).double = true;
       });
     });
-    const button = (await page.$('button'))!;
+    using button = (await page.$('button'))!;
     await button!.click({count: 2});
     expect(await page.evaluate('double')).toBe(true);
     expect(await page.evaluate('result')).toBe('Clicked');
@@ -428,7 +418,7 @@ describe('Page.click', function () {
       server.PREFIX + '/input/button.html'
     );
     const frame = page.frames()[1];
-    const button = await frame!.$('button');
+    using button = await frame!.$('button');
     await button!.click();
     expect(
       await frame!.evaluate(() => {
@@ -451,8 +441,8 @@ describe('Page.click', function () {
       server.CROSS_PROCESS_PREFIX + '/input/button.html'
     );
     const frame = page.frames()[1];
-    await frame!.$eval('button', (button: Element) => {
-      return (button as HTMLElement).style.setProperty('position', 'fixed');
+    await frame!.$eval('button', button => {
+      return button.style.setProperty('position', 'fixed');
     });
     await frame!.click('button');
     expect(
@@ -477,7 +467,7 @@ describe('Page.click', function () {
       server.PREFIX + '/input/button.html'
     );
     const frame = page.frames()[1];
-    const button = await frame!.$('button');
+    using button = await frame!.$('button');
     await button!.click();
     expect(
       await frame!.evaluate(() => {

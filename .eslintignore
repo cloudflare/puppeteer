@@ -5,6 +5,7 @@ node_modules
 # Production
 build/
 lib/
+bin/
 
 # Generated files
 **/*.tsbuildinfo
@@ -18,7 +19,7 @@ test/output-*/
 coverage/
 generated/
 .eslintcache
-/.cache/
+.cache/
 
 # IDE Artifacts
 .vscode
@@ -49,3 +50,7 @@ third_party/
 packages/ng-schematics/sandbox/**
 packages/ng-schematics/multi/**
 packages/ng-schematics/src/**/files/
+
+# examples
+examples/puppeteer-in-browser/out/**/*
+examples/puppeteer-in-browser/node_modules/**/*

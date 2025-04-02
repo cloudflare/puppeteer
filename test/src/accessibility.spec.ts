@@ -1,22 +1,12 @@
 /**
- * Copyright 2018 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @license
+ * Copyright 2018 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 import assert from 'assert';
 
-import {SerializedAXNode} from '@cloudflare/puppeteer/internal/common/Accessibility.js';
+import type {SerializedAXNode} from '@cloudflare/puppeteer/internal/cdp/Accessibility.js';
 import expect from 'expect';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
@@ -108,13 +98,13 @@ describe('Accessibility', function () {
               value: 'First Option',
               haspopup: 'menu',
               children: [
-                {role: 'menuitem', name: 'First Option', selected: true},
-                {role: 'menuitem', name: 'Second Option'},
+                {role: 'option', name: 'First Option', selected: true},
+                {role: 'option', name: 'Second Option'},
               ],
             },
           ],
         };
-    expect(await page.accessibility.snapshot()).toEqual(golden);
+    expect(await page.accessibility.snapshot()).toMatchObject(golden);
   });
   it('should report uninteresting nodes', async () => {
     const {page, isFirefox} = await getTestState();
@@ -158,7 +148,7 @@ describe('Accessibility', function () {
       findFocusedNode(
         await page.accessibility.snapshot({interestingOnly: false})
       )
-    ).toEqual(golden);
+    ).toMatchObject(golden);
   });
   it('get snapshots while the tree is re-calculated', async () => {
     // see https://github.com/puppeteer/puppeteer/issues/9404
@@ -200,7 +190,97 @@ describe('Accessibility', function () {
     async function getAccessibleName(page: any, element: any) {
       return (await page.accessibility.snapshot({root: element})).name;
     }
-    const button = await page.$('button');
+    using button = await page.$('button');
+    expect(await getAccessibleName(page, button)).toEqual('Show');
+    await button?.click();
+    await page.waitForSelector('aria/Hide');
+  });
+  it('get snapshots while the tree is re-calculated', async () => {
+    // see https://github.com/puppeteer/puppeteer/issues/9404
+    const {page} = await getTestState();
+
+    await page.setContent(
+      `<!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Accessible name + aria-expanded puppeteer bug</title>
+        <style>
+          [aria-expanded="false"] + * {
+            display: none;
+          }
+        </style>
+      </head>
+      <body>
+        <button hidden>Show</button>
+        <p>Some content</p>
+        <script>
+          const button = document.querySelector('button');
+          button.removeAttribute('hidden')
+          button.setAttribute('aria-expanded', 'false');
+          button.addEventListener('click', function() {
+            button.setAttribute('aria-expanded', button.getAttribute('aria-expanded') !== 'true')
+            if (button.getAttribute('aria-expanded') == 'true') {
+              button.textContent = 'Hide'
+            } else {
+              button.textContent = 'Show'
+            }
+          })
+        </script>
+      </body>
+      </html>`
+    );
+    async function getAccessibleName(page: any, element: any) {
+      return (await page.accessibility.snapshot({root: element})).name;
+    }
+    using button = await page.$('button');
+    expect(await getAccessibleName(page, button)).toEqual('Show');
+    await button?.click();
+    await page.waitForSelector('aria/Hide');
+  });
+  it('get snapshots while the tree is re-calculated', async () => {
+    // see https://github.com/puppeteer/puppeteer/issues/9404
+    const {page} = await getTestState();
+
+    await page.setContent(
+      `<!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Accessible name + aria-expanded puppeteer bug</title>
+        <style>
+          [aria-expanded="false"] + * {
+            display: none;
+          }
+        </style>
+      </head>
+      <body>
+        <button hidden>Show</button>
+        <p>Some content</p>
+        <script>
+          const button = document.querySelector('button');
+          button.removeAttribute('hidden')
+          button.setAttribute('aria-expanded', 'false');
+          button.addEventListener('click', function() {
+            button.setAttribute('aria-expanded', button.getAttribute('aria-expanded') !== 'true')
+            if (button.getAttribute('aria-expanded') == 'true') {
+              button.textContent = 'Hide'
+            } else {
+              button.textContent = 'Show'
+            }
+          })
+        </script>
+      </body>
+      </html>`
+    );
+    async function getAccessibleName(page: any, element: any) {
+      return (await page.accessibility.snapshot({root: element})).name;
+    }
+    using button = await page.$('button');
     expect(await getAccessibleName(page, button)).toEqual('Show');
     await button?.click();
     await page.waitForSelector('aria/Hide');
@@ -338,7 +418,7 @@ describe('Accessibility', function () {
                 name: 'Edit this image: ',
               },
               {
-                role: 'img',
+                role: 'image',
                 name: 'my fake image',
               },
             ],
@@ -346,7 +426,7 @@ describe('Accessibility', function () {
       const snapshot = await page.accessibility.snapshot();
       assert(snapshot);
       assert(snapshot.children);
-      expect(snapshot.children[0]).toEqual(golden);
+      expect(snapshot.children[0]).toMatchObject(golden);
     });
     it('rich text editable fields with role should have children', async () => {
       const {page, isFirefox} = await getTestState();
@@ -383,7 +463,7 @@ describe('Accessibility', function () {
       const snapshot = await page.accessibility.snapshot();
       assert(snapshot);
       assert(snapshot.children);
-      expect(snapshot.children[0]).toEqual(golden);
+      expect(snapshot.children[0]).toMatchObject(golden);
     });
 
     // Firefox does not support contenteditable="plaintext-only".
@@ -483,7 +563,7 @@ describe('Accessibility', function () {
 
         await page.setContent(`<button>My Button</button>`);
 
-        const button = (await page.$('button'))!;
+        using button = (await page.$('button'))!;
         expect(await page.accessibility.snapshot({root: button})).toEqual({
           role: 'button',
           name: 'My Button',
@@ -494,7 +574,7 @@ describe('Accessibility', function () {
 
         await page.setContent(`<input title="My Input" value="My Value">`);
 
-        const input = (await page.$('input'))!;
+        using input = (await page.$('input'))!;
         expect(await page.accessibility.snapshot({root: input})).toEqual({
           role: 'textbox',
           name: 'My Input',
@@ -512,7 +592,7 @@ describe('Accessibility', function () {
             </div>
           `);
 
-        const menu = (await page.$('div[role="menu"]'))!;
+        using menu = (await page.$('div[role="menu"]'))!;
         expect(await page.accessibility.snapshot({root: menu})).toEqual({
           role: 'menu',
           name: 'My Menu',
@@ -528,7 +608,7 @@ describe('Accessibility', function () {
         const {page} = await getTestState();
 
         await page.setContent(`<button>My Button</button>`);
-        const button = (await page.$('button'))!;
+        using button = (await page.$('button'))!;
         await page.$eval('button', button => {
           return button.remove();
         });
@@ -538,14 +618,14 @@ describe('Accessibility', function () {
         const {page} = await getTestState();
 
         await page.setContent(`<div><button>My Button</button></div>`);
-        const div = (await page.$('div'))!;
+        using div = (await page.$('div'))!;
         expect(await page.accessibility.snapshot({root: div})).toEqual(null);
         expect(
           await page.accessibility.snapshot({
             root: div,
             interestingOnly: false,
           })
-        ).toEqual({
+        ).toMatchObject({
           role: 'generic',
           name: '',
           children: [

@@ -1,17 +1,7 @@
 /**
- * Copyright 2023 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @license
+ * Copyright 2023 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 import {describe, it, beforeEach} from 'node:test';
@@ -22,18 +12,18 @@ import sinon from 'sinon';
 import {EventEmitter} from './EventEmitter.js';
 
 describe('EventEmitter', () => {
-  let emitter: EventEmitter;
+  let emitter: EventEmitter<Record<string, unknown>>;
 
   beforeEach(() => {
     emitter = new EventEmitter();
   });
 
   describe('on', () => {
-    const onTests = (methodName: 'on' | 'addListener'): void => {
+    const onTests = (methodName: 'on'): void => {
       it(`${methodName}: adds an event listener that is fired when the event is emitted`, () => {
         const listener = sinon.spy();
         emitter[methodName]('foo', listener);
-        emitter.emit('foo');
+        emitter.emit('foo', undefined);
         expect(listener.callCount).toEqual(1);
       });
 
@@ -53,19 +43,17 @@ describe('EventEmitter', () => {
       });
     };
     onTests('on');
-    // we support addListener for legacy reasons
-    onTests('addListener');
   });
 
   describe('off', () => {
-    const offTests = (methodName: 'off' | 'removeListener'): void => {
+    const offTests = (methodName: 'off'): void => {
       it(`${methodName}: removes the listener so it is no longer called`, () => {
         const listener = sinon.spy();
         emitter.on('foo', listener);
-        emitter.emit('foo');
+        emitter.emit('foo', undefined);
         expect(listener.callCount).toEqual(1);
         emitter.off('foo', listener);
-        emitter.emit('foo');
+        emitter.emit('foo', undefined);
         expect(listener.callCount).toEqual(1);
       });
 
@@ -77,17 +65,15 @@ describe('EventEmitter', () => {
       });
     };
     offTests('off');
-    // we support removeListener for legacy reasons
-    offTests('removeListener');
   });
 
   describe('once', () => {
     it('only calls the listener once and then removes it', () => {
       const listener = sinon.spy();
       emitter.once('foo', listener);
-      emitter.emit('foo');
+      emitter.emit('foo', undefined);
       expect(listener.callCount).toEqual(1);
-      emitter.emit('foo');
+      emitter.emit('foo', undefined);
       expect(listener.callCount).toEqual(1);
     });
 
@@ -105,7 +91,7 @@ describe('EventEmitter', () => {
       const listener3 = sinon.spy();
       emitter.on('foo', listener1).on('foo', listener2).on('bar', listener3);
 
-      emitter.emit('foo');
+      emitter.emit('foo', undefined);
 
       expect(listener1.callCount).toEqual(1);
       expect(listener2.callCount).toEqual(1);
@@ -125,13 +111,13 @@ describe('EventEmitter', () => {
     it('returns true if the event has listeners', () => {
       const listener = sinon.spy();
       emitter.on('foo', listener);
-      expect(emitter.emit('foo')).toBe(true);
+      expect(emitter.emit('foo', undefined)).toBe(true);
     });
 
     it('returns false if the event has listeners', () => {
       const listener = sinon.spy();
       emitter.on('foo', listener);
-      expect(emitter.emit('notFoo')).toBe(false);
+      expect(emitter.emit('notFoo', undefined)).toBe(false);
     });
   });
 
@@ -151,8 +137,8 @@ describe('EventEmitter', () => {
       emitter.on('foo', () => {}).on('bar', () => {});
 
       emitter.removeAllListeners();
-      expect(emitter.emit('foo')).toBe(false);
-      expect(emitter.emit('bar')).toBe(false);
+      expect(emitter.emit('foo', undefined)).toBe(false);
+      expect(emitter.emit('bar', undefined)).toBe(false);
     });
 
     it('returns the emitter for chaining', () => {
@@ -166,8 +152,30 @@ describe('EventEmitter', () => {
         .on('bar', () => {});
 
       emitter.removeAllListeners('bar');
-      expect(emitter.emit('foo')).toBe(true);
-      expect(emitter.emit('bar')).toBe(false);
+      expect(emitter.emit('foo', undefined)).toBe(true);
+      expect(emitter.emit('bar', undefined)).toBe(false);
+    });
+  });
+
+  describe('dispose', () => {
+    it('should dispose higher order emitters properly', () => {
+      let values = '';
+      emitter.on('foo', () => {
+        values += '1';
+      });
+      const higherOrderEmitter = new EventEmitter(emitter);
+
+      higherOrderEmitter.on('foo', () => {
+        values += '2';
+      });
+      higherOrderEmitter.emit('foo', undefined);
+
+      expect(values).toMatch('12');
+
+      higherOrderEmitter.off('foo');
+      higherOrderEmitter.emit('foo', undefined);
+
+      expect(values).toMatch('121');
     });
   });
 });

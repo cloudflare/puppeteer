@@ -1,24 +1,30 @@
 /**
- * Copyright 2023 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @license
+ * Copyright 2023 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 import {homedir} from 'os';
 import {join} from 'path';
 
-import {Configuration, Product} from '@cloudflare/puppeteer';
+import type {Configuration, Product} from '@cloudflare/puppeteer';
 import {cosmiconfigSync} from 'cosmiconfig';
+
+function getBooleanEnvVar(name: string) {
+  const env = process.env[name];
+  if (env === undefined) {
+    return;
+  }
+  switch (env.toLowerCase()) {
+    case '':
+    case '0':
+    case 'false':
+    case 'off':
+      return false;
+    default:
+      return true;
+  }
+}
 
 /**
  * @internal
@@ -37,7 +43,9 @@ function isSupportedProduct(product: unknown): product is Product {
  * @internal
  */
 export const getConfiguration = (): Configuration => {
-  const result = cosmiconfigSync('puppeteer').search();
+  const result = cosmiconfigSync('puppeteer', {
+    searchStrategy: 'global',
+  }).search();
   const configuration: Configuration = result ? result.config : {};
 
   configuration.logLevel = (process.env['PUPPETEER_LOGLEVEL'] ??
@@ -66,10 +74,30 @@ export const getConfiguration = (): Configuration => {
 
   // Set skipDownload explicitly or from default
   configuration.skipDownload = Boolean(
-    process.env['PUPPETEER_SKIP_DOWNLOAD'] ??
-      process.env['npm_config_puppeteer_skip_download'] ??
-      process.env['npm_package_config_puppeteer_skip_download'] ??
+    getBooleanEnvVar('PUPPETEER_SKIP_DOWNLOAD') ??
+      getBooleanEnvVar('npm_config_puppeteer_skip_download') ??
+      getBooleanEnvVar('npm_package_config_puppeteer_skip_download') ??
       configuration.skipDownload
+  );
+
+  // Set skipChromeDownload explicitly or from default
+  configuration.skipChromeDownload = Boolean(
+    getBooleanEnvVar('PUPPETEER_SKIP_CHROME_DOWNLOAD') ??
+      getBooleanEnvVar('npm_config_puppeteer_skip_chrome_download') ??
+      getBooleanEnvVar('npm_package_config_puppeteer_skip_chrome_download') ??
+      configuration.skipChromeDownload
+  );
+
+  // Set skipChromeDownload explicitly or from default
+  configuration.skipChromeHeadlessShellDownload = Boolean(
+    getBooleanEnvVar('PUPPETEER_SKIP_CHROME_HEADLESS_SHELL_DOWNLOAD') ??
+      getBooleanEnvVar(
+        'npm_config_puppeteer_skip_chrome_headless_shell_download'
+      ) ??
+      getBooleanEnvVar(
+        'npm_package_config_puppeteer_skip_chrome_headless_shell_download'
+      ) ??
+      configuration.skipChromeHeadlessShellDownload
   );
 
   // Prepare variables used in browser downloading
@@ -97,12 +125,17 @@ export const getConfiguration = (): Configuration => {
       process.env['npm_package_config_puppeteer_download_base_url'] ??
       configuration.downloadBaseUrl ??
       downloadHost;
+  }
 
-    configuration.downloadPath =
-      process.env['PUPPETEER_DOWNLOAD_PATH'] ??
-      process.env['npm_config_puppeteer_download_path'] ??
-      process.env['npm_package_config_puppeteer_download_path'] ??
-      configuration.downloadPath;
+  if (
+    Object.keys(process.env).some(key => {
+      return key.startsWith('npm_package_config_puppeteer_');
+    }) &&
+    configuration.logLevel === 'warn'
+  ) {
+    console.warn(
+      `Configuring Puppeteer via npm/package.json is deprecated. Use https://pptr.dev/guides/configuration instead.`
+    );
   }
 
   configuration.cacheDirectory =

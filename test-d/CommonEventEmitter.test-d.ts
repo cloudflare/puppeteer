@@ -1,16 +1,24 @@
+/**
+ * @license
+ * Copyright 2024 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 // eslint-disable-next-line no-restricted-imports
 import {EventEmitter as NodeEventEmitter} from 'node:events';
 
-import {CommonEventEmitter, EventEmitter} from 'puppeteer';
 import {expectAssignable} from 'tsd';
 
-declare const emitter: EventEmitter;
+import type {CommonEventEmitter, EventEmitter, EventType} from 'puppeteer';
+
+declare const emitter: EventEmitter<Record<EventType, any>>;
 
 {
   {
-    expectAssignable<CommonEventEmitter>(new NodeEventEmitter());
+    expectAssignable<CommonEventEmitter<Record<EventType, any>>>(
+      new NodeEventEmitter()
+    );
   }
   {
-    expectAssignable<CommonEventEmitter>(emitter);
+    expectAssignable<CommonEventEmitter<Record<EventType, any>>>(emitter);
   }
 }

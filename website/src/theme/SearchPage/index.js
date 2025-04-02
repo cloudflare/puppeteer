@@ -1,3 +1,8 @@
+/**
+ * @license
+ * Copyright 2024 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 import Head from '@docusaurus/Head';
 import Link from '@docusaurus/Link';
@@ -18,7 +23,7 @@ import algoliaSearchHelper from 'algoliasearch-helper';
 import clsx from 'clsx';
 import React, {useEffect, useState, useReducer, useRef} from 'react';
 
-// eslint-disable-next-line import/extensions
+// eslint-disable-next-line rulesdir/extensions
 import {tagToCounter} from '../SearchMetadata';
 
 import styles from './styles.module.css';

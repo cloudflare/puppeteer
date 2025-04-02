@@ -1,3 +1,8 @@
+/**
+ * @license
+ * Copyright 2024 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import {DocSearchButton, useDocSearchKeyboardEvents} from '@docsearch/react';
 import Head from '@docusaurus/Head';
 import Link from '@docusaurus/Link';
@@ -14,7 +19,7 @@ import translations from '@theme/SearchTranslations';
 import React, {useState, useRef, useCallback, useMemo} from 'react';
 import {createPortal} from 'react-dom';
 
-// eslint-disable-next-line import/extensions
+// eslint-disable-next-line rulesdir/extensions
 import {tagToCounter} from '../SearchMetadata';
 let DocSearchModal = null;
 function Hit({hit, children}) {

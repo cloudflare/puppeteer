@@ -1,6 +1,6 @@
 {
   "name": "puppeteer",
-  "version": "21.1.0",
+  "version": "22.8.2",
   "description": "A high-level API to control headless Chrome over the DevTools Protocol",
   "keywords": [
     "puppeteer",
@@ -9,6 +9,7 @@
     "automation"
   ],
   "type": "commonjs",
+  "bin": "./lib/esm/puppeteer/node/cli.js",
   "main": "./lib/cjs/puppeteer/puppeteer.js",
   "types": "./lib/types.d.ts",
   "exports": {
@@ -31,16 +32,13 @@
     "url": "https://github.com/puppeteer/puppeteer/tree/main/packages/puppeteer"
   },
   "engines": {
-    "node": ">=16.3.0"
+    "node": ">=18"
   },
   "scripts": {
     "build:docs": "wireit",
-    "build:tsc": "wireit",
-    "build:types": "wireit",
     "build": "wireit",
-    "clean": "tsc -b --clean && rm -rf lib",
-    "generate:package-json": "wireit",
-    "postinstall": "node install.js",
+    "clean": "../../tools/clean.mjs",
+    "postinstall": "node install.mjs",
     "prepack": "wireit"
   },
   "wireit": {
@@ -80,7 +78,7 @@
       ]
     },
     "build:tsc": {
-      "command": "tsc -b",
+      "command": "tsc -b && tsx ../../tools/chmod.ts 755 lib/cjs/puppeteer/node/cli.js lib/esm/puppeteer/node/cli.js",
       "clean": "if-file-deleted",
       "dependencies": [
         "../puppeteer-core:build",
@@ -114,7 +112,8 @@
   "files": [
     "lib",
     "src",
-    "install.js",
+    "install.mjs",
+    "!*.test.ts",
     "!*.test.js",
     "!*.test.d.ts",
     "!*.test.js.map",
@@ -124,8 +123,13 @@
   "author": "The Chromium Authors",
   "license": "Apache-2.0",
   "dependencies": {
-    "cosmiconfig": "8.2.0",
-    "@cloudflare/puppeteer": "file:../puppeteer-core",
-    "@puppeteer/browsers": "1.7.0"
+    "cosmiconfig": "9.0.0",
+    "puppeteer-core": "22.8.2",
+    "@puppeteer/browsers": "2.2.3",
+    "devtools-protocol": "0.0.1273771",
+    "@cloudflare/puppeteer": "file:../puppeteer-core"
+  },
+  "devDependencies": {
+    "@types/node": "18.17.15"
   }
 }

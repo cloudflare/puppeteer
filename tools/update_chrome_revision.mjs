@@ -1,17 +1,7 @@
 /**
- * Copyright 2023 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @license
+ * Copyright 2023 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 import {execSync, exec} from 'child_process';
@@ -41,7 +31,7 @@ function checkIfNeedsUpdate(oldVersion, newVersion, newRevision) {
   if (newSemVer.compare(oldSemVer) <= 0) {
     // Exit the process without setting up version
     console.warn(
-      `Version ${newVersion} is older then the current ${oldVersion}`
+      `Version ${newVersion} is older or the same as the current ${oldVersion}`
     );
     process.exit(0);
   } else if (newSemVer.compareMain(oldSemVer) === 0) {
@@ -71,7 +61,7 @@ async function formatUpdateFiles() {
 
 async function replaceInFile(filePath, search, replace) {
   const buffer = await readFile(filePath);
-  const update = buffer.toString().replace(search, replace);
+  const update = buffer.toString().replaceAll(search, replace);
 
   await writeFile(filePath, update);
 
@@ -108,6 +98,12 @@ async function updateDevToolsProtocolVersion(revision) {
     `"devtools-protocol": "${currentProtocol}"`,
     `"devtools-protocol": "${bestNewProtocol}"`
   );
+
+  await replaceInFile(
+    './packages/puppeteer/package.json',
+    `"devtools-protocol": "${currentProtocol}"`,
+    `"devtools-protocol": "${bestNewProtocol}"`
+  );
 }
 
 async function updateVersionFileLastMaintained(oldVersion, newVersion) {
@@ -133,8 +129,12 @@ async function updateVersionFileLastMaintained(oldVersion, newVersion) {
   const newSemVer = new SemVer(newVersion, true);
 
   if (newSemVer.compareMain(oldSemVer) !== 0) {
-    const lastMaintainedIndex = versions.indexOf(lastMaintainedChromeVersion);
-    const nextMaintainedVersion = versions[lastMaintainedIndex - 1];
+    const lastMaintainedSemVer = new SemVer(lastMaintainedChromeVersion, true);
+    const newLastMaintainedMajor = lastMaintainedSemVer.major + 1;
+
+    const nextMaintainedVersion = versions.find(version => {
+      return new SemVer(version, true).major === newLastMaintainedMajor;
+    });
 
     await replaceInFile(
       './versions.js',

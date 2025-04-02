@@ -1,15 +1,23 @@
+/**
+ * @license
+ * Copyright 2024 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import {spawn} from 'child_process';
+import {normalize, join} from 'path';
 
 import {
   createBuilder,
-  BuilderContext,
-  BuilderOutput,
+  type BuilderContext,
+  type BuilderOutput,
   targetFromTargetString,
-  BuilderRun,
+  type BuilderRun,
 } from '@angular-devkit/architect';
-import {JsonObject} from '@angular-devkit/core';
+import type {JsonObject} from '@angular-devkit/core';
 
-import {PuppeteerBuilderOptions} from './types.js';
+import {TestRunner} from '../../schematics/utils/types.js';
+
+import type {PuppeteerBuilderOptions} from './types.js';
 
 const terminalStyles = {
   cyan: '\u001b[36;1m',
@@ -20,41 +28,87 @@ const terminalStyles = {
   clear: '\u001b[0m',
 };
 
-function getError(executable: string, args: string[]) {
-  return (
-    `Error running '${executable}' with arguments '${args.join(' ')}'.` +
-    `\n` +
-    'Please look at the output above to determine the issue!'
-  );
+export function getCommandForRunner(runner: TestRunner): [string, ...string[]] {
+  switch (runner) {
+    case TestRunner.Jasmine:
+      return [`jasmine`, '--config=./e2e/jasmine.json'];
+    case TestRunner.Jest:
+      return [`jest`, '-c', 'e2e/jest.config.js'];
+    case TestRunner.Mocha:
+      return [`mocha`, '--config=./e2e/.mocharc.js'];
+    case TestRunner.Node:
+      return ['node', '--test', '--test-reporter', 'spec', 'e2e/build/'];
+  }
+
+  throw new Error(`Unknown test runner ${runner}!`);
 }
 
 function getExecutable(command: string[]) {
   const executable = command.shift()!;
-  const error = getError(executable, command);
+  const debugError = `Error running '${executable}' with arguments '${command.join(
+    ' '
+  )}'.`;
 
   return {
     executable,
     args: command,
-    error,
+    debugError,
+    error: 'Please look at the output above to determine the issue!',
   };
 }
 
-async function executeCommand(context: BuilderContext, command: string[]) {
+function updateExecutablePath(command: string, root?: string) {
+  if (command === TestRunner.Node) {
+    return command;
+  }
+
+  let path = 'node_modules/.bin/';
+  if (root && root !== '') {
+    const nested = root
+      .split('/')
+      .map(() => {
+        return '../';
+      })
+      .join('');
+    path = `${nested}${path}${command}`;
+  } else {
+    path = `./${path}${command}`;
+  }
+
+  return normalize(path);
+}
+
+async function executeCommand(
+  context: BuilderContext,
+  command: string[],
+  env: NodeJS.ProcessEnv = {}
+) {
+  let project: JsonObject;
+  if (context.target) {
+    project = await context.getProjectMetadata(context.target.project);
+    command[0] = updateExecutablePath(command[0]!, String(project['root']));
+  }
+
   await new Promise(async (resolve, reject) => {
     context.logger.debug(`Trying to execute command - ${command.join(' ')}.`);
-    const {executable, args, error} = getExecutable(command);
+    const {executable, args, debugError, error} = getExecutable(command);
     let path = context.workspaceRoot;
     if (context.target) {
-      const project = await context.getProjectMetadata(context.target.project);
-      path = `${path}/${project['root']}`;
+      path = join(path, (project['root'] as string | undefined) ?? '');
     }
 
     const child = spawn(executable, args, {
       cwd: path,
       stdio: 'inherit',
+      shell: true,
+      env: {
+        ...process.env,
+        ...env,
+      },
     });
 
     child.on('error', message => {
+      context.logger.debug(debugError);
       console.log(message);
       reject(error);
     });
@@ -121,12 +175,17 @@ async function executeE2ETest(
 ): Promise<BuilderOutput> {
   let server: BuilderRun | null = null;
   try {
+    message('\n Building tests 🛠️ ... \n', context);
+    await executeCommand(context, [`tsc`, '-p', 'e2e/tsconfig.json']);
+
     server = await startServer(options, context);
+    const result = await server.result;
 
     message('\n Running tests 🧪 ... \n', context);
-    for (const command of options.commands) {
-      await executeCommand(context, command);
-    }
+    const testRunnerCommand = getCommandForRunner(options.testRunner);
+    await executeCommand(context, testRunnerCommand, {
+      baseUrl: result['baseUrl'],
+    });
 
     message('\n 🚀 Test ran successfully! 🚀 ', context, 'success');
     return {success: true};

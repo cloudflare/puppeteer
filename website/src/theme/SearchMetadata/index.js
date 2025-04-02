@@ -1,3 +1,8 @@
+/**
+ * @license
+ * Copyright 2024 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import Head from '@docusaurus/Head';
 import React from 'react';
 
@@ -10,7 +15,6 @@ class MonotonicCountMap {
   #map = new Map();
 
   get(key) {
-    console.log(key);
     let counter = this.#map.get(key);
     if (!counter) {
       counter = ++this.#counter;

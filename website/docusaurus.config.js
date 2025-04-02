@@ -1,17 +1,7 @@
 /**
- * Copyright 2022 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @license
+ * Copyright 2022 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 // @ts-check
@@ -19,13 +9,28 @@
 
 const assert = require('assert');
 
-const darkCodeTheme = require('prism-react-renderer/themes/dracula');
-const lightCodeTheme = require('prism-react-renderer/themes/github');
+const {themes} = require('prism-react-renderer');
+const darkCodeTheme = themes.dracula;
+const lightCodeTheme = themes.github;
+const semver = require('semver');
 
 const archivedVersions = require('./versionsArchived.json');
 
 const DOC_ROUTE_BASE_PATH = '/';
 const DOC_PATH = '../docs';
+
+/**
+ * This logic should match the one in `Herebyfile.mjs`.
+ */
+function getApiUrl(version) {
+  if (semver.gte(version, '19.3.0')) {
+    return `https://github.com/puppeteer/puppeteer/blob/puppeteer-${version}/docs/api/index.md`;
+  } else if (semver.gte(version, '15.3.0')) {
+    return `https://github.com/puppeteer/puppeteer/blob/${version}/docs/api/index.md`;
+  } else {
+    return `https://github.com/puppeteer/puppeteer/blob/${version}/docs/api.md`;
+  }
+}
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -77,6 +82,34 @@ const config = {
           {
             from: '/guides',
             to: '/category/guides',
+          },
+          {
+            from: '/docs',
+            to: '/guides/what-is-puppeteer',
+          },
+          {
+            from: '/chromium-support',
+            to: '/supported-browsers',
+          },
+          {
+            from: '/guides/query-selectors',
+            to: '/guides/page-interactions',
+          },
+          {
+            from: '/guides/request-interception',
+            to: '/guides/network-interception',
+          },
+          {
+            from: '/guides/query-selectors-legacy',
+            to: '/guides/page-interactions',
+          },
+          {
+            from: '/guides/locators',
+            to: '/guides/page-interactions',
+          },
+          {
+            from: '/guides/evaluate-javascript',
+            to: '/guides/javascript-execution',
           },
         ],
       }),
@@ -227,6 +260,9 @@ const config = {
           path: DOC_PATH,
           routeBasePath: DOC_ROUTE_BASE_PATH,
           sidebarPath: require.resolve('./sidebars.js'),
+          remarkPlugins: [
+            [require('@docusaurus/remark-plugin-npm2yarn'), {sync: true}],
+          ],
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -251,8 +287,8 @@ const config = {
         items: [
           ...[
             {
-              type: 'doc',
-              docId: 'index',
+              type: 'docSidebar',
+              sidebarId: 'docs',
               label: 'Docs',
             },
             {
@@ -283,18 +319,9 @@ const config = {
                   value: '<b>Archived versions</b>',
                 },
                 ...archivedVersions.map(version => {
-                  const parts = version.split('.').map(item => {
-                    return Number(item);
-                  });
-                  if (parts[0] <= 19 && parts[1] <= 2 && parts[2] <= 2) {
-                    return {
-                      label: version,
-                      href: `https://github.com/puppeteer/puppeteer/blob/v${version}/docs/api/index.md`,
-                    };
-                  }
                   return {
                     label: version,
-                    href: `https://github.com/puppeteer/puppeteer/blob/puppeteer-v${version}/docs/api/index.md`,
+                    href: getApiUrl(`v${version}`),
                   };
                 }),
               ],
@@ -335,6 +362,7 @@ const config = {
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
+        additionalLanguages: ['bash', 'diff', 'json'],
       },
     },
 };

@@ -1,3 +1,8 @@
+/**
+ * @license
+ * Copyright 2025 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import {fetch} from 'undici';
 import {describe, it} from 'vitest';
 
@@ -7,7 +12,7 @@ describe('browser pdf', () => {
       setTimeout(resolve, 30000);
     });
     const response = await fetch(
-      `https://test-workers.cloudflare-browser-rendering-085.workers.dev/pdf`
+      `https://puppeteer-test-worker.cloudflare-browser-rendering-085.workers.dev/pdf`
     );
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toBe('application/pdf');

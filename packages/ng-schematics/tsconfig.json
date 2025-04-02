@@ -2,7 +2,8 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": "tsconfig",
-    "module": "CommonJS",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "noEmitOnError": true,
     "rootDir": "src/",
     "outDir": "lib/",
@@ -12,6 +13,5 @@
     "types": ["node"]
   },
   "include": ["src/**/*"],
-  "exclude": ["src/**/files/**/*"],
-  "references": [{"path": "./tsconfig.spec.json"}]
+  "exclude": ["src/**/files/**/*"]
 }

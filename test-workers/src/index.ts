@@ -1,3 +1,8 @@
+/**
+ * @license
+ * Copyright 2025 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import puppeteer from '@cloudflare/puppeteer';
 
 import {test as basicInteractions} from './fixtures/basic-interactions.js';
@@ -17,7 +22,7 @@ const testsMap = {
 };
 
 export default {
-  async fetch(request: Request, env): Promise<Response> {
+  async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url).pathname.slice(1) as
       | keyof typeof testsMap
       | undefined;
@@ -32,6 +37,6 @@ export default {
     await browser.close();
     return response;
   },
-} satisfies ExportedHandler<Env>;
+};
 
 // page content

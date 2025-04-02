@@ -1,23 +1,13 @@
 /**
- * Copyright 2023 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @license
+ * Copyright 2023 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 import {TimeoutError} from '@cloudflare/puppeteer';
 import {
   Locator,
-  LocatorEmittedEvents,
+  LocatorEvent,
 } from '@cloudflare/puppeteer/internal/api/locators/locators.js';
 import expect from 'expect';
 import sinon from 'sinon';
@@ -38,11 +28,11 @@ describe('Locator', function () {
     await page
       .mainFrame()
       .locator('button')
-      .on(LocatorEmittedEvents.Action, () => {
+      .on(LocatorEvent.Action, () => {
         willClick = true;
       })
       .click();
-    const button = await page.$('button');
+    using button = await page.$('button');
     const text = await button?.evaluate(el => {
       return el.innerText;
     });
@@ -65,11 +55,11 @@ describe('Locator', function () {
       .setVisibility(null)
       .setWaitForEnabled(false)
       .setWaitForStableBoundingBox(false)
-      .on(LocatorEmittedEvents.Action, () => {
+      .on(LocatorEvent.Action, () => {
         willClick = true;
       })
       .click();
-    const button = await page.$('button');
+    using button = await page.$('button');
     const text = await button?.evaluate(el => {
       return el.innerText;
     });
@@ -88,11 +78,11 @@ describe('Locator', function () {
       let willClick = false;
       await page
         .locator('button')
-        .on(LocatorEmittedEvents.Action, () => {
+        .on(LocatorEvent.Action, () => {
           willClick = true;
         })
         .click();
-      const button = await page.$('button');
+      using button = await page.$('button');
       const text = await button?.evaluate(el => {
         return el.innerText;
       });
@@ -110,11 +100,11 @@ describe('Locator', function () {
       let clicked = false;
       await page
         .locator('::-p-text(test), ::-p-xpath(/button)')
-        .on(LocatorEmittedEvents.Action, () => {
+        .on(LocatorEvent.Action, () => {
           clicked = true;
         })
         .click();
-      const button = await page.$('button');
+      using button = await page.$('button');
       const text = await button?.evaluate(el => {
         return el.innerText;
       });
@@ -130,7 +120,7 @@ describe('Locator', function () {
         <button style="margin-top: 600px;" onclick="this.innerText = 'clicked';">test</button>
       `);
       await page.locator('button').click();
-      const button = await page.$('button');
+      using button = await page.$('button');
       const text = await button?.evaluate(el => {
         return el.innerText;
       });
@@ -144,7 +134,7 @@ describe('Locator', function () {
       await page.setContent(`
         <button style="display: none;" onclick="this.innerText = 'clicked';">test</button>
       `);
-      const button = await page.$('button');
+      using button = await page.$('button');
       const result = page
         .locator('button')
         .click()
@@ -177,7 +167,7 @@ describe('Locator', function () {
       await page.setContent(`
         <button disabled onclick="this.innerText = 'clicked';">test</button>
       `);
-      const button = await page.$('button');
+      using button = await page.$('button');
       const result = page.locator('button').click();
       expect(
         await button?.evaluate(el => {
@@ -202,7 +192,7 @@ describe('Locator', function () {
       await page.setContent(`
         <button style="margin-top: 600px;" style="display: none;" disabled onclick="this.innerText = 'clicked';">test</button>
       `);
-      const button = await page.$('button');
+      using button = await page.$('button');
       const result = page.locator('button').click();
       expect(
         await button?.evaluate(el => {
@@ -304,11 +294,11 @@ describe('Locator', function () {
       let willClick = false;
       await frame
         .locator('button')
-        .on(LocatorEmittedEvents.Action, () => {
+        .on(LocatorEvent.Action, () => {
           willClick = true;
         })
         .click();
-      const button = await frame.$('button');
+      using button = await frame.$('button');
       const text = await button?.evaluate(el => {
         return el.innerText;
       });
@@ -328,11 +318,11 @@ describe('Locator', function () {
       let hovered = false;
       await page
         .locator('button')
-        .on(LocatorEmittedEvents.Action, () => {
+        .on(LocatorEvent.Action, () => {
           hovered = true;
         })
         .hover();
-      const button = await page.$('button');
+      using button = await page.$('button');
       const text = await button?.evaluate(el => {
         return el.innerText;
       });
@@ -354,14 +344,14 @@ describe('Locator', function () {
       let scrolled = false;
       await page
         .locator('div')
-        .on(LocatorEmittedEvents.Action, () => {
+        .on(LocatorEvent.Action, () => {
           scrolled = true;
         })
         .scroll({
           scrollTop: 500,
           scrollLeft: 500,
         });
-      const scrollable = await page.$('div');
+      using scrollable = await page.$('div');
       const scroll = await scrollable?.evaluate(el => {
         return el.scrollTop + ' ' + el.scrollLeft;
       });
@@ -380,7 +370,7 @@ describe('Locator', function () {
       let filled = false;
       await page
         .locator('textarea')
-        .on(LocatorEmittedEvents.Action, () => {
+        .on(LocatorEvent.Action, () => {
           filled = true;
         })
         .fill('test');
@@ -404,7 +394,7 @@ describe('Locator', function () {
       let filled = false;
       await page
         .locator('select')
-        .on(LocatorEmittedEvents.Action, () => {
+        .on(LocatorEvent.Action, () => {
           filled = true;
         })
         .fill('value2');
@@ -435,7 +425,7 @@ describe('Locator', function () {
       await page.setContent(`
         <input disabled>
       `);
-      const input = await page.$('input');
+      using input = await page.$('input');
       const result = page.locator('input').fill('test');
       expect(
         await input?.evaluate(el => {
@@ -686,7 +676,7 @@ describe('Locator', function () {
   describe('Locator.prototype.wait', () => {
     it('should work', async () => {
       const {page} = await getTestState();
-      page.setContent(`
+      void page.setContent(`
         <script>
           setTimeout(() => {
             const element = document.createElement("div");
@@ -703,7 +693,7 @@ describe('Locator', function () {
   describe('Locator.prototype.waitHandle', () => {
     it('should work', async () => {
       const {page} = await getTestState();
-      page.setContent(`
+      void page.setContent(`
         <script>
           setTimeout(() => {
             const element = document.createElement("div");
@@ -760,7 +750,7 @@ describe('Locator', function () {
       await page.setContent(`<div onclick="window.clicked = true">test</div>`);
       await page
         .locator(() => {
-          return document.getElementsByTagName('div')[0] as HTMLDivElement;
+          return document.getElementsByTagName('div')[0]!;
         })
         .click();
       await expect(

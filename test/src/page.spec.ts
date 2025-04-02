@@ -1,25 +1,18 @@
 /**
- * Copyright 2017 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @license
+ * Copyright 2017 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
  */
-import {ServerResponse} from 'http';
+import assert from 'assert';
+import type {ServerResponse} from 'http';
 import path from 'path';
 
-import {Metrics, Page} from '@cloudflare/puppeteer/internal/api/Page.js';
-import {CDPSession} from '@cloudflare/puppeteer/internal/common/Connection.js';
-import {ConsoleMessage} from '@cloudflare/puppeteer/internal/common/ConsoleMessage.js';
-import {CDPPage} from '@cloudflare/puppeteer/internal/common/Page.js';
+import {CDPSession} from '@cloudflare/puppeteer/internal/api/CDPSession.js';
+import type {HTTPRequest} from '@cloudflare/puppeteer/internal/api/HTTPRequest.js';
+import type {Metrics, Page} from '@cloudflare/puppeteer/internal/api/Page.js';
+import type {CdpPage} from '@cloudflare/puppeteer/internal/cdp/Page.js';
+import type {ConsoleMessage} from '@cloudflare/puppeteer/internal/common/ConsoleMessage.js';
+import {Deferred} from '@cloudflare/puppeteer/internal/util/Deferred.js';
 import expect from 'expect';
 import {KnownDevices, TimeoutError} from 'puppeteer';
 import sinon from 'sinon';
@@ -49,9 +42,9 @@ describe('Page', function () {
       expect(error.message).toContain('Protocol error');
     });
     it('should not be visible in browser.pages', async () => {
-      const {browser} = await getTestState();
+      const {browser, context} = await getTestState();
 
-      const newPage = await browser.newPage();
+      const newPage = await context.newPage();
       expect(await browser.pages()).toContain(newPage);
       await newPage.close();
       expect(await browser.pages()).not.toContain(newPage);
@@ -109,7 +102,11 @@ describe('Page', function () {
       ]);
       for (let i = 0; i < 2; i++) {
         const message = results[i].message;
-        expect(message).atLeastOneToContain(['Target closed', 'Page closed!']);
+        expect(message).atLeastOneToContain([
+          'Target closed',
+          'Page closed!',
+          'Frame detached',
+        ]);
         expect(message).not.toContain('Timeout');
       }
     });
@@ -287,7 +284,7 @@ describe('Page', function () {
       const [popup] = await Promise.all([
         waitEvent<Page>(page, 'popup'),
         page.$eval('a', a => {
-          return (a as HTMLAnchorElement).click();
+          return a.click();
         }),
       ]);
       expect(
@@ -322,133 +319,6 @@ describe('Page', function () {
           return !!window.opener;
         })
       ).toBe(false);
-    });
-  });
-
-  describe('BrowserContext.overridePermissions', function () {
-    function getPermission(page: Page, name: PermissionName) {
-      return page.evaluate(name => {
-        return navigator.permissions.query({name}).then(result => {
-          return result.state;
-        });
-      }, name);
-    }
-
-    it('should be prompt by default', async () => {
-      const {page, server} = await getTestState();
-
-      await page.goto(server.EMPTY_PAGE);
-      expect(await getPermission(page, 'geolocation')).toBe('prompt');
-    });
-    it('should deny permission when not listed', async () => {
-      const {page, server, context} = await getTestState();
-
-      await page.goto(server.EMPTY_PAGE);
-      await context.overridePermissions(server.EMPTY_PAGE, []);
-      expect(await getPermission(page, 'geolocation')).toBe('denied');
-    });
-    it('should fail when bad permission is given', async () => {
-      const {page, server, context} = await getTestState();
-
-      await page.goto(server.EMPTY_PAGE);
-      let error!: Error;
-      await context
-        // @ts-expect-error purposeful bad input for test
-        .overridePermissions(server.EMPTY_PAGE, ['foo'])
-        .catch(error_ => {
-          return (error = error_);
-        });
-      expect(error.message).toBe('Unknown permission: foo');
-    });
-    it('should grant permission when listed', async () => {
-      const {page, server, context} = await getTestState();
-
-      await page.goto(server.EMPTY_PAGE);
-      await context.overridePermissions(server.EMPTY_PAGE, ['geolocation']);
-      expect(await getPermission(page, 'geolocation')).toBe('granted');
-    });
-    it('should reset permissions', async () => {
-      const {page, server, context} = await getTestState();
-
-      await page.goto(server.EMPTY_PAGE);
-      await context.overridePermissions(server.EMPTY_PAGE, ['geolocation']);
-      expect(await getPermission(page, 'geolocation')).toBe('granted');
-      await context.clearPermissionOverrides();
-      expect(await getPermission(page, 'geolocation')).toBe('prompt');
-    });
-    it('should trigger permission onchange', async () => {
-      const {page, server, context} = await getTestState();
-
-      await page.goto(server.EMPTY_PAGE);
-      await page.evaluate(() => {
-        (globalThis as any).events = [];
-        return navigator.permissions
-          .query({name: 'geolocation'})
-          .then(function (result) {
-            (globalThis as any).events.push(result.state);
-            result.onchange = function () {
-              (globalThis as any).events.push(result.state);
-            };
-          });
-      });
-      expect(
-        await page.evaluate(() => {
-          return (globalThis as any).events;
-        })
-      ).toEqual(['prompt']);
-      await context.overridePermissions(server.EMPTY_PAGE, []);
-      expect(
-        await page.evaluate(() => {
-          return (globalThis as any).events;
-        })
-      ).toEqual(['prompt', 'denied']);
-      await context.overridePermissions(server.EMPTY_PAGE, ['geolocation']);
-      expect(
-        await page.evaluate(() => {
-          return (globalThis as any).events;
-        })
-      ).toEqual(['prompt', 'denied', 'granted']);
-      await context.clearPermissionOverrides();
-      expect(
-        await page.evaluate(() => {
-          return (globalThis as any).events;
-        })
-      ).toEqual(['prompt', 'denied', 'granted', 'prompt']);
-    });
-    it('should isolate permissions between browser contexts', async () => {
-      const {page, server, context, browser} = await getTestState();
-
-      await page.goto(server.EMPTY_PAGE);
-      const otherContext = await browser.createIncognitoBrowserContext();
-      const otherPage = await otherContext.newPage();
-      await otherPage.goto(server.EMPTY_PAGE);
-      expect(await getPermission(page, 'geolocation')).toBe('prompt');
-      expect(await getPermission(otherPage, 'geolocation')).toBe('prompt');
-
-      await context.overridePermissions(server.EMPTY_PAGE, []);
-      await otherContext.overridePermissions(server.EMPTY_PAGE, [
-        'geolocation',
-      ]);
-      expect(await getPermission(page, 'geolocation')).toBe('denied');
-      expect(await getPermission(otherPage, 'geolocation')).toBe('granted');
-
-      await context.clearPermissionOverrides();
-      expect(await getPermission(page, 'geolocation')).toBe('prompt');
-      expect(await getPermission(otherPage, 'geolocation')).toBe('granted');
-
-      await otherContext.close();
-    });
-    it('should grant persistent-storage', async () => {
-      const {page, server, context} = await getTestState();
-
-      await page.goto(server.EMPTY_PAGE);
-      expect(await getPermission(page, 'persistent-storage')).not.toBe(
-        'granted'
-      );
-      await context.overridePermissions(server.EMPTY_PAGE, [
-        'persistent-storage',
-      ]);
-      expect(await getPermission(page, 'persistent-storage')).toBe('granted');
     });
   });
 
@@ -524,103 +394,6 @@ describe('Page', function () {
     });
   });
 
-  describe('ExecutionContext.queryObjects', function () {
-    it('should work', async () => {
-      const {page} = await getTestState();
-
-      // Create a custom class
-      const classHandle = await page.evaluateHandle(() => {
-        return class CustomClass {};
-      });
-
-      // Create an instance.
-      await page.evaluate(CustomClass => {
-        // @ts-expect-error: Different context.
-        self.customClass = new CustomClass();
-      }, classHandle);
-
-      // Validate only one has been added.
-      const prototypeHandle = await page.evaluateHandle(CustomClass => {
-        return CustomClass.prototype;
-      }, classHandle);
-      const objectsHandle = await page.queryObjects(prototypeHandle);
-      await expect(
-        page.evaluate(objects => {
-          return objects.length;
-        }, objectsHandle)
-      ).resolves.toBe(1);
-
-      // Check that instances.
-      await expect(
-        page.evaluate(objects => {
-          // @ts-expect-error: Different context.
-          return objects[0] === self.customClass;
-        }, objectsHandle)
-      ).resolves.toBeTruthy();
-    });
-    it('should work for non-trivial page', async () => {
-      const {page, server} = await getTestState();
-      await page.goto(server.EMPTY_PAGE);
-
-      // Create a custom class
-      const classHandle = await page.evaluateHandle(() => {
-        return class CustomClass {};
-      });
-
-      // Create an instance.
-      await page.evaluate(CustomClass => {
-        // @ts-expect-error: Different context.
-        self.customClass = new CustomClass();
-      }, classHandle);
-
-      // Validate only one has been added.
-      const prototypeHandle = await page.evaluateHandle(CustomClass => {
-        return CustomClass.prototype;
-      }, classHandle);
-      const objectsHandle = await page.queryObjects(prototypeHandle);
-      await expect(
-        page.evaluate(objects => {
-          return objects.length;
-        }, objectsHandle)
-      ).resolves.toBe(1);
-
-      // Check that instances.
-      await expect(
-        page.evaluate(objects => {
-          // @ts-expect-error: Different context.
-          return objects[0] === self.customClass;
-        }, objectsHandle)
-      ).resolves.toBeTruthy();
-    });
-    it('should fail for disposed handles', async () => {
-      const {page} = await getTestState();
-
-      const prototypeHandle = await page.evaluateHandle(() => {
-        return HTMLBodyElement.prototype;
-      });
-      await prototypeHandle.dispose();
-      let error!: Error;
-      await page.queryObjects(prototypeHandle).catch(error_ => {
-        return (error = error_);
-      });
-      expect(error.message).toBe('Prototype JSHandle is disposed!');
-    });
-    it('should fail primitive values as prototypes', async () => {
-      const {page} = await getTestState();
-
-      const prototypeHandle = await page.evaluateHandle(() => {
-        return 42;
-      });
-      let error!: Error;
-      await page.queryObjects(prototypeHandle).catch(error_ => {
-        return (error = error_);
-      });
-      expect(error.message).toBe(
-        'Prototype JSHandle must not be referencing primitive value'
-      );
-    });
-  });
-
   describe('Page.Events.Console', function () {
     it('should work', async () => {
       const {page} = await getTestState();
@@ -660,7 +433,7 @@ describe('Page', function () {
     it('should work for different console API calls with logging functions', async () => {
       const {page} = await getTestState();
 
-      const messages: any[] = [];
+      const messages: ConsoleMessage[] = [];
       page.on('console', msg => {
         return messages.push(msg);
       });
@@ -676,7 +449,7 @@ describe('Page', function () {
         messages.map(msg => {
           return msg.type();
         })
-      ).toEqual(['trace', 'dir', 'warning', 'error', 'log']);
+      ).toEqual(['trace', 'dir', 'warn', 'error', 'log']);
       expect(
         messages.map(msg => {
           return msg.text();
@@ -723,6 +496,24 @@ describe('Page', function () {
         'JSHandle@window',
       ]);
     });
+    it('should return remote objects', async () => {
+      const {page} = await getTestState();
+
+      const logPromise = waitEvent<ConsoleMessage>(page, 'console');
+      await page.evaluate(() => {
+        (globalThis as any).test = 1;
+        console.log(1, 2, 3, globalThis);
+      });
+      const log = await logPromise;
+
+      expect(log.text()).atLeastOneToContain([
+        '1 2 3 JSHandle@object',
+        '1 2 3 JSHandle@window',
+      ]);
+      expect(log.args()).toHaveLength(4);
+      using property = await log.args()[3]!.getProperty('test');
+      expect(await property.jsonValue()).toBe(1);
+    });
     it('should trigger correct Log', async () => {
       const {page, server, isChrome} = await getTestState();
 
@@ -730,7 +521,7 @@ describe('Page', function () {
       const [message] = await Promise.all([
         waitEvent(page, 'console'),
         page.evaluate(async (url: string) => {
-          return fetch(url).catch(() => {});
+          return await fetch(url).catch(() => {});
         }, server.EMPTY_PAGE),
       ]);
       expect(message.text()).toContain('Access-Control-Allow-Origin');
@@ -814,14 +605,10 @@ describe('Page', function () {
         // 3. After that, remove the iframe.
         frame.remove();
       });
-      const popupTarget = page
-        .browserContext()
-        .targets()
-        .find(target => {
-          return target !== page.target();
-        })!;
-      // 4. Connect to the popup and make sure it doesn't throw.
-      await popupTarget.page();
+      // 4. The target will always be the last one.
+      const popupTarget = page.browserContext().targets().at(-1)!;
+      // 5. Connect to the popup and make sure it doesn't throw and is not the same page.
+      expect(await popupTarget.page()).not.toBe(page);
     });
   });
 
@@ -1082,21 +869,16 @@ describe('Page', function () {
           return Date.now();
         }),
         page
-          .evaluate(() => {
-            return (async () => {
-              await Promise.all([
-                fetch('/digits/1.png'),
-                fetch('/digits/2.png'),
-              ]);
-              await new Promise(resolve => {
-                return setTimeout(resolve, 200);
-              });
-              await fetch('/digits/3.png');
-              await new Promise(resolve => {
-                return setTimeout(resolve, 200);
-              });
-              await fetch('/digits/4.png');
-            })();
+          .evaluate(async () => {
+            await Promise.all([fetch('/digits/1.png'), fetch('/digits/2.png')]);
+            await new Promise(resolve => {
+              return setTimeout(resolve, 200);
+            });
+            await fetch('/digits/3.png');
+            await new Promise(resolve => {
+              return setTimeout(resolve, 200);
+            });
+            await fetch('/digits/4.png');
           })
           .then(() => {
             return Date.now();
@@ -1159,7 +941,7 @@ describe('Page', function () {
 
       await page.goto(server.PREFIX + '/abort-request.html');
 
-      const element = await page.$(`#abort`);
+      using element = await page.$(`#abort`);
       await element!.click();
 
       let error = false;
@@ -1168,6 +950,34 @@ describe('Page', function () {
       });
 
       expect(error).toBe(false);
+    });
+    it('should work with delayed response', async () => {
+      const {page, server} = await getTestState();
+      await page.goto(server.EMPTY_PAGE);
+      let response!: ServerResponse;
+      server.setRoute('/fetch-request-b.js', (_req, res) => {
+        response = res;
+      });
+      const t0 = Date.now();
+      const [t1, t2] = await Promise.all([
+        page.waitForNetworkIdle({idleTime: 100}).then(() => {
+          return Date.now();
+        }),
+        new Promise<number>(res => {
+          setTimeout(() => {
+            response.end();
+            res(Date.now());
+          }, 300);
+        }),
+        page.evaluate(async () => {
+          await fetch('/fetch-request-b.js');
+        }),
+      ]);
+      expect(t1).toBeGreaterThan(t2);
+      // request finished + idle time.
+      expect(t1 - t0).toBeGreaterThan(400);
+      // request finished + idle time - request finished.
+      expect(t1 - t2).toBeGreaterThanOrEqual(100);
     });
   });
 
@@ -1179,7 +989,7 @@ describe('Page', function () {
         return a * b;
       });
       const result = await page.evaluate(async function () {
-        return await (globalThis as any).compute(9, 4);
+        return (globalThis as any).compute(9, 4);
       });
       expect(result).toBe(36);
     });
@@ -1191,7 +1001,9 @@ describe('Page', function () {
       });
       const {message, stack} = await page.evaluate(async () => {
         try {
-          return await (globalThis as any).woof();
+          return await (
+            globalThis as unknown as {woof(): Promise<never>}
+          ).woof();
         } catch (error) {
           return {
             message: (error as Error).message,
@@ -1221,15 +1033,15 @@ describe('Page', function () {
     it('should be callable from-inside evaluateOnNewDocument', async () => {
       const {page} = await getTestState();
 
-      let called = false;
+      const called = new Deferred<void>();
       await page.exposeFunction('woof', function () {
-        called = true;
+        called.resolve();
       });
       await page.evaluateOnNewDocument(() => {
         return (globalThis as any).woof();
       });
       await page.reload();
-      expect(called).toBe(true);
+      await called.valueOrThrow();
     });
     it('should survive navigation', async () => {
       const {page, server} = await getTestState();
@@ -1240,7 +1052,7 @@ describe('Page', function () {
 
       await page.goto(server.EMPTY_PAGE);
       const result = await page.evaluate(async function () {
-        return await (globalThis as any).compute(9, 4);
+        return (globalThis as any).compute(9, 4);
       });
       expect(result).toBe(36);
     });
@@ -1252,7 +1064,20 @@ describe('Page', function () {
       });
 
       const result = await page.evaluate(async function () {
-        return await (globalThis as any).compute(3, 5);
+        return (globalThis as any).compute(3, 5);
+      });
+      expect(result).toBe(15);
+    });
+    it('should await returned if called from function', async () => {
+      const {page} = await getTestState();
+
+      await page.exposeFunction('compute', function (a: number, b: number) {
+        return Promise.resolve(a * b);
+      });
+
+      const result = await page.evaluate(async function () {
+        const result = await (globalThis as any).compute(3, 5);
+        return result;
       });
       expect(result).toBe(15);
     });
@@ -1266,7 +1091,51 @@ describe('Page', function () {
       await page.goto(server.PREFIX + '/frames/nested-frames.html');
       const frame = page.frames()[1]!;
       const result = await frame.evaluate(async function () {
-        return await (globalThis as any).compute(3, 5);
+        return (globalThis as any).compute(3, 5);
+      });
+      expect(result).toBe(15);
+    });
+    it('should work with loading frames', async () => {
+      // Tries to reproduce the scenario from
+      // https://github.com/puppeteer/puppeteer/issues/8106
+      const {page, server} = await getTestState();
+
+      await page.setRequestInterception(true);
+      let saveRequest: (value: HTTPRequest | PromiseLike<HTTPRequest>) => void;
+      const iframeRequest = new Promise<HTTPRequest>(resolve => {
+        saveRequest = resolve;
+      });
+      page.on('request', async req => {
+        if (req.url().endsWith('/frames/frame.html')) {
+          saveRequest(req);
+        } else {
+          await req.continue();
+        }
+      });
+
+      let error: Error | undefined;
+      const navPromise = page
+        .goto(server.PREFIX + '/frames/one-frame.html', {
+          waitUntil: 'networkidle0',
+        })
+        .catch(err => {
+          error = err;
+        });
+      const req = await iframeRequest;
+      // Expose function while the frame is being loaded. Loading process is
+      // controlled by interception.
+      const exposePromise = page.exposeFunction(
+        'compute',
+        function (a: number, b: number) {
+          return Promise.resolve(a * b);
+        }
+      );
+      await Promise.all([req.continue(), exposePromise]);
+      await navPromise;
+      expect(error).toBeUndefined();
+      const frame = page.frames()[1]!;
+      const result = await frame.evaluate(async function () {
+        return (globalThis as any).compute(3, 5);
       });
       expect(result).toBe(15);
     });
@@ -1280,7 +1149,7 @@ describe('Page', function () {
 
       const frame = page.frames()[1]!;
       const result = await frame.evaluate(async function () {
-        return await (globalThis as any).compute(3, 5);
+        return (globalThis as any).compute(3, 5);
       });
       expect(result).toBe(15);
     });
@@ -1296,7 +1165,7 @@ describe('Page', function () {
 
       await expect(
         page.evaluate(async function () {
-          return await (globalThis as any).compute(3, 5);
+          return (globalThis as any).compute(3, 5);
         })
       ).resolves.toEqual(15);
     });
@@ -1305,7 +1174,7 @@ describe('Page', function () {
 
       await page.exposeFunction(
         'complexObject',
-        function (a: {x: any}, b: {x: any}) {
+        function (a: {x: number}, b: {x: number}) {
           return {x: a.x + b.x};
         }
       );
@@ -1324,7 +1193,7 @@ describe('Page', function () {
       await page.goto(server.EMPTY_PAGE);
       await page.exposeFunction('compute', moduleObject);
       const result = await page.evaluate(async function () {
-        return await (globalThis as any).compute(9, 4);
+        return (globalThis as any).compute(9, 4);
       });
       expect(result).toBe(36);
     });
@@ -1338,18 +1207,20 @@ describe('Page', function () {
         return a * b;
       });
       const result = await page.evaluate(async function () {
-        return await (globalThis as any).compute(9, 4);
+        return (globalThis as any).compute(9, 4);
       });
       expect(result).toBe(36);
       await page.removeExposedFunction('compute');
 
-      let error: Error | null = null;
-      await page
+      const error = await page
         .evaluate(async function () {
           return (globalThis as any).compute(9, 4);
         })
-        .catch(_error => {
-          return (error = _error);
+        .then(() => {
+          return null;
+        })
+        .catch(error => {
+          return error;
         });
       expect(error).toBeTruthy();
     });
@@ -1360,10 +1231,13 @@ describe('Page', function () {
       const {page, server} = await getTestState();
 
       const [error] = await Promise.all([
-        waitEvent<Error>(page, 'pageerror'),
+        waitEvent<Error>(page, 'pageerror', err => {
+          return err.message.includes('Fancy');
+        }),
         page.goto(server.PREFIX + '/error.html'),
       ]);
       expect(error.message).toContain('Fancy');
+      expect(error.stack?.split('\n').at(-1)).toContain('error.html:3:1');
     });
   });
 
@@ -1451,6 +1325,31 @@ describe('Page', function () {
       expect(uaData['platform']).toBe('MockOS');
       expect(uaData['platformVersion']).toBe('3.1');
       expect(request.headers['user-agent']).toBe('MockBrowser');
+    });
+    it('should restore original', async () => {
+      const {page, server} = await getTestState();
+
+      const userAgent = await page.evaluate(() => {
+        return navigator.userAgent;
+      });
+
+      await page.setUserAgent('foobar');
+      const [requestWithOverride] = await Promise.all([
+        server.waitForRequest('/empty.html'),
+        page.goto(server.EMPTY_PAGE),
+      ]);
+      expect(requestWithOverride.headers['user-agent']).toBe('foobar');
+
+      await page.setUserAgent('');
+      const [request] = await Promise.all([
+        server.waitForRequest('/empty.html'),
+        page.goto(server.EMPTY_PAGE),
+      ]);
+      expect(request.headers['user-agent']).toBe(userAgent);
+      const userAgentRestored = await page.evaluate(() => {
+        return navigator.userAgent;
+      });
+      expect(userAgentRestored).toBe(userAgent);
     });
   });
 
@@ -1732,7 +1631,7 @@ describe('Page', function () {
       const {page, server} = await getTestState();
 
       await page.goto(server.EMPTY_PAGE);
-      const scriptHandle = await page.addScriptTag({url: '/injectedfile.js'});
+      using scriptHandle = await page.addScriptTag({url: '/injectedfile.js'});
       expect(scriptHandle.asElement()).not.toBeNull();
       expect(
         await page.evaluate(() => {
@@ -1810,7 +1709,7 @@ describe('Page', function () {
       const {page, server} = await getTestState();
 
       await page.goto(server.EMPTY_PAGE);
-      const scriptHandle = await page.addScriptTag({
+      using scriptHandle = await page.addScriptTag({
         path: path.join(__dirname, '../assets/injectedfile.js'),
       });
       expect(scriptHandle.asElement()).not.toBeNull();
@@ -1838,7 +1737,7 @@ describe('Page', function () {
       const {page, server} = await getTestState();
 
       await page.goto(server.EMPTY_PAGE);
-      const scriptHandle = await page.addScriptTag({
+      using scriptHandle = await page.addScriptTag({
         content: 'window.__injected = 35;',
       });
       expect(scriptHandle.asElement()).not.toBeNull();
@@ -1906,7 +1805,7 @@ describe('Page', function () {
       const {page, server} = await getTestState();
 
       await page.goto(server.EMPTY_PAGE);
-      const styleHandle = await page.addStyleTag({url: '/injectedstyle.css'});
+      using styleHandle = await page.addStyleTag({url: '/injectedstyle.css'});
       expect(styleHandle.asElement()).not.toBeNull();
       expect(
         await page.evaluate(
@@ -1936,7 +1835,7 @@ describe('Page', function () {
       const {page, server} = await getTestState();
 
       await page.goto(server.EMPTY_PAGE);
-      const styleHandle = await page.addStyleTag({
+      using styleHandle = await page.addStyleTag({
         path: path.join(__dirname, '../assets/injectedstyle.css'),
       });
       expect(styleHandle.asElement()).not.toBeNull();
@@ -1954,8 +1853,8 @@ describe('Page', function () {
       await page.addStyleTag({
         path: path.join(__dirname, '../assets/injectedstyle.css'),
       });
-      const styleHandle = (await page.$('style'))!;
-      const styleContent = await page.evaluate((style: HTMLStyleElement) => {
+      using styleHandle = (await page.$('style'))!;
+      const styleContent = await page.evaluate(style => {
         return style.innerHTML;
       }, styleHandle);
       expect(styleContent).toContain(path.join('assets', 'injectedstyle.css'));
@@ -1965,7 +1864,7 @@ describe('Page', function () {
       const {page, server} = await getTestState();
 
       await page.goto(server.EMPTY_PAGE);
-      const styleHandle = await page.addStyleTag({
+      using styleHandle = await page.addStyleTag({
         content: 'body { background-color: green; }',
       });
       expect(styleHandle.asElement()).not.toBeNull();
@@ -2069,31 +1968,6 @@ describe('Page', function () {
         page.reload(),
       ]);
       expect(nonCachedRequest.headers['if-modified-since']).toBe(undefined);
-    });
-  });
-
-  describe('Page.pdf', function () {
-    it('can print to PDF and stream the result', async () => {
-      const {page} = await getTestState();
-
-      const stream = await page.createPDFStream();
-      let size = 0;
-      for await (const chunk of stream) {
-        size += chunk.length;
-      }
-      expect(size).toBeGreaterThan(0);
-    });
-
-    it('should respect timeout', async () => {
-      const {page, server} = await getTestState();
-
-      await page.goto(server.PREFIX + '/pdf.html');
-
-      let error!: Error;
-      await page.pdf({timeout: 1}).catch(_error => {
-        return (error = _error);
-      });
-      expect(error).toBeInstanceOf(TimeoutError);
     });
   });
 
@@ -2251,11 +2125,9 @@ describe('Page', function () {
       await page.select('select');
       expect(
         await page.$eval('select', select => {
-          return Array.from((select as HTMLSelectElement).options).every(
-            option => {
-              return !option.selected;
-            }
-          );
+          return Array.from(select.options).every(option => {
+            return !option.selected;
+          });
         })
       ).toEqual(true);
     });
@@ -2267,11 +2139,9 @@ describe('Page', function () {
       await page.select('select');
       expect(
         await page.$eval('select', select => {
-          return Array.from((select as HTMLSelectElement).options).filter(
-            option => {
-              return option.selected;
-            }
-          )[0]!.value;
+          return Array.from(select.options).filter(option => {
+            return option.selected;
+          })[0]!.value;
         })
       ).toEqual('');
     });
@@ -2315,15 +2185,17 @@ describe('Page', function () {
     it('should work with window.close', async () => {
       const {page, context} = await getTestState();
 
-      const newPagePromise = new Promise<Page>(fulfill => {
+      const newPagePromise = new Promise<Page | null>(fulfill => {
         return context.once('targetcreated', target => {
           return fulfill(target.page());
         });
       });
+      assert(page);
       await page.evaluate(() => {
         return ((window as any)['newPage'] = window.open('about:blank'));
       });
       const newPage = await newPagePromise;
+      assert(newPage);
       const closedPromise = waitEvent(newPage, 'close');
       await page.evaluate(() => {
         return (window as any)['newPage'].close();
@@ -2359,7 +2231,42 @@ describe('Page', function () {
   describe('Page.client', function () {
     it('should return the client instance', async () => {
       const {page} = await getTestState();
-      expect((page as CDPPage)._client()).toBeInstanceOf(CDPSession);
+      expect((page as CdpPage)._client()).toBeInstanceOf(CDPSession);
+    });
+  });
+
+  describe('Page.bringToFront', function () {
+    it('should work', async () => {
+      const {context} = await getTestState();
+      const page1 = await context.newPage();
+      const page2 = await context.newPage();
+
+      await page1.bringToFront();
+      expect(
+        await page1.evaluate(() => {
+          return document.visibilityState;
+        })
+      ).toBe('visible');
+      expect(
+        await page2.evaluate(() => {
+          return document.visibilityState;
+        })
+      ).toBe('hidden');
+
+      await page2.bringToFront();
+      expect(
+        await page1.evaluate(() => {
+          return document.visibilityState;
+        })
+      ).toBe('hidden');
+      expect(
+        await page2.evaluate(() => {
+          return document.visibilityState;
+        })
+      ).toBe('visible');
+
+      await page1.close();
+      await page2.close();
     });
   });
 });

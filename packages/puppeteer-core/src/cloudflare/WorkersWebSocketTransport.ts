@@ -1,6 +1,11 @@
-import {ConnectionTransport} from '../common/ConnectionTransport.js';
+/**
+ * @license
+ * Copyright 2025 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+import type {ConnectionTransport} from '../common/ConnectionTransport.js';
 
-import {BrowserWorker} from './BrowserWorker.js';
+import type {BrowserWorker} from './BrowserWorker.js';
 import {messageToChunks, chunksToMessage} from './chunking.js';
 
 const FAKE_HOST = 'https://fake.host';

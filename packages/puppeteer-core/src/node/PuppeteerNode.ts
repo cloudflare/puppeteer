@@ -1,17 +1,7 @@
 /**
- * Copyright 2020 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @license
+ * Copyright 2020 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 import {
@@ -22,25 +12,24 @@ import {
   uninstall,
 } from '@puppeteer/browsers';
 
-import {Browser} from '../api/Browser.js';
-import {BrowserConnectOptions} from '../common/BrowserConnector.js';
-import {Configuration} from '../common/Configuration.js';
-import {Product} from '../common/Product.js';
-import {
-  CommonPuppeteerSettings,
+import type {Browser} from '../api/Browser.js';
+import type {Configuration} from '../common/Configuration.js';
+import type {
   ConnectOptions,
-  Puppeteer,
-} from '../common/Puppeteer.js';
+  BrowserConnectOptions,
+} from '../common/ConnectOptions.js';
+import type {Product} from '../common/Product.js';
+import {type CommonPuppeteerSettings, Puppeteer} from '../common/Puppeteer.js';
 import {PUPPETEER_REVISIONS} from '../revisions.js';
 
 import {ChromeLauncher} from './ChromeLauncher.js';
 import {FirefoxLauncher} from './FirefoxLauncher.js';
-import {
+import type {
   BrowserLaunchArgumentOptions,
   ChromeReleaseChannel,
   LaunchOptions,
 } from './LaunchOptions.js';
-import {ProductLauncher} from './ProductLauncher.js';
+import type {ProductLauncher} from './ProductLauncher.js';
 
 /**
  * @public
@@ -147,11 +136,11 @@ export class PuppeteerNode extends Puppeteer {
    * specified.
    *
    * When using with `puppeteer-core`,
-   * {@link LaunchOptions | options.executablePath} or
-   * {@link LaunchOptions | options.channel} must be provided.
+   * {@link LaunchOptions.executablePath | options.executablePath} or
+   * {@link LaunchOptions.channel | options.channel} must be provided.
    *
    * @example
-   * You can use {@link LaunchOptions | options.ignoreDefaultArgs}
+   * You can use {@link LaunchOptions.ignoreDefaultArgs | options.ignoreDefaultArgs}
    * to filter out `--mute-audio` from default arguments:
    *
    * ```ts
@@ -173,7 +162,7 @@ export class PuppeteerNode extends Puppeteer {
    * for a description of the differences between Chromium and Chrome.
    * {@link https://chromium.googlesource.com/chromium/src/+/lkgr/docs/chromium_browser_vs_google_chrome.md | This article}
    * describes some differences for Linux users. See
-   * {@link https://goo.gle/chrome-for-testing | this doc} for the description
+   * {@link https://developer.chrome.com/blog/chrome-for-testing/ | this doc} for the description
    * of Chrome for Testing.
    *
    * @param options - Options to configure launching behavior.
@@ -234,7 +223,7 @@ export class PuppeteerNode extends Puppeteer {
    * @internal
    */
   get defaultDownloadPath(): string | undefined {
-    return this.configuration.downloadPath ?? this.configuration.cacheDirectory;
+    return this.configuration.cacheDirectory;
   }
 
   /**
@@ -294,8 +283,7 @@ export class PuppeteerNode extends Puppeteer {
       throw new Error('The current platform is not supported.');
     }
 
-    const cacheDir =
-      this.configuration.downloadPath ?? this.configuration.cacheDirectory!;
+    const cacheDir = this.configuration.cacheDirectory!;
     const installedBrowsers = await getInstalledBrowsers({
       cacheDir,
     });
@@ -357,7 +345,7 @@ export class PuppeteerNode extends Puppeteer {
       }
 
       await uninstall({
-        browser: SupportedBrowser.CHROME,
+        browser: installedBrowser.browser,
         platform,
         cacheDir,
         buildId: installedBrowser.buildId,

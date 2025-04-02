@@ -1,21 +1,12 @@
 /**
- * Copyright 2018 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @license
+ * Copyright 2018 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-import {Frame} from '@cloudflare/puppeteer/internal/api/Frame.js';
-import {CDPSession} from '@cloudflare/puppeteer/internal/common/Connection.js';
+import {CDPSession} from '@cloudflare/puppeteer/internal/api/CDPSession.js';
+import type {Frame} from '@cloudflare/puppeteer/internal/api/Frame.js';
+import {assert} from '@cloudflare/puppeteer/internal/util/assert.js';
 import expect from 'expect';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
@@ -30,50 +21,13 @@ import {
 describe('Frame specs', function () {
   setupTestBrowserHooks();
 
-  describe('Frame.executionContext', function () {
-    it('should work', async () => {
-      const {page, server} = await getTestState();
-
-      await page.goto(server.EMPTY_PAGE);
-      await attachFrame(page, 'frame1', server.EMPTY_PAGE);
-      expect(page.frames()).toHaveLength(2);
-      const [frame1, frame2] = page.frames();
-      const context1 = await frame1!.executionContext();
-      const context2 = await frame2!.executionContext();
-      expect(context1).toBeTruthy();
-      expect(context2).toBeTruthy();
-      expect(context1 !== context2).toBeTruthy();
-      expect(context1._world?.frame()).toBe(frame1);
-      expect(context2._world?.frame()).toBe(frame2);
-
-      await Promise.all([
-        context1.evaluate(() => {
-          return ((globalThis as any).a = 1);
-        }),
-        context2.evaluate(() => {
-          return ((globalThis as any).a = 2);
-        }),
-      ]);
-      const [a1, a2] = await Promise.all([
-        context1.evaluate(() => {
-          return (globalThis as any).a;
-        }),
-        context2.evaluate(() => {
-          return (globalThis as any).a;
-        }),
-      ]);
-      expect(a1).toBe(1);
-      expect(a2).toBe(2);
-    });
-  });
-
   describe('Frame.evaluateHandle', function () {
     it('should work', async () => {
       const {page, server} = await getTestState();
 
       await page.goto(server.EMPTY_PAGE);
       const mainFrame = page.mainFrame();
-      const windowHandle = await mainFrame.evaluateHandle(() => {
+      using windowHandle = await mainFrame.evaluateHandle(() => {
         return window;
       });
       expect(windowHandle).toBeTruthy();
@@ -86,17 +40,15 @@ describe('Frame specs', function () {
 
       const frame1 = (await attachFrame(page, 'frame1', server.EMPTY_PAGE))!;
       await detachFrame(page, 'frame1');
-      let error!: Error;
-      await frame1
-        .evaluate(() => {
+      let error: Error | undefined;
+      try {
+        await frame1.evaluate(() => {
           return 7 * 8;
-        })
-        .catch(error_ => {
-          return (error = error_);
         });
-      expect(error.message).toContain(
-        'Execution context is not available in detached frame'
-      );
+      } catch (err) {
+        error = err as Error;
+      }
+      expect(error?.message).toContain('Attempted to use detached Frame');
     });
 
     it('allows readonly array to be an argument', async () => {
@@ -127,7 +79,7 @@ describe('Frame specs', function () {
       const {page, server} = await getTestState();
 
       await page.goto(server.PREFIX + '/frames/nested-frames.html');
-      expect(dumpFrames(page.mainFrame())).toEqual([
+      expect(await dumpFrames(page.mainFrame())).toEqual([
         'http://localhost:<PORT>/frames/nested-frames.html',
         '    http://localhost:<PORT>/frames/two-frames.html (2frames)',
         '        http://localhost:<PORT>/frames/frame.html (uno)',
@@ -254,6 +206,18 @@ describe('Frame specs', function () {
       expect(detachedFrames).toHaveLength(4);
       expect(navigatedFrames).toHaveLength(1);
     });
+
+    it('should click elements in a frameset', async () => {
+      const {page, server} = await getTestState();
+      await page.goto(server.PREFIX + '/frames/frameset.html');
+      const frame = await page.waitForFrame(frame => {
+        return frame.url().endsWith('/frames/frame.html');
+      });
+      using div = await frame.waitForSelector('div');
+      expect(div).toBeTruthy();
+      await div?.click();
+    });
+
     it('should report frame from-inside shadow DOM', async () => {
       const {page, server} = await getTestState();
 
@@ -268,23 +232,6 @@ describe('Frame specs', function () {
       }, server.EMPTY_PAGE);
       expect(page.frames()).toHaveLength(2);
       expect(page.frames()[1]!.url()).toBe(server.EMPTY_PAGE);
-    });
-    it('should report frame.name()', async () => {
-      const {page, server} = await getTestState();
-
-      await attachFrame(page, 'theFrameId', server.EMPTY_PAGE);
-      await page.evaluate((url: string) => {
-        const frame = document.createElement('iframe');
-        frame.name = 'theFrameName';
-        frame.src = url;
-        document.body.appendChild(frame);
-        return new Promise(x => {
-          return (frame.onload = x);
-        });
-      }, server.EMPTY_PAGE);
-      expect(page.frames()[0]!.name()).toBe('');
-      expect(page.frames()[1]!.name()).toBe('theFrameId');
-      expect(page.frames()[2]!.name()).toBe('theFrameName');
     });
     it('should report frame.parent()', async () => {
       const {page, server} = await getTestState();
@@ -340,7 +287,38 @@ describe('Frame specs', function () {
   describe('Frame.client', function () {
     it('should return the client instance', async () => {
       const {page} = await getTestState();
-      expect(page.mainFrame()._client()).toBeInstanceOf(CDPSession);
+      expect(page.mainFrame().client).toBeInstanceOf(CDPSession);
+    });
+  });
+
+  describe('Frame.prototype.frameElement', function () {
+    it('should work', async () => {
+      const {page, server} = await getTestState();
+
+      await attachFrame(page, 'theFrameId', server.EMPTY_PAGE);
+      await page.evaluate((url: string) => {
+        const frame = document.createElement('iframe');
+        frame.name = 'theFrameName';
+        frame.src = url;
+        document.body.appendChild(frame);
+        return new Promise(x => {
+          return (frame.onload = x);
+        });
+      }, server.EMPTY_PAGE);
+      using frame0 = await page.frames()[0]?.frameElement();
+      assert(!frame0);
+      using frame1 = await page.frames()[1]?.frameElement();
+      assert(frame1);
+      using frame2 = await page.frames()[2]?.frameElement();
+      assert(frame2);
+      const name1 = await frame1.evaluate(frame => {
+        return frame.id;
+      });
+      expect(name1).toBe('theFrameId');
+      const name2 = await frame2.evaluate(frame => {
+        return frame.name;
+      });
+      expect(name2).toBe('theFrameName');
     });
   });
 });

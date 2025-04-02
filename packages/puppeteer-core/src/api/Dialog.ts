@@ -1,20 +1,10 @@
 /**
- * Copyright 2017 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @license
+ * Copyright 2017 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-import {Protocol} from 'devtools-protocol';
+import type {Protocol} from 'devtools-protocol';
 
 import {assert} from '../util/assert.js';
 
@@ -42,7 +32,7 @@ import {assert} from '../util/assert.js';
  *
  * @public
  */
-export class Dialog {
+export abstract class Dialog {
   #type: Protocol.Page.DialogType;
   #message: string;
   #defaultValue: string;
@@ -86,9 +76,10 @@ export class Dialog {
   /**
    * @internal
    */
-  sendCommand(_options: {accept: boolean; text?: string}): Promise<void> {
-    throw new Error('Not implemented');
-  }
+  protected abstract handle(options: {
+    accept: boolean;
+    text?: string;
+  }): Promise<void>;
 
   /**
    * A promise that resolves when the dialog has been accepted.
@@ -100,7 +91,7 @@ export class Dialog {
   async accept(promptText?: string): Promise<void> {
     assert(!this.#handled, 'Cannot accept dialog which is already handled!');
     this.#handled = true;
-    await this.sendCommand({
+    await this.handle({
       accept: true,
       text: promptText,
     });
@@ -112,7 +103,7 @@ export class Dialog {
   async dismiss(): Promise<void> {
     assert(!this.#handled, 'Cannot dismiss dialog which is already handled!');
     this.#handled = true;
-    await this.sendCommand({
+    await this.handle({
       accept: false,
     });
   }

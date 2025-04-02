@@ -1,25 +1,17 @@
 /**
- * Copyright 2018 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @license
+ * Copyright 2018 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
-import {ServerResponse} from 'http';
+import type {ServerResponse} from 'http';
 
-import {HTTPRequest} from '@cloudflare/puppeteer/internal/api/HTTPRequest.js';
+import type {Frame} from '@cloudflare/puppeteer';
+import {TimeoutError} from '@cloudflare/puppeteer';
+import type {HTTPRequest} from '@cloudflare/puppeteer/internal/api/HTTPRequest.js';
+import type {HTTPResponse} from '@cloudflare/puppeteer/internal/api/HTTPResponse.js';
 import {Deferred} from '@cloudflare/puppeteer/internal/util/Deferred.js';
 import expect from 'expect';
-import {Frame, TimeoutError} from 'puppeteer';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
 import {attachFrame, isFavicon, waitEvent} from './utils.js';
@@ -121,12 +113,44 @@ describe('navigation', function () {
       const response = await page.goto(server.PREFIX + '/grid.html');
       expect(response!.status()).toBe(200);
     });
+    it('should work when reload causes history API in beforeunload', async () => {
+      const {page, server} = await getTestState();
+
+      await page.goto(server.EMPTY_PAGE);
+      await page.evaluate(() => {
+        window.addEventListener(
+          'beforeunload',
+          () => {
+            return history.replaceState(null, 'initial', window.location.href);
+          },
+          false
+        );
+      });
+      await page.reload();
+      // Evaluate still works.
+      expect(
+        await page.evaluate(() => {
+          return 1;
+        })
+      ).toBe(1);
+    });
     it('should navigate to empty page with networkidle0', async () => {
       const {page, server} = await getTestState();
 
       const response = await page.goto(server.EMPTY_PAGE, {
         waitUntil: 'networkidle0',
       });
+      expect(response!.status()).toBe(200);
+    });
+    it('should navigate to page with iframe and networkidle0', async () => {
+      const {page, server} = await getTestState();
+
+      const response = await page.goto(
+        server.PREFIX + '/frames/one-frame.html',
+        {
+          waitUntil: 'networkidle0',
+        }
+      );
       expect(response!.status()).toBe(200);
     });
     it('should navigate to empty page with networkidle2', async () => {
@@ -152,10 +176,10 @@ describe('navigation', function () {
     });
 
     const EXPECTED_SSL_CERT_MESSAGE_REGEX =
-      /net::ERR_CERT_INVALID|net::ERR_CERT_AUTHORITY_INVALID/;
+      /net::ERR_CERT_INVALID|net::ERR_CERT_AUTHORITY_INVALID|MOZILLA_PKIX_ERROR_SELF_SIGNED_CERT|SSL_ERROR_UNKNOWN/;
 
     it('should fail when navigating to bad SSL', async () => {
-      const {page, httpsServer, isChrome} = await getTestState();
+      const {page, httpsServer} = await getTestState();
 
       // Make sure that network events do not emit 'undefined'.
       // @see https://crbug.com/750469
@@ -174,18 +198,14 @@ describe('navigation', function () {
       await page.goto(httpsServer.EMPTY_PAGE).catch(error_ => {
         return (error = error_);
       });
-      if (isChrome) {
-        expect(error.message).toMatch(EXPECTED_SSL_CERT_MESSAGE_REGEX);
-      } else {
-        expect(error.message).toContain('SSL_ERROR_UNKNOWN');
-      }
+      expect(error.message).toMatch(EXPECTED_SSL_CERT_MESSAGE_REGEX);
 
       expect(requests).toHaveLength(2);
       expect(requests[0]).toBe('request');
       expect(requests[1]).toBe('requestfailed');
     });
     it('should fail when navigating to bad SSL after redirects', async () => {
-      const {page, server, httpsServer, isChrome} = await getTestState();
+      const {page, server, httpsServer} = await getTestState();
 
       server.setRedirect('/redirect/1.html', '/redirect/2.html');
       server.setRedirect('/redirect/2.html', '/empty.html');
@@ -193,17 +213,10 @@ describe('navigation', function () {
       await page.goto(httpsServer.PREFIX + '/redirect/1.html').catch(error_ => {
         return (error = error_);
       });
-      if (isChrome) {
-        expect(error.message).toMatch(EXPECTED_SSL_CERT_MESSAGE_REGEX);
-      } else {
-        expect(error.message).atLeastOneToContain([
-          'MOZILLA_PKIX_ERROR_SELF_SIGNED_CERT', // Firefox WebDriver BiDi.
-          'SSL_ERROR_UNKNOWN ', // Others.
-        ]);
-      }
+      expect(error.message).toMatch(EXPECTED_SSL_CERT_MESSAGE_REGEX);
     });
     it('should fail when main resources failed to load', async () => {
-      const {page, isChrome} = await getTestState();
+      const {page} = await getTestState();
 
       let error!: Error;
       await page
@@ -211,11 +224,9 @@ describe('navigation', function () {
         .catch(error_ => {
           return (error = error_);
         });
-      if (isChrome) {
-        expect(error.message).toContain('net::ERR_CONNECTION_REFUSED');
-      } else {
-        expect(error.message).toContain('NS_ERROR_CONNECTION_REFUSED');
-      }
+      expect(error.message).toMatch(
+        /net::ERR_CONNECTION_REFUSED|NS_ERROR_CONNECTION_REFUSED/
+      );
     });
     it('should fail when exceeding maximum navigation timeout', async () => {
       const {page, server} = await getTestState();
@@ -277,7 +288,7 @@ describe('navigation', function () {
       let error!: Error;
       let loaded = false;
       page.once('load', () => {
-        return (loaded = true);
+        loaded = true;
       });
       await page
         .goto(server.PREFIX + '/grid.html', {timeout: 0, waitUntil: ['load']})
@@ -805,6 +816,7 @@ describe('navigation', function () {
       const error = await navigationPromise;
       expect(error.message).atLeastOneToContain([
         'Navigating frame was detached',
+        'Frame detached',
         'Error: NS_BINDING_ABORTED',
         'net::ERR_ABORTED',
       ]);
@@ -826,18 +838,27 @@ describe('navigation', function () {
       server.setRoute('/one-style.html', (_req, res) => {
         return serverResponses.push(res);
       });
-      const navigations = [];
+      const navigations: Array<Promise<HTTPResponse | null>> = [];
       for (let i = 0; i < 3; ++i) {
         navigations.push(frames[i]!.goto(server.PREFIX + '/one-style.html'));
         await server.waitForRequest('/one-style.html');
       }
       // Respond from server out-of-order.
       const serverResponseTexts = ['AAA', 'BBB', 'CCC'];
-      for (const i of [1, 2, 0]) {
-        serverResponses[i]!.end(serverResponseTexts[i]);
-        const response = (await navigations[i])!;
-        expect(response.frame()).toBe(frames[i]);
-        expect(await response.text()).toBe(serverResponseTexts[i]);
+      try {
+        for (const i of [1, 2, 0]) {
+          const response = await getResponse(i);
+          expect(response.frame()).toBe(frames[i]);
+          expect(await response.text()).toBe(serverResponseTexts[i]);
+        }
+      } catch (error) {
+        await Promise.all([getResponse(0), getResponse(1), getResponse(2)]);
+        throw error;
+      }
+
+      async function getResponse(index: number) {
+        serverResponses[index]!.end(serverResponseTexts[index]);
+        return (await navigations[index])!;
       }
     });
   });

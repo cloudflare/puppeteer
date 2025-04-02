@@ -1,17 +1,7 @@
 /**
- * Copyright 2023 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @license
+ * Copyright 2023 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 import assert from 'assert';
@@ -28,23 +18,23 @@ describe('chrome-headless-shell', () => {
   it('should resolve download URLs', () => {
     assert.strictEqual(
       resolveDownloadUrl(BrowserPlatform.LINUX, '118.0.5950.0'),
-      'https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/118.0.5950.0/linux64/chrome-headless-shell-linux64.zip'
+      'https://storage.googleapis.com/chrome-for-testing-public/118.0.5950.0/linux64/chrome-headless-shell-linux64.zip'
     );
     assert.strictEqual(
       resolveDownloadUrl(BrowserPlatform.MAC, '118.0.5950.0'),
-      'https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/118.0.5950.0/mac-x64/chrome-headless-shell-mac-x64.zip'
+      'https://storage.googleapis.com/chrome-for-testing-public/118.0.5950.0/mac-x64/chrome-headless-shell-mac-x64.zip'
     );
     assert.strictEqual(
       resolveDownloadUrl(BrowserPlatform.MAC_ARM, '118.0.5950.0'),
-      'https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/118.0.5950.0/mac-arm64/chrome-headless-shell-mac-arm64.zip'
+      'https://storage.googleapis.com/chrome-for-testing-public/118.0.5950.0/mac-arm64/chrome-headless-shell-mac-arm64.zip'
     );
     assert.strictEqual(
       resolveDownloadUrl(BrowserPlatform.WIN32, '118.0.5950.0'),
-      'https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/118.0.5950.0/win32/chrome-headless-shell-win32.zip'
+      'https://storage.googleapis.com/chrome-for-testing-public/118.0.5950.0/win32/chrome-headless-shell-win32.zip'
     );
     assert.strictEqual(
       resolveDownloadUrl(BrowserPlatform.WIN64, '118.0.5950.0'),
-      'https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/118.0.5950.0/win64/chrome-headless-shell-win64.zip'
+      'https://storage.googleapis.com/chrome-for-testing-public/118.0.5950.0/win64/chrome-headless-shell-win64.zip'
     );
   });
 

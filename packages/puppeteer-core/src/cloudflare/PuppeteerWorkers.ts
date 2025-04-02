@@ -1,27 +1,18 @@
 /**
- * Copyright 2020 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @license
+ * Copyright 2025 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 import './globalPatcher.js';
 
-import {Browser} from '../api/Browser.js';
-import {ConnectionTransport} from '../common/ConnectionTransport.js';
-import {ConnectOptions, Puppeteer} from '../common/Puppeteer.js';
+import type {Browser} from '../api/Browser.js';
+import type {ConnectionTransport} from '../common/ConnectionTransport.js';
+import type {ConnectOptions} from '../common/ConnectOptions.js';
+import {Puppeteer} from '../common/Puppeteer.js';
 
-import {BrowserWorker} from './BrowserWorker.js';
-import {connectToCDPBrowser, Locations} from './utils.js';
+import type {BrowserWorker} from './BrowserWorker.js';
+import {connectToCDPBrowser, type Locations} from './utils.js';
 import {WorkersWebSocketTransport} from './WorkersWebSocketTransport.js';
 
 const FAKE_HOST = 'https://fake.host';
@@ -130,7 +121,7 @@ export class PuppeteerWorkers extends Puppeteer {
     }
     // Got a 200, so response text is actually an AcquireResponse
     const response: AcquireResponse = JSON.parse(text);
-    return this.connect(endpoint, response.sessionId);
+    return await this.connect(endpoint, response.sessionId);
   }
 
   /**
@@ -217,14 +208,14 @@ export class PuppeteerWorkers extends Puppeteer {
   ): Promise<Browser> {
     try {
       if (!sessionId) {
-        return super.connect(endpoint as ConnectOptions);
+        return await super.connect(endpoint as ConnectOptions);
       }
       const connectionTransport: ConnectionTransport =
         await WorkersWebSocketTransport.create(
           endpoint as BrowserWorker,
           sessionId
         );
-      return connectToCDPBrowser(connectionTransport, {sessionId});
+      return await connectToCDPBrowser(connectionTransport, {sessionId});
     } catch (e) {
       throw new Error(
         `Unable to connect to existing session ${sessionId} (it may still be in use or not ready yet) - retry or launch a new browser: ${e}`

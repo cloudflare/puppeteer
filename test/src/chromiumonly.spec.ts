@@ -1,19 +1,9 @@
 /**
- * Copyright 2019 Google Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * @license
+ * Copyright 2019 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
  */
-import {IncomingMessage} from 'http';
+import type {IncomingMessage} from 'http';
 
 import {Deferred} from '@cloudflare/puppeteer/internal/util/Deferred.js';
 import expect from 'expect';
@@ -31,16 +21,16 @@ describe('Chromium-Specific Launcher tests', function () {
       try {
         const browserURL = 'http://127.0.0.1:21222';
 
-        const browser1 = await puppeteer.connect({browserURL});
+        using browser1 = await puppeteer.connect({browserURL});
         const page1 = await browser1.newPage();
         expect(
           await page1.evaluate(() => {
             return 7 * 8;
           })
         ).toBe(56);
-        browser1.disconnect();
+        await browser1.disconnect();
 
-        const browser2 = await puppeteer.connect({
+        using browser2 = await puppeteer.connect({
           browserURL: browserURL + '/',
         });
         const page2 = await browser2.newPage();
@@ -49,7 +39,6 @@ describe('Chromium-Specific Launcher tests', function () {
             return 8 * 7;
           })
         ).toBe(56);
-        browser2.disconnect();
       } finally {
         await close();
       }

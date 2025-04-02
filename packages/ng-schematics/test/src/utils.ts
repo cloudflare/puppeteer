@@ -1,10 +1,16 @@
+/**
+ * @license
+ * Copyright 2024 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import https from 'https';
+import {before, after} from 'node:test';
 import {join} from 'path';
 
-import {JsonObject} from '@angular-devkit/core';
+import type {JsonObject} from '@angular-devkit/core';
 import {
   SchematicTestRunner,
-  UnitTestTree,
+  type UnitTestTree,
 } from '@angular-devkit/schematics/testing';
 import sinon from 'sinon';
 
@@ -14,10 +20,6 @@ const WORKSPACE_OPTIONS = {
   version: '14.0.0',
 };
 
-const MULTI_APPLICATION_OPTIONS = {
-  name: 'sandbox',
-};
-
 const SINGLE_APPLICATION_OPTIONS = {
   name: 'sandbox',
   directory: '.',
@@ -25,12 +27,20 @@ const SINGLE_APPLICATION_OPTIONS = {
   version: '14.0.0',
 };
 
+const MULTI_APPLICATION_OPTIONS = {
+  name: SINGLE_APPLICATION_OPTIONS.name,
+};
+
+export const MULTI_LIBRARY_OPTIONS = {
+  name: 'components',
+};
+
 export function setupHttpHooks(): void {
   // Stop outgoing Request for version fetching
   before(() => {
     const httpsGetStub = sinon.stub(https, 'get');
     httpsGetStub.returns({
-      on: (_: any, callback: () => void) => {
+      on: (_: string, callback: () => void) => {
         callback();
       },
     } as any);
@@ -43,7 +53,8 @@ export function setupHttpHooks(): void {
 
 export function getAngularJsonScripts(
   tree: UnitTestTree,
-  isDefault = true
+  isDefault = true,
+  name = SINGLE_APPLICATION_OPTIONS.name
 ): {
   builder: string;
   configurations: Record<string, any>;
@@ -51,9 +62,7 @@ export function getAngularJsonScripts(
 } {
   const angularJson = tree.readJson('angular.json') as any;
   const e2eScript = isDefault ? 'e2e' : 'puppeteer';
-  return angularJson['projects']?.[SINGLE_APPLICATION_OPTIONS.name]?.[
-    'architect'
-  ][e2eScript];
+  return angularJson['projects']?.[name]?.['architect'][e2eScript];
 }
 
 export function getPackageJson(tree: UnitTestTree): {
@@ -69,23 +78,24 @@ export function getPackageJson(tree: UnitTestTree): {
   };
 }
 
-export function getMultiProjectFile(file: string): string {
+export function getMultiApplicationFile(file: string): string {
   return `/${WORKSPACE_OPTIONS.newProjectRoot}/${MULTI_APPLICATION_OPTIONS.name}/${file}`;
+}
+export function getMultiLibraryFile(file: string): string {
+  return `/${WORKSPACE_OPTIONS.newProjectRoot}/${MULTI_LIBRARY_OPTIONS.name}/${file}`;
 }
 
 export async function buildTestingTree(
-  command: 'ng-add' | 'test',
+  command: 'ng-add' | 'e2e' | 'config',
   type: 'single' | 'multi' = 'single',
-  userOptions?: Record<string, any>
+  userOptions?: Record<string, unknown>
 ): Promise<UnitTestTree> {
   const runner = new SchematicTestRunner(
     'schematics',
     join(__dirname, '../../lib/schematics/collection.json')
   );
   const options = {
-    isDefaultTester: true,
-    exportConfig: false,
-    testingFramework: 'jasmine',
+    testRunner: 'jasmine',
     ...userOptions,
   };
   let workingTree: UnitTestTree;
@@ -111,6 +121,13 @@ export async function buildTestingTree(
       MULTI_APPLICATION_OPTIONS,
       workingTree
     );
+    // Build dummy library
+    workingTree = await runner.runExternalSchematic(
+      '@schematics/angular',
+      'library',
+      MULTI_LIBRARY_OPTIONS,
+      workingTree
+    );
   }
 
   if (command !== 'ng-add') {
@@ -120,4 +137,16 @@ export async function buildTestingTree(
   }
 
   return await runner.runSchematic(command, options, workingTree);
+}
+
+export async function runSchematic(
+  tree: UnitTestTree,
+  command: 'ng-add' | 'test',
+  options?: Record<string, any>
+): Promise<UnitTestTree> {
+  const runner = new SchematicTestRunner(
+    'schematics',
+    join(__dirname, '../../lib/schematics/collection.json')
+  );
+  return await runner.runSchematic(command, options, tree);
 }

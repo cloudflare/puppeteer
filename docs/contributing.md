@@ -8,7 +8,7 @@ patches and contributions!
 Contributions to this project must be accompanied by a Contributor License
 Agreement. You (or your employer) retain the copyright to your contribution,
 this simply gives us permission to use and redistribute your contributions as
-part of the project. Head over to <https://cla.developers.google.com/> to see
+part of the project. Head over to &lt;[https://cla.developers.google.com/](https://cla.developers.google.com/)&gt; to see
 your current agreements on file or to sign a new one.
 
 You generally only need to submit a CLA once, so if you've already submitted one
@@ -32,7 +32,7 @@ again.
 
    ```bash
    npm install
-   # Or to download Firefox
+   # Or to download Firefox by default
    PUPPETEER_PRODUCT=firefox npm install
    ```
 
@@ -57,7 +57,7 @@ npm run build --workspace <package> # e.g. puppeteer
 ```
 
 This will build all dependent packages automatically, so specifying a single
-packages is sufficient. This is all possible due to
+package is sufficient. This is all possible due to
 [wireit](https://github.com/google/wireit) which behaves similar to
 [GNU Make](https://www.gnu.org/software/make/).
 
@@ -107,7 +107,7 @@ Puppeteer uses a custom test runner on top of Mocha that consults the
 [TestExpectations.json](https://github.com/puppeteer/puppeteer/blob/main/test/TestExpectations.json)
 to see if a given test result is expected or not. See more info about the test
 runner in
-[`tools/mochaRunner`](https://github.com/puppeteer/puppeteer/tree/main/tools/mochaRunner).
+[`tools/mocha-runner`](https://github.com/puppeteer/puppeteer/tree/main/tools/mocha-runner).
 
 ### Unit tests
 
@@ -155,7 +155,7 @@ The following is a description of the primary folders in Puppeteer:
 - `test-d` contains type tests using
   [`tsd`](https://github.com/SamVerschueren/tsd).
 - `tools` contains miscellaneous scripts that are used in building and etc.
-- `tools/mochaRunner` - contains the source code for our test runner.
+- `tools/mocha-runner` - contains the source code for our test runner.
 
 ## API guidelines
 
@@ -234,8 +234,9 @@ A barrier for introducing new installation dependencies is especially high:
 
 There are additional considerations for dependencies that are environment
 agonistic. See the
-[`third_party/README.md`](https://github.com/puppeteer/puppeteer/blob/main/third_party/README.md)
-for details.
+[`third_party/README.md`](https://github.com/puppeteer/puppeteer/blob/main/packages/puppeteer-core/third_party/README.md)
+
+> > > > > > > for details.
 
 ## Testing tips
 
@@ -248,7 +249,7 @@ for details.
 If a test is expected to fail on certain configurations or became flaky, update
 [TestExpectations.json](https://github.com/puppeteer/puppeteer/blob/main/test/TestExpectations.json)
 to reflect that. See more info about TestExpectations.json in
-[`tools/mochaRunner`](https://github.com/puppeteer/puppeteer/tree/main/tools/mochaRunner).
+[`tools/mocha-runner`](https://github.com/puppeteer/puppeteer/tree/main/tools/mocha-runner).
 
 ## API Coverage
 
@@ -289,7 +290,7 @@ The following steps are manual version of the script above.
 2. Update `packages/puppeteer-core/src/revisions.ts` with the found `version`
    number.
 3. Update `versions.js` with the new Chrome-to-Puppeteer `version` mapping and
-   update `lastMaintainedChromeVersion` with the the next one in from the list.
+   update `lastMaintainedChromeVersion` with the next one in from the list.
 4. Run `npm run check`. If it fails, update
    `packages/puppeteer-core/package.json`
    with the expected `devtools-protocol` version and run `npm install` to generate an updated `package-lock.json`.
