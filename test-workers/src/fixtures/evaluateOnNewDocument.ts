@@ -1,4 +1,9 @@
-import {Browser} from '@cloudflare/puppeteer';
+/**
+ * @license
+ * Copyright 2025 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+import type {Browser} from '@cloudflare/puppeteer';
 
 export const test = async (browser: Browser): Promise<Response> => {
   const page = await browser.newPage();
@@ -10,6 +15,8 @@ export const test = async (browser: Browser): Promise<Response> => {
   });
   // Navigate the page to a URL.
   await page.goto('https://developer.chrome.com/');
-  const meaningOfLife = await page.evaluate(() => (globalThis as any).meaningOfLife);
+  const meaningOfLife = await page.evaluate(() => {
+    return (globalThis as any).meaningOfLife;
+  });
   return new Response(`The meaning of life is ${meaningOfLife}`);
 };

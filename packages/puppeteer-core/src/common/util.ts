@@ -186,7 +186,8 @@ export function evaluationString(
     }
     return JSON.stringify(arg);
   }
-  // function is most likely bundled with wrangler, which uses esbuild with keepNames enabled.
+  // function is most likely bundled with wrangler,
+  // which uses esbuild with keepNames enabled.
   // See: https://github.com/cloudflare/workers-sdk/issues/7107
   const script = `(${fun})(${args.map(serializeArgument).join(',')})`;
   return `((__name => (${script}))(t => t))`;

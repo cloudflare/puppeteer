@@ -29,8 +29,12 @@ export const createFunction = (
  */
 export function stringifyFunction(fn: (...args: never) => unknown): string {
   let value;
-  if (typeof fn === 'function' && navigator.userAgent === 'Cloudflare-Workers') {
-    // function is most likely bundled with wrangler, which uses esbuild with keepNames enabled.
+  if (
+    typeof fn === 'function' &&
+    navigator.userAgent === 'Cloudflare-Workers'
+  ) {
+    // function is most likely bundled with wrangler,
+    // which uses esbuild with keepNames enabled.
     // See: https://github.com/cloudflare/workers-sdk/issues/7107
     value = `((__name => (${fn}))(t => t))`;
   } else {

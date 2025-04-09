@@ -1,8 +1,15 @@
+/**
+ * @license
+ * Copyright 2025 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import {fetch} from 'undici';
 import {describe, it} from 'vitest';
 
 describe('browser evaluates', () => {
-  it('evaluates function with inner function on new document', async ({expect}) => {
+  it('evaluates function with inner function on new document', async ({
+    expect,
+  }) => {
     await new Promise(resolve => {
       setTimeout(resolve, 30000);
     });
