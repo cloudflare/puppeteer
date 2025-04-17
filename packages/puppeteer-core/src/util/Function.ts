@@ -31,7 +31,7 @@ export function stringifyFunction(fn: (...args: never) => unknown): string {
   let value;
   if (
     typeof fn === 'function' &&
-    navigator.userAgent === 'Cloudflare-Workers'
+    globalThis.navigator?.userAgent === 'Cloudflare-Workers'
   ) {
     // function is most likely bundled with wrangler,
     // which uses esbuild with keepNames enabled.

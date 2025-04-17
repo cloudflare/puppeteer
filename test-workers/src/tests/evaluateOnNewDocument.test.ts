@@ -6,7 +6,7 @@
 import {fetch} from 'undici';
 import {describe, it} from 'vitest';
 
-describe('browser evaluates', () => {
+describe('browser evaluateOnNewDocument', () => {
   it('evaluates function with inner function on new document', async ({
     expect,
   }) => {
@@ -14,7 +14,7 @@ describe('browser evaluates', () => {
       setTimeout(resolve, 30000);
     });
     const response = await fetch(
-      `https://test-workers.cloudflare-browser-rendering-085.workers.dev/evaluateOnNewDocument`
+      `https://puppeteer-test-worker.cloudflare-browser-rendering-085.workers.dev/evaluateOnNewDocument`
     );
     expect(await response.text()).toMatchSnapshot();
   });

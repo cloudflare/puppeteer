@@ -190,7 +190,9 @@ export function evaluationString(
   // which uses esbuild with keepNames enabled.
   // See: https://github.com/cloudflare/workers-sdk/issues/7107
   const script = `(${fun})(${args.map(serializeArgument).join(',')})`;
-  return `((__name => (${script}))(t => t))`;
+  return globalThis.navigator?.userAgent === 'Cloudflare-Workers'
+    ? `((__name => (${script}))(t => t))`
+    : script;
 }
 
 /**
