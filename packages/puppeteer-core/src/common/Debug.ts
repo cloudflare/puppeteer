@@ -66,14 +66,18 @@ export async function importDebug(): Promise<typeof Debug> {
  * @internal
  */
 export const debug = (prefix: string): ((...args: unknown[]) => void) => {
-  if (isNode) {
-    return async (...logArgs: unknown[]) => {
-      if (captureLogs) {
-        capturedLogs.push(prefix + logArgs);
-      }
-      (await importDebug())(prefix)(logArgs);
-    };
-  }
+  // it is using unenv, which calls console.debug:
+  // https://github.com/unjs/unenv/blob/8383922e357d799e32befd9bf08cbe650590e534/src/runtime/npm/debug.ts#L4
+  // so we need to comment this out, otherwise it will write all debug logs to the console
+
+  // if (isNode) {
+  //   return async (...logArgs: unknown[]) => {
+  //     if (captureLogs) {
+  //       capturedLogs.push(prefix + logArgs);
+  //     }
+  //     (await importDebug())(prefix)(logArgs);
+  //   };
+  // }
 
   return (...logArgs: unknown[]): void => {
     const debugLevel = (globalThis as any).__PUPPETEER_DEBUG;
