@@ -9,7 +9,7 @@ export const test = async (browser: Browser): Promise<Response> => {
   const page = await browser.newPage();
 
   await page.goto('https://example.com/');
-  const img = (await page.screenshot()) as Buffer;
+  const img = await page.screenshot();
 
   return new Response(img, {
     headers: {
