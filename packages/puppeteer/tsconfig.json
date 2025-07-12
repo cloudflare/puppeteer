@@ -6,7 +6,9 @@
     // just stick with ol'fashion path resolution.
     "baseUrl": ".",
     "paths": {
-      "puppeteer-core/internal/*": ["../puppeteer-core/lib/esm/puppeteer/*"]
+      "@cloudflare/puppeteer/internal/*": [
+        "../puppeteer-core/lib/esm/puppeteer/*"
+      ]
     }
   },
   "references": [

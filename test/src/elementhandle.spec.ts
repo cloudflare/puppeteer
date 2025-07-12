@@ -4,13 +4,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import expect from 'expect';
-import {Puppeteer} from 'puppeteer';
-import {ElementHandle} from 'puppeteer-core/internal/api/ElementHandle.js';
+import {ElementHandle} from '@cloudflare/puppeteer/internal/api/ElementHandle.js';
 import {
   asyncDisposeSymbol,
   disposeSymbol,
-} from 'puppeteer-core/internal/util/disposable.js';
+} from '@cloudflare/puppeteer/internal/util/disposable.js';
+import expect from 'expect';
+import {Puppeteer} from 'puppeteer';
 import sinon from 'sinon';
 
 import {
@@ -880,27 +880,6 @@ describe('ElementHandle specs', function () {
           .join('');
       });
       expect(txtContents).toBe('textcontent');
-    });
-
-    it('should work with function shorthands', async () => {
-      const {page} = await getTestState();
-      await page.setContent('<div id="not-foo"></div><div id="foo"></div>');
-
-      Puppeteer.registerCustomQueryHandler('getById', {
-        // This is a function shorthand
-        queryOne(_element, selector) {
-          return document.querySelector(`[id="${selector}"]`);
-        },
-      });
-
-      using element = (await page.$(
-        'getById/foo'
-      )) as ElementHandle<HTMLDivElement>;
-      expect(
-        await page.evaluate(element => {
-          return element.id;
-        }, element)
-      ).toBe('foo');
     });
   });
 

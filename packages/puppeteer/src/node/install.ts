@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import type {Product} from '@cloudflare/puppeteer';
+import {PUPPETEER_REVISIONS} from '@cloudflare/puppeteer/internal/revisions.js';
 import {
   install,
   Browser,
@@ -11,8 +13,6 @@ import {
   makeProgressCallback,
   detectBrowserPlatform,
 } from '@puppeteer/browsers';
-import type {Product} from 'puppeteer-core';
-import {PUPPETEER_REVISIONS} from 'puppeteer-core/internal/revisions.js';
 
 import {getConfiguration} from '../getConfiguration.js';
 

@@ -6,9 +6,9 @@
 
 import assert from 'assert';
 
+import type {ElementHandle} from '@cloudflare/puppeteer/internal/api/ElementHandle.js';
 import expect from 'expect';
 import {TimeoutError} from 'puppeteer';
-import type {ElementHandle} from 'puppeteer-core/internal/api/ElementHandle.js';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
 import {attachFrame, detachFrame} from './utils.js';

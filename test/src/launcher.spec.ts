@@ -10,10 +10,10 @@ import os from 'os';
 import path from 'path';
 import type {TLSSocket} from 'tls';
 
+import type {Page} from '@cloudflare/puppeteer/internal/api/Page.js';
+import {rmSync} from '@cloudflare/puppeteer/internal/node/util/fs.js';
 import expect from 'expect';
 import {TimeoutError} from 'puppeteer';
-import type {Page} from 'puppeteer-core/internal/api/Page.js';
-import {rmSync} from 'puppeteer-core/internal/node/util/fs.js';
 import sinon from 'sinon';
 
 import {getTestState, launch} from './mocha-utils.js';

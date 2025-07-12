@@ -6,8 +6,8 @@
 
 import path from 'path';
 
+import type {PuppeteerLaunchOptions} from '@cloudflare/puppeteer/internal/node/PuppeteerNode.js';
 import expect from 'expect';
-import type {PuppeteerLaunchOptions} from 'puppeteer-core/internal/node/PuppeteerNode.js';
 
 import {getTestState, launch} from '../mocha-utils.js';
 

@@ -7,21 +7,25 @@
 import fs from 'fs';
 import path from 'path';
 
+import type {Browser} from '@cloudflare/puppeteer/internal/api/Browser.js';
+import type {BrowserContext} from '@cloudflare/puppeteer/internal/api/BrowserContext.js';
+import type {Page} from '@cloudflare/puppeteer/internal/api/Page.js';
+import type {Cookie} from '@cloudflare/puppeteer/internal/common/Cookie.js';
+import {
+  setLogCapture,
+  getCapturedLogs,
+} from '@cloudflare/puppeteer/internal/common/Debug.js';
+import type {
+  PuppeteerLaunchOptions,
+  PuppeteerNode,
+} from '@cloudflare/puppeteer/internal/node/PuppeteerNode.js';
+import {rmSync} from '@cloudflare/puppeteer/internal/node/util/fs.js';
+import {Deferred} from '@cloudflare/puppeteer/internal/util/Deferred.js';
+import {isErrorLike} from '@cloudflare/puppeteer/internal/util/ErrorLike.js';
 import {TestServer} from '@pptr/testserver';
 import expect from 'expect';
 import type * as MochaBase from 'mocha';
 import puppeteer from 'puppeteer/lib/cjs/puppeteer/puppeteer.js';
-import type {Browser} from 'puppeteer-core/internal/api/Browser.js';
-import type {BrowserContext} from 'puppeteer-core/internal/api/BrowserContext.js';
-import type {Page} from 'puppeteer-core/internal/api/Page.js';
-import type {Cookie} from 'puppeteer-core/internal/common/Cookie.js';
-import type {
-  PuppeteerLaunchOptions,
-  PuppeteerNode,
-} from 'puppeteer-core/internal/node/PuppeteerNode.js';
-import {rmSync} from 'puppeteer-core/internal/node/util/fs.js';
-import {Deferred} from 'puppeteer-core/internal/util/Deferred.js';
-import {isErrorLike} from 'puppeteer-core/internal/util/ErrorLike.js';
 import sinon from 'sinon';
 
 import {extendExpectWithToBeGolden} from './utils.js';
@@ -72,9 +76,7 @@ const headless = (process.env['HEADLESS'] || 'true').trim().toLowerCase() as
 export const isHeadless = headless === 'true' || headless === 'shell';
 const isFirefox = product === 'firefox';
 const isChrome = product === 'chrome';
-const protocol = (process.env['PUPPETEER_PROTOCOL'] || 'cdp') as
-  | 'cdp'
-  | 'webDriverBiDi';
+const protocol = (process.env['PUPPETEER_PROTOCOL'] || 'cdp') as 'cdp';
 
 let extraLaunchOptions = {};
 try {
@@ -119,7 +121,7 @@ const processVariables: {
   isHeadless: boolean;
   isFirefox: boolean;
   isChrome: boolean;
-  protocol: 'cdp' | 'webDriverBiDi';
+  protocol: 'cdp';
   defaultBrowserOptions: PuppeteerLaunchOptions;
 } = {
   product,
@@ -408,6 +410,34 @@ export const expectCookieEquals = async (
   for (let i = 0; i < cookies.length; i++) {
     expect(cookies[i]).toMatchObject(expectedCookies[i]!);
   }
+};
+
+/**
+ * Use it if you want to capture debug logs for a specitic test suite in CI.
+ * This describe function enables capturing of debug logs and would print them
+ * only if a test fails to reduce the amount of output.
+ */
+export const describeWithDebugLogs = (
+  description: string,
+  body: (this: Mocha.Suite) => void
+): Mocha.Suite | void => {
+  describe(description + '-debug', () => {
+    beforeEach(() => {
+      setLogCapture(true);
+    });
+
+    afterEach(function () {
+      if (this.currentTest?.state === 'failed') {
+        console.log(
+          `\n"${this.currentTest.fullTitle()}" failed. Here is a debug log:`
+        );
+        console.log(getCapturedLogs().join('\n') + '\n');
+      }
+      setLogCapture(false);
+    });
+
+    describe(description, body);
+  });
 };
 
 export const shortWaitForArrayToHaveAtLeastNElements = async (

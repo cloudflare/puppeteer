@@ -43,6 +43,7 @@ jobs:
               - 'test/**'
               - 'test-d/**'
               - 'tools/mocha-runner/**'
+              - 'test-workers/**'
               - '.mocharc.cjs'
               - 'tools/doctest/**'
               - 'tsconfig.base.json'

@@ -1,85 +1,32 @@
-name: Publish
-
-permissions: read-all
+name: Publish release
 
 on:
   workflow_dispatch:
   push:
-    tags:
-      - '*v*'
+    tags: '*'
 
 jobs:
-  npm-publish:
-    name: Publish npm packages
+  publish:
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
-      - name: Check out repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3.4.1
+        with:
+          node-version: 18.18
       - name: Install dependencies
-        run: npm ci
-        env:
-          PUPPETEER_SKIP_DOWNLOAD: true
-      - name: Build packages
+        run: npm install
+      - name: Build puppeteer
         run: npm run build
-      - name: Set npm registry
-        run: npm config set registry 'https://wombat-dressing-room.appspot.com/'
-      - name: Publish packages
+      - name: Publish puppeteer
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN_RELEASE}}
+          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
         run: |
-          npm config set '//wombat-dressing-room.appspot.com/:_authToken' $NODE_AUTH_TOKEN
-          npm publish -w packages/${GITHUB_REF_NAME%-v*}
-      - name: Deprecate old Puppeteer versions
-        if: ${{ startsWith(github.ref_name, 'puppeteer-v') }}
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN_PUPPETEER}}
-        run: |
-          npm config set '//wombat-dressing-room.appspot.com/:_authToken' $NODE_AUTH_TOKEN
-          version_range=$(node tools/get_deprecated_version_range.js)
-          npm deprecate puppeteer@"$version_range" "$version_range is no longer supported" || true
-  docker-publish:
-    name: Publish Docker image
-    runs-on: ubuntu-latest
-    if: ${{ startsWith(github.ref_name, 'puppeteer-v') }}
-    permissions:
-      contents: read
-      packages: write
-    env:
-      REGISTRY: ghcr.io
-      IMAGE_NAME: ${{ github.repository }}
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-      - name: Install dependencies
-        run: npm ci
-        env:
-          PUPPETEER_SKIP_DOWNLOAD: true
-      - name: Build packages
-        run: npm run build
-      - name: Pack packages for docker
-        run: docker/pack.sh
-      # Based on https://docs.github.com/en/actions/publishing-packages/publishing-docker-images.
-      - name: Log in to the Container registry
-        uses: docker/login-action@0d4c9c5ea7693da7b068278f7b52bda2a190a446 # v3.2.0
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            latest
-            type=match,pattern=puppeteer-v(\d+\.\d+\.\d+),group=1
-            type=match,pattern=puppeteer-v(\d+)\.\d+\.\d+,group=1
-      - name: Build and push the Docker image
-        uses: docker/build-push-action@1a162644f9a7e87d8f4b053101d1d9a712edc18c # v6.3.0
-        with:
-          context: ./docker
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          npm config set registry 'https://registry.npmjs.org/'
+          npm config set '//registry.npmjs.org/:_authToken' '${NPM_TOKEN}'
+          echo "Publishing @cloudflare/puppeteer"
+          cd ./packages/puppeteer-core/
+          npm publish ${{ contains(github.ref, 'rc')  && '--tag next' || ''}}

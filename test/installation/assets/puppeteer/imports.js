@@ -7,4 +7,4 @@
 import 'puppeteer';
 
 // Should still be reachable.
-import 'puppeteer-core/internal/revisions.js';
+import '@cloudflare/puppeteer/internal/revisions.js';

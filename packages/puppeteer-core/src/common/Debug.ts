@@ -70,6 +70,18 @@ export const debug = (prefix: string): ((...args: unknown[]) => void) => {
       if (captureLogs) {
         capturedLogs.push(prefix + logArgs);
       }
+      const debugLevel = process.env['DEBUG'] || '';
+      const everythingShouldBeLogged = debugLevel === '*';
+
+      const prefixMatchesDebugLevel =
+        everythingShouldBeLogged ||
+        (debugLevel.endsWith('*')
+          ? prefix.startsWith(debugLevel)
+          : prefix === debugLevel);
+
+      if (!prefixMatchesDebugLevel) {
+        return;
+      }
       (await importDebug())(prefix)(logArgs);
     };
   }

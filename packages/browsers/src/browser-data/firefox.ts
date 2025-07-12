@@ -64,7 +64,7 @@ function parseBuildId(buildId: string): [FirefoxChannel, string] {
 export function resolveDownloadUrl(
   platform: BrowserPlatform,
   buildId: string,
-  baseUrl?: string
+  baseUrl = 'https://archive.mozilla.org/pub/firefox/nightly/2023/08/2023-08-01-03-45-57-mozilla-central'
 ): string {
   const [channel, resolvedBuildId] = parseBuildId(buildId);
   switch (channel) {
@@ -83,12 +83,16 @@ export function resolveDownloadUrl(
   }
   switch (channel) {
     case FirefoxChannel.NIGHTLY:
-      return `${baseUrl}/${resolveDownloadPath(platform, resolvedBuildId).join('/')}`;
+      return `${baseUrl}/${resolveDownloadPath(platform, resolvedBuildId).join(
+        '/'
+      )}`;
     case FirefoxChannel.DEVEDITION:
     case FirefoxChannel.BETA:
     case FirefoxChannel.STABLE:
     case FirefoxChannel.ESR:
-      return `${baseUrl}/${resolvedBuildId}/${platformName(platform)}/en-US/${archive(platform, resolvedBuildId)}`;
+      return `${baseUrl}/${resolvedBuildId}/${platformName(
+        platform
+      )}/en-US/${archive(platform, resolvedBuildId)}`;
   }
 }
 
@@ -374,7 +378,6 @@ function defaultProfilePreferences(
     // Do not automatically fill sign-in forms with known usernames and
     // passwords
     'signon.autofillForms': false,
-
     // Disable password capture, so that tests that include forms are not
     // influenced by the presence of the persistent doorhanger notification
     'signon.rememberSignons': false,

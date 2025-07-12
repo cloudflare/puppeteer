@@ -20,7 +20,6 @@ jobs:
           - chrome-headless
           - chrome-headful
           - chrome-headless-shell
-          - chrome-bidi
         os:
           - ubuntu-latest
           - windows-latest
@@ -35,6 +34,7 @@ jobs:
           - os: windows-latest
             suite: chrome-bidi
           - os: macos-latest
+          - os: macos-13
             suite: chrome-headful
     steps:
       - name: Check out repository
@@ -49,7 +49,7 @@ jobs:
         env:
           PUPPETEER_SKIP_DOWNLOAD: true
       # Set up GitHub Actions caching for Wireit.
-      - uses: google/wireit@4aad131006ea85c1e42af927534ebb13426dd730 # setup-github-actions-caching/v1.0.2
+      # - uses: google/wireit@f21db1f3a6a4db31f42787a958cf2a18308effed # setup-github-actions-caching/v2.0.3
       - name: Build packages
         run: npm run build
       - name: Install Chrome Canary
