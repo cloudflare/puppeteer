@@ -1223,9 +1223,7 @@ export class MarkdownDocumenter {
             new DocHtmlAttribute({
               configuration,
               name: 'id',
-              value: `"${Utilities.getSafeFilenameForName(
-                apiItem.displayName
-              )}"`,
+              value: `"${Utilities.getSafeFilenameForName(apiItem.displayName)}"`,
             }),
           ],
         }),

@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {LazyArg} from '@cloudflare/puppeteer/internal/common/LazyArg.js';
 import expect from 'expect';
+import {LazyArg} from 'puppeteer-core/internal/common/LazyArg.js';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
 

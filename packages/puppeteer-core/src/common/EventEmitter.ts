@@ -11,6 +11,7 @@ import {disposeSymbol} from '../util/disposable.js';
  * @public
  */
 export type EventType = string | symbol;
+
 /**
  * @public
  */

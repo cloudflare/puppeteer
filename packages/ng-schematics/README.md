@@ -77,7 +77,7 @@ Check out our [contributing guide](https://pptr.dev/contributing) to get an over
 
 To make integration easier smoke test can be run with a single command, that will create a fresh install of Angular (single application and a milti application projects). Then it will install the schematics inside them and run the initial e2e tests:
 
-`````bash
+```bash
 node tools/smoke.mjs
 ```
 
@@ -85,10 +85,9 @@ node tools/smoke.mjs
 
 The schematics utilize `@angular-devkit/schematics/testing` for verifying correct file creation and `package.json` updates. To execute the test suit:
 
-
-````bash npm2yarn
+```bash npm2yarn
 npm run test
-`````
+```
 
 ## Migrating from Protractor
 

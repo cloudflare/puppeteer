@@ -5,8 +5,8 @@
  */
 import type {IncomingMessage} from 'http';
 
-import {Deferred} from '@cloudflare/puppeteer/internal/util/Deferred.js';
 import expect from 'expect';
+import {Deferred} from 'puppeteer-core/internal/util/Deferred.js';
 
 import {getTestState, setupTestBrowserHooks, launch} from './mocha-utils.js';
 import {waitEvent} from './utils.js';

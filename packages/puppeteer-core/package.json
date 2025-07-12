@@ -1,6 +1,6 @@
 {
-  "name": "@cloudflare/puppeteer",
-  "version": "1.0.3",
+  "name": "puppeteer-core",
+  "version": "22.8.2",
   "description": "A high-level API to control headless Chrome over the DevTools Protocol",
   "keywords": [
     "puppeteer",
@@ -9,13 +9,13 @@
     "automation"
   ],
   "type": "commonjs",
-  "main": "./lib/cjs/puppeteer/puppeteer-cloudflare.js",
+  "main": "./lib/cjs/puppeteer/puppeteer-core.js",
   "types": "./lib/types.d.ts",
   "exports": {
     ".": {
       "types": "./lib/types.d.ts",
-      "import": "./lib/esm/puppeteer/puppeteer-cloudflare.js",
-      "require": "./lib/cjs/puppeteer/puppeteer-cloudflare.js"
+      "import": "./lib/esm/puppeteer/puppeteer-core.js",
+      "require": "./lib/cjs/puppeteer/puppeteer-core.js"
     },
     "./internal/*": {
       "import": "./lib/esm/puppeteer/*",
@@ -28,7 +28,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cloudflare/puppeteer/tree/main/packages/puppeteer-core"
+    "url": "https://github.com/puppeteer/puppeteer/tree/main/packages/puppeteer-core"
   },
   "engines": {
     "node": ">=18"
@@ -120,6 +120,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@puppeteer/browsers": "2.2.3",
+    "chromium-bidi": "0.5.19",
     "debug": "4.3.4",
     "devtools-protocol": "0.0.1273771",
     "ws": "8.17.0"

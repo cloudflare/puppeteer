@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export {Protocol} from '@cloudflare/puppeteer/internal/puppeteer-core.js';
+export type {Protocol} from 'puppeteer-core';
 
-export * from '@cloudflare/puppeteer/internal/puppeteer-core.js';
+export * from 'puppeteer-core/internal/puppeteer-core.js';
 
-import {PuppeteerNode} from '@cloudflare/puppeteer/internal/node/PuppeteerNode.js';
+import {PuppeteerNode} from 'puppeteer-core/internal/node/PuppeteerNode.js';
 
 import {getConfiguration} from './getConfiguration.js';
 

@@ -12,6 +12,7 @@ import {
   CDP_WEBSOCKET_ENDPOINT_REGEX,
   launch,
   TimeoutError as BrowsersTimeoutError,
+  WEBDRIVER_BIDI_WEBSOCKET_ENDPOINT_REGEX,
   computeExecutablePath,
 } from '@puppeteer/browsers';
 
@@ -28,6 +29,7 @@ import {Connection} from '../cdp/Connection.js';
 import {TimeoutError} from '../common/Errors.js';
 import type {Product} from '../common/Product.js';
 import {debugError, DEFAULT_VIEWPORT} from '../common/util.js';
+import type {Viewport} from '../common/Viewport.js';
 
 import type {
   BrowserLaunchArgumentOptions,
@@ -89,7 +91,9 @@ export abstract class ProductLauncher {
       defaultViewport = DEFAULT_VIEWPORT,
       slowMo = 0,
       timeout = 30000,
+      waitForInitialPage = true,
       protocolTimeout,
+      protocol,
     } = options;
 
     const launchArgs = await this.computeLaunchArguments(options);
@@ -107,6 +111,18 @@ export abstract class ProductLauncher {
         isTemp: launchArgs.isTempUserDataDir,
       });
     };
+
+    if (
+      this.#product === 'firefox' &&
+      protocol !== 'webDriverBiDi' &&
+      this.puppeteer.configuration.logLevel === 'warn'
+    ) {
+      console.warn(
+        `Chrome DevTools Protocol (CDP) support for Firefox is deprecated in Puppeteer ` +
+          `and it will be eventually removed. ` +
+          `Use WebDriver BiDi instead (see https://pptr.dev/webdriver-bidi#get-started).`
+      );
+    }
 
     const browserProcess = launch({
       executablePath: launchArgs.executablePath,
@@ -133,35 +149,68 @@ export abstract class ProductLauncher {
     };
 
     try {
-      if (usePipe) {
-        cdpConnection = await this.createCdpPipeConnection(browserProcess, {
-          timeout,
-          protocolTimeout,
-          slowMo,
-        });
+      if (this.#product === 'firefox' && protocol === 'webDriverBiDi') {
+        browser = await this.createBiDiBrowser(
+          browserProcess,
+          browserCloseCallback,
+          {
+            timeout,
+            protocolTimeout,
+            slowMo,
+            defaultViewport,
+            ignoreHTTPSErrors,
+          }
+        );
       } else {
-        cdpConnection = await this.createCdpSocketConnection(browserProcess, {
-          timeout,
-          protocolTimeout,
-          slowMo,
-        });
+        if (usePipe) {
+          cdpConnection = await this.createCdpPipeConnection(browserProcess, {
+            timeout,
+            protocolTimeout,
+            slowMo,
+          });
+        } else {
+          cdpConnection = await this.createCdpSocketConnection(browserProcess, {
+            timeout,
+            protocolTimeout,
+            slowMo,
+          });
+        }
+        if (protocol === 'webDriverBiDi') {
+          browser = await this.createBiDiOverCdpBrowser(
+            browserProcess,
+            cdpConnection,
+            browserCloseCallback,
+            {
+              timeout,
+              protocolTimeout,
+              slowMo,
+              defaultViewport,
+              ignoreHTTPSErrors,
+            }
+          );
+        } else {
+          browser = await CdpBrowser._create(
+            this.product,
+            cdpConnection,
+            [],
+            ignoreHTTPSErrors,
+            defaultViewport,
+            browserProcess.nodeProcess,
+            browserCloseCallback,
+            options.targetFilter
+          );
+        }
       }
-      browser = await CdpBrowser._create(
-        this.product,
-        cdpConnection,
-        [],
-        ignoreHTTPSErrors,
-        defaultViewport,
-        browserProcess.nodeProcess,
-        browserCloseCallback,
-        options.targetFilter
-      );
     } catch (error) {
       void browserCloseCallback();
       if (error instanceof BrowsersTimeoutError) {
         throw new TimeoutError(error.message);
       }
       throw error;
+    }
+
+    if (waitForInitialPage && protocol !== 'webDriverBiDi') {
+      await this.waitForPageTarget(browser, timeout);
     }
 
     return browser;
@@ -281,6 +330,72 @@ export abstract class ProductLauncher {
       pipeRead as NodeJS.ReadableStream
     );
     return new Connection('', transport, opts.slowMo, opts.protocolTimeout);
+  }
+
+  /**
+   * @internal
+   */
+  protected async createBiDiOverCdpBrowser(
+    browserProcess: ReturnType<typeof launch>,
+    connection: Connection,
+    closeCallback: BrowserCloseCallback,
+    opts: {
+      timeout: number;
+      protocolTimeout: number | undefined;
+      slowMo: number;
+      defaultViewport: Viewport | null;
+      ignoreHTTPSErrors?: boolean;
+    }
+  ): Promise<Browser> {
+    // TODO: use other options too.
+    const BiDi = await import(/* webpackIgnore: true */ '../bidi/bidi.js');
+    const bidiConnection = await BiDi.connectBidiOverCdp(connection, {
+      acceptInsecureCerts: opts.ignoreHTTPSErrors ?? false,
+    });
+    return await BiDi.BidiBrowser.create({
+      connection: bidiConnection,
+      closeCallback,
+      process: browserProcess.nodeProcess,
+      defaultViewport: opts.defaultViewport,
+      ignoreHTTPSErrors: opts.ignoreHTTPSErrors,
+    });
+  }
+
+  /**
+   * @internal
+   */
+  protected async createBiDiBrowser(
+    browserProcess: ReturnType<typeof launch>,
+    closeCallback: BrowserCloseCallback,
+    opts: {
+      timeout: number;
+      protocolTimeout: number | undefined;
+      slowMo: number;
+      defaultViewport: Viewport | null;
+      ignoreHTTPSErrors?: boolean;
+    }
+  ): Promise<Browser> {
+    const browserWSEndpoint =
+      (await browserProcess.waitForLineOutput(
+        WEBDRIVER_BIDI_WEBSOCKET_ENDPOINT_REGEX,
+        opts.timeout
+      )) + '/session';
+    const transport = await WebSocketTransport.create(browserWSEndpoint);
+    const BiDi = await import(/* webpackIgnore: true */ '../bidi/bidi.js');
+    const bidiConnection = new BiDi.BidiConnection(
+      browserWSEndpoint,
+      transport,
+      opts.slowMo,
+      opts.protocolTimeout
+    );
+    // TODO: use other options too.
+    return await BiDi.BidiBrowser.create({
+      connection: bidiConnection,
+      closeCallback,
+      process: browserProcess.nodeProcess,
+      defaultViewport: opts.defaultViewport,
+      ignoreHTTPSErrors: opts.ignoreHTTPSErrors,
+    });
   }
 
   /**

@@ -5,6 +5,7 @@
  */
 
 import type {Browser} from '../api/Browser.js';
+import {_connectToBiDiBrowser} from '../bidi/BrowserConnector.js';
 import {_connectToCdpBrowser} from '../cdp/BrowserConnector.js';
 import {isNode} from '../environment.js';
 import {assert} from '../util/assert.js';
@@ -33,12 +34,21 @@ export async function _connectToBrowser(
   const {connectionTransport, endpointUrl} =
     await getConnectionTransport(options);
 
-  const cdpBrowser = await _connectToCdpBrowser(
-    connectionTransport,
-    endpointUrl,
-    options
-  );
-  return cdpBrowser;
+  if (options.protocol === 'webDriverBiDi') {
+    const bidiBrowser = await _connectToBiDiBrowser(
+      connectionTransport,
+      endpointUrl,
+      options
+    );
+    return bidiBrowser;
+  } else {
+    const cdpBrowser = await _connectToCdpBrowser(
+      connectionTransport,
+      endpointUrl,
+      options
+    );
+    return cdpBrowser;
+  }
 }
 
 /**

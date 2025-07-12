@@ -28,46 +28,25 @@ export const createFunction = (
  * @internal
  */
 export function stringifyFunction(fn: (...args: never) => unknown): string {
-  let value;
-  if (
-    typeof fn === 'function' &&
-    globalThis.navigator?.userAgent === 'Cloudflare-Workers'
-  ) {
-    // function is most likely bundled with wrangler,
-    // which uses esbuild with keepNames enabled.
-    // See: https://github.com/cloudflare/workers-sdk/issues/7107
-    value = `((__name => (${fn}))(t => t))`;
-  } else {
-    value = fn.toString();
+  let value = fn.toString();
+  try {
+    new Function(`(${value})`);
+  } catch {
+    // This means we might have a function shorthand (e.g. `test(){}`). Let's
+    // try prefixing.
+    let prefix = 'function ';
+    if (value.startsWith('async ')) {
+      prefix = `async ${prefix}`;
+      value = value.substring('async '.length);
+    }
+    value = `${prefix}${value}`;
+    try {
+      new Function(`(${value})`);
+    } catch {
+      // We tried hard to serialize, but there's a weird beast here.
+      throw new Error('Passed function cannot be serialized!');
+    }
   }
-
-  /**
-   * We remove the check for the ability for dynamic javascript to be
-   * serializable, because the Workers runtime does not allow dynamic
-   * javascript to be executed, as a security precaution. In the
-   * future, we can consider the serialization check in the back end
-   * but before the message gets to the remote browser.
-   */
-  // original implementationn
-  // try {
-  //   new Function(`(${value})`);
-  // } catch {
-  //   // This means we might have a function shorthand (e.g. `test(){}`). Let's
-  //   // try prefixing.
-  //   let prefix = 'function ';
-  //   if (value.startsWith('async ')) {
-  //     prefix = `async ${prefix}`;
-  //     value = value.substring('async '.length);
-  //   }
-  //   value = `${prefix}${value}`;
-  //   try {
-  //     new Function(`(${value})`);
-  //   } catch {
-  //     console.log('functions::::', value);
-  //     // We tried hard to serialize, but there's a weird beast here.
-  //     throw new Error('Passed function cannot be serialized!');
-  //   }
-  // }
   return value;
 }
 

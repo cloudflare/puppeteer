@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {TimeoutError} from '@cloudflare/puppeteer';
+import expect from 'expect';
+import {TimeoutError} from 'puppeteer-core';
 import {
   Locator,
   LocatorEvent,
-} from '@cloudflare/puppeteer/internal/api/locators/locators.js';
-import expect from 'expect';
+} from 'puppeteer-core/internal/api/locators/locators.js';
 import sinon from 'sinon';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';

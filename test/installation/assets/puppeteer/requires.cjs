@@ -7,4 +7,4 @@
 require('puppeteer');
 
 // Should still be reachable.
-require('@cloudflare/puppeteer/internal/revisions.js');
+require('puppeteer-core/internal/revisions.js');

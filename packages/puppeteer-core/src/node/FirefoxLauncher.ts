@@ -38,19 +38,26 @@ export class FirefoxLauncher extends ProductLauncher {
 
   static getPreferences(
     extraPrefsFirefox?: Record<string, unknown>,
-    _?: 'cdp'
+    protocol?: 'cdp' | 'webDriverBiDi'
   ): Record<string, unknown> {
     return {
       ...extraPrefsFirefox,
-      // Do not close the window when the last tab gets closed
-      'browser.tabs.closeWindowWithLastTab': false,
-      // Prevent various error message on the console
-      // jest-puppeteer asserts that no error message is emitted by the console
-      'network.cookie.cookieBehavior': 0,
-      // Temporarily force disable BFCache in parent (https://bit.ly/bug-1732263)
-      'fission.bfcacheInParent': false,
-      // Only enable the CDP protocol
-      'remote.active-protocols': 2,
+      ...(protocol === 'webDriverBiDi'
+        ? {
+            // Only enable the WebDriver BiDi protocol
+            'remote.active-protocols': 1,
+          }
+        : {
+            // Do not close the window when the last tab gets closed
+            'browser.tabs.closeWindowWithLastTab': false,
+            // Prevent various error message on the console
+            // jest-puppeteer asserts that no error message is emitted by the console
+            'network.cookie.cookieBehavior': 0,
+            // Temporarily force disable BFCache in parent (https://bit.ly/bug-1732263)
+            'fission.bfcacheInParent': false,
+            // Only enable the CDP protocol
+            'remote.active-protocols': 2,
+          }),
       // Force all web content to use a single content process. TODO: remove
       // this once Firefox supports mouse event dispatch from the main frame
       // context. Once this happens, webContentIsolationStrategy should only

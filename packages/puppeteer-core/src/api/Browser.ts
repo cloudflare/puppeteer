@@ -454,13 +454,4 @@ export abstract class Browser extends EventEmitter<BrowserEvents> {
    * @experimental
    */
   abstract get debugInfo(): DebugInfo;
-
-  /**
-   * Get the BISO session ID associated with this browser
-   *
-   * @public
-   */
-  sessionId(): string {
-    throw new Error('Not implemented');
-  }
 }

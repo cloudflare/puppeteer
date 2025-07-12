@@ -15,7 +15,7 @@ import type {Viewport} from './Viewport.js';
 /**
  * @public
  */
-export type ProtocolType = 'cdp';
+export type ProtocolType = 'cdp' | 'webDriverBiDi';
 
 /**
  * Generic browser options that can be passed when launching any browser or when

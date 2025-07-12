@@ -31,5 +31,17 @@ describe('FirefoxLauncher', function () {
         )
       );
     });
+
+    it('should return preferences for WebDriver BiDi', async () => {
+      const prefs: Record<string, unknown> = FirefoxLauncher.getPreferences(
+        {
+          test: 1,
+        },
+        'webDriverBiDi'
+      );
+      expect(prefs['test']).toBe(1);
+      expect(prefs['fission.bfcacheInParent']).toBe(undefined);
+      expect(prefs['fission.webContentIsolationStrategy']).toBe(0);
+    });
   });
 });

@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {PageEvent} from '@cloudflare/puppeteer/internal/api/Page.js';
 import expect from 'expect';
+import {PageEvent} from 'puppeteer-core';
 
 import {launch} from '../mocha-utils.js';
 import {waitEvent} from '../utils.js';

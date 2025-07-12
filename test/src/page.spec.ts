@@ -4,17 +4,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import assert from 'assert';
+import fs from 'fs';
 import type {ServerResponse} from 'http';
 import path from 'path';
 
-import {CDPSession} from '@cloudflare/puppeteer/internal/api/CDPSession.js';
-import type {HTTPRequest} from '@cloudflare/puppeteer/internal/api/HTTPRequest.js';
-import type {Metrics, Page} from '@cloudflare/puppeteer/internal/api/Page.js';
-import type {CdpPage} from '@cloudflare/puppeteer/internal/cdp/Page.js';
-import type {ConsoleMessage} from '@cloudflare/puppeteer/internal/common/ConsoleMessage.js';
-import {Deferred} from '@cloudflare/puppeteer/internal/util/Deferred.js';
 import expect from 'expect';
 import {KnownDevices, TimeoutError} from 'puppeteer';
+import {CDPSession} from 'puppeteer-core/internal/api/CDPSession.js';
+import type {HTTPRequest} from 'puppeteer-core/internal/api/HTTPRequest.js';
+import type {Metrics, Page} from 'puppeteer-core/internal/api/Page.js';
+import type {CdpPage} from 'puppeteer-core/internal/cdp/Page.js';
+import type {ConsoleMessage} from 'puppeteer-core/internal/common/ConsoleMessage.js';
+import {Deferred} from 'puppeteer-core/internal/util/Deferred.js';
 import sinon from 'sinon';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
@@ -1968,6 +1969,49 @@ describe('Page', function () {
         page.reload(),
       ]);
       expect(nonCachedRequest.headers['if-modified-since']).toBe(undefined);
+    });
+  });
+
+  describe('Page.pdf', function () {
+    it('can print to PDF and save to file', async () => {
+      const {page, server} = await getTestState();
+
+      const outputFile = __dirname + '/../assets/output.pdf';
+      await page.goto(server.PREFIX + '/pdf.html');
+      await page.pdf({path: outputFile});
+      try {
+        expect(fs.readFileSync(outputFile).byteLength).toBeGreaterThan(0);
+      } finally {
+        fs.unlinkSync(outputFile);
+      }
+    });
+
+    it('can print to PDF and stream the result', async () => {
+      const {page} = await getTestState();
+
+      const stream = await page.createPDFStream();
+      let size = 0;
+      const reader = stream.getReader();
+      while (true) {
+        const {done, value} = await reader.read();
+        if (done) {
+          break;
+        }
+        size += value.length;
+      }
+
+      expect(size).toBeGreaterThan(0);
+    });
+
+    it('should respect timeout', async () => {
+      const {page, server} = await getTestState();
+
+      await page.goto(server.PREFIX + '/pdf.html');
+
+      const error = await page.pdf({timeout: 1}).catch(err => {
+        return err;
+      });
+      expect(error).toBeInstanceOf(TimeoutError);
     });
   });
 

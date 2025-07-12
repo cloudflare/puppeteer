@@ -65,8 +65,7 @@ async function resolveBuildIdForBrowserTag(
     case Browser.FIREFOX:
       switch (tag) {
         case BrowserTag.LATEST:
-          // return await firefox.resolveBuildId('FIREFOX_NIGHTLY');
-          return '118.0a1';
+          return await firefox.resolveBuildId(firefox.FirefoxChannel.NIGHTLY);
         case BrowserTag.BETA:
           return await firefox.resolveBuildId(firefox.FirefoxChannel.BETA);
         case BrowserTag.NIGHTLY:

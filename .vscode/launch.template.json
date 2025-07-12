@@ -13,7 +13,9 @@
         "chrome-headful",
         "chrome-headless-shell",
         "firefox-headless",
-        "firefox-headful"
+        "firefox-headful",
+        "firefox-bidi",
+        "chrome-bidi"
       ],
       "default": "chrome-headless"
     }

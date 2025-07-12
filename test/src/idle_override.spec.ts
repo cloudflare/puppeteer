@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type {ElementHandle} from '@cloudflare/puppeteer/internal/api/ElementHandle.js';
-import type {Page} from '@cloudflare/puppeteer/internal/api/Page.js';
 import expect from 'expect';
+import type {ElementHandle} from 'puppeteer-core/internal/api/ElementHandle.js';
+import type {Page} from 'puppeteer-core/internal/api/Page.js';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
 

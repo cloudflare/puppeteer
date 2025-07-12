@@ -5,7 +5,6 @@
  */
 
 import type FS from 'fs/promises';
-import {Buffer} from 'node:buffer';
 
 import type {OperatorFunction} from '../../third_party/rxjs/rxjs.js';
 import {
@@ -18,7 +17,6 @@ import {
   timer,
 } from '../../third_party/rxjs/rxjs.js';
 import type {CDPSession} from '../api/CDPSession.js';
-// import {isNode} from '../environment.js';
 import {assert} from '../util/assert.js';
 
 import {debug} from './Debug.js';
@@ -186,13 +184,8 @@ export function evaluationString(
     }
     return JSON.stringify(arg);
   }
-  // function is most likely bundled with wrangler,
-  // which uses esbuild with keepNames enabled.
-  // See: https://github.com/cloudflare/workers-sdk/issues/7107
-  const script = `(${fun})(${args.map(serializeArgument).join(',')})`;
-  return globalThis.navigator?.userAgent === 'Cloudflare-Workers'
-    ? `((__name => (${script}))(t => t))`
-    : script;
+
+  return `(${fun})(${args.map(serializeArgument).join(',')})`;
 }
 
 /**
@@ -209,7 +202,7 @@ export async function importFSPromises(): Promise<typeof FS> {
     } catch (error) {
       if (error instanceof TypeError) {
         throw new Error(
-          'Cannot write to a path outside of a Node-like environment. fs'
+          'Cannot write to a path outside of a Node-like environment.'
         );
       }
       throw error;
@@ -228,9 +221,20 @@ export async function getReadableAsBuffer(
   const buffers: Uint8Array[] = [];
   const reader = readable.getReader();
   if (path) {
-    throw new Error(
-      'Cannot write to a path outside of a Node-like environment.'
-    );
+    const fs = await importFSPromises();
+    const fileHandle = await fs.open(path, 'w+');
+    try {
+      while (true) {
+        const {done, value} = await reader.read();
+        if (done) {
+          break;
+        }
+        buffers.push(value);
+        await fileHandle.writeFile(value);
+      }
+    } finally {
+      await fileHandle.close();
+    }
   } else {
     while (true) {
       const {done, value} = await reader.read();

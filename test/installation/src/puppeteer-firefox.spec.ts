@@ -42,6 +42,13 @@ import {readAsset} from './util.js';
         await this.runScript(script, 'mjs');
       });
     });
+
+    describe('with WebDriverBiDi', () => {
+      it('evaluates ES modules', async function () {
+        const script = await readAsset('puppeteer', 'bidi.js');
+        await this.runScript(script, 'mjs');
+      });
+    });
   }
 );
 

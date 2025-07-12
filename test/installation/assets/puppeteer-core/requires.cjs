@@ -4,6 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-require('@cloudflare/puppeteer');
-require('@cloudflare/puppeteer/internal/revisions.js');
-require('@cloudflare/puppeteer/lib/cjs/puppeteer/revisions.js');
+require('puppeteer-core');
+require('puppeteer-core/internal/revisions.js');
+require('puppeteer-core/lib/cjs/puppeteer/revisions.js');

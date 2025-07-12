@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {JSHandle} from '@cloudflare/puppeteer/internal/api/JSHandle.js';
+import expect from 'expect';
+import {JSHandle} from 'puppeteer-core/internal/api/JSHandle.js';
 import {
   asyncDisposeSymbol,
   disposeSymbol,
-} from '@cloudflare/puppeteer/internal/util/disposable.js';
-import expect from 'expect';
+} from 'puppeteer-core/internal/util/disposable.js';
 import sinon from 'sinon';
 
 import {getTestState, setupTestBrowserHooks} from './mocha-utils.js';
@@ -147,6 +147,27 @@ describe('JSHandle', function () {
         return undefined;
       });
       expect(await bHandle.jsonValue()).toEqual(undefined);
+    });
+
+    it('should work with dates', async () => {
+      const {page} = await getTestState();
+
+      using dateHandle = await page.evaluateHandle(() => {
+        return new Date('2017-09-26T00:00:00.000Z');
+      });
+      const date = await dateHandle.jsonValue();
+      expect(date).toBeInstanceOf(Date);
+      expect(date.toISOString()).toEqual('2017-09-26T00:00:00.000Z');
+    });
+    it('should not throw for circular objects', async () => {
+      const {page} = await getTestState();
+
+      using handle = await page.evaluateHandle(() => {
+        const t: {t?: unknown; g: number} = {g: 1};
+        t.t = t;
+        return t;
+      });
+      await handle.jsonValue();
     });
   });
 

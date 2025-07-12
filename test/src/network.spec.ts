@@ -8,9 +8,9 @@ import fs from 'fs';
 import type {ServerResponse} from 'http';
 import path from 'path';
 
-import type {HTTPRequest} from '@cloudflare/puppeteer/internal/api/HTTPRequest.js';
-import type {HTTPResponse} from '@cloudflare/puppeteer/internal/api/HTTPResponse.js';
 import expect from 'expect';
+import type {HTTPRequest} from 'puppeteer-core/internal/api/HTTPRequest.js';
+import type {HTTPResponse} from 'puppeteer-core/internal/api/HTTPResponse.js';
 
 import {getTestState, launch, setupTestBrowserHooks} from './mocha-utils.js';
 import {attachFrame, isFavicon, waitEvent} from './utils.js';
