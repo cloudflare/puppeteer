@@ -108,7 +108,7 @@ export abstract class ProductLauncher {
         isTemp: launchArgs.isTempUserDataDir,
       });
     };
-    
+
     const browserProcess = launch({
       executablePath: launchArgs.executablePath,
       args: launchArgs.args,
@@ -134,7 +134,6 @@ export abstract class ProductLauncher {
     };
 
     try {
-
       if (usePipe) {
         cdpConnection = await this.createCdpPipeConnection(browserProcess, {
           timeout,
