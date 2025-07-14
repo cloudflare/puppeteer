@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import type {Browser} from '@cloudflare/puppeteer';
-import { a } from 'vitest/dist/suite-dWqIFb_-.js';
 
 export const test = async (browser: Browser): Promise<Response> => {
   const page = await browser.newPage();
@@ -28,7 +27,9 @@ export const test = async (browser: Browser): Promise<Response> => {
   const textSelector = await page
     .locator('h1 ::-p-text(Getting started)')
     .waitHandle();
-  const fullTitle = await textSelector?.evaluate(el => el.textContent.trim());
+  const fullTitle = await textSelector?.evaluate(el => {
+    return el.textContent.trim();
+  });
 
   return new Response(`The title of this blog post is ${fullTitle}`);
 };
