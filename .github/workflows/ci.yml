@@ -154,7 +154,7 @@ jobs:
           - firefox-headful
           - firefox-headless
         os:
-          - ubuntu-latest
+          - ubuntu-22.04
           - macos-latest
           - windows-latest
         shard:
