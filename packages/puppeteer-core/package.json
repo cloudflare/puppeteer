@@ -1,6 +1,6 @@
 {
   "name": "@cloudflare/puppeteer",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A high-level API to control headless Chrome over the DevTools Protocol",
   "keywords": [
     "puppeteer",
