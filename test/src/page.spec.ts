@@ -23,6 +23,15 @@ import {attachFrame, detachFrame, isFavicon, waitEvent} from './utils.js';
 describe('Page', function () {
   setupTestBrowserHooks();
 
+  describe("Useragent", function (){
+    it("should have a default user agent set", async () => {
+      const {context} = await getTestState();
+      const newPage = await context.newPage();
+      const userAgent = await newPage.evaluate(() => navigator.userAgent);
+      assert.strictEqual(userAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36");
+    });
+  });
+
   describe('Page.close', function () {
     it('should reject all promises when page is closed', async () => {
       const {context} = await getTestState();
