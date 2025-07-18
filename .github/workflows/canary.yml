@@ -23,7 +23,7 @@ jobs:
         os:
           - ubuntu-latest
           - windows-latest
-          - macos-13
+          - macos-latest
         shard:
           - 1-2
           - 2-2
@@ -31,13 +31,16 @@ jobs:
           - experimental
           - stable
         exclude:
+          - os: windows-latest
+            suite: chrome-bidi
+          - os: macos-latest
           - os: macos-13
             suite: chrome-headful
     steps:
       - name: Check out repository
-        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b # v4.1.5
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - name: Set up Node.js
-        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
           cache: npm
           node-version-file: '.nvmrc'
@@ -48,25 +51,30 @@ jobs:
       # Set up GitHub Actions caching for Wireit.
       # - uses: google/wireit@f21db1f3a6a4db31f42787a958cf2a18308effed # setup-github-actions-caching/v2.0.3
       - name: Build packages
-        run: npm run build --workspace @puppeteer-test/test
+        run: npm run build
       - name: Install Chrome Canary
         id: browser
-        run: node tools/download_chrome_canary.mjs $HOME/.cache/puppeteer/chrome-canary
+        run: npm ci
+        env:
+          PUPPETEER_BROWSER_REVISION: canary
+      - name: Configure permissions
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: icacls $HOME/.cache/puppeteer/chrome /grant "ALL APPLICATION PACKAGES:(OI)(CI)(RX)"
       - name: Apply Canary expectations
         run: node tools/merge-canary-test-expectations.mjs
       - name: Run all tests (for non-Linux)
         if: ${{ matrix.os != 'ubuntu-latest' }}
         run: npm run test -- --shard '${{ matrix.shard }}' --test-suite ${{ matrix.suite }} --save-stats-to /tmp/artifacts/${{ github.event_name }}_INSERTID.json
         env:
-          PUPPETEER_EXECUTABLE_PATH: ${{ steps.browser.outputs.executablePath }}
+          PUPPETEER_BROWSER_REVISION: canary
           PUPPETEER_TEST_EXPERIMENTAL_CHROME_FEATURES: ${{ matrix.configs == 'experimental' }}
       - name: Run all tests (for Linux)
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: xvfb-run --auto-servernum npm run test -- --shard '${{ matrix.shard }}' --test-suite ${{ matrix.suite }} --save-stats-to /tmp/artifacts/${{ github.event_name }}_INSERTID.json
         env:
-          PUPPETEER_EXECUTABLE_PATH: ${{ steps.browser.outputs.executablePath }}
+          PUPPETEER_BROWSER_REVISION: canary
           PUPPETEER_TEST_EXPERIMENTAL_CHROME_FEATURES: ${{ matrix.configs == 'experimental' }}
-      - uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+      - uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
         if: always()
         with:
           name: test-results-${{ matrix.os }}-${{ matrix.suite }}-${{ matrix.shard }}-${{ matrix.configs }}
