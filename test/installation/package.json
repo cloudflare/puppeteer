@@ -45,7 +45,7 @@
     "assets"
   ],
   "dependencies": {
-    "glob": "10.4.3",
-    "mocha": "10.6.0"
+    "glob": "11.0.3",
+    "mocha": "11.7.1"
   }
 }
