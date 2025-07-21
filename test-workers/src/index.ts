@@ -13,6 +13,7 @@ import {test as htmlTest} from './fixtures/html.js';
 import {test as imageTest} from './fixtures/image.js';
 import {test as pdfTest} from './fixtures/pdf.js';
 import {test as tracingTest} from './fixtures/tracing.js';
+import {test as xpath} from './fixtures/xpath.js';
 
 const testsMap = {
   image: imageTest,
@@ -23,6 +24,7 @@ const testsMap = {
   coverage: coverageTest,
   evaluate: evaluateTest,
   evaluateOnNewDocument: evaluateOnNewDocumentTest,
+  xpath: xpath,
 };
 
 export default {
