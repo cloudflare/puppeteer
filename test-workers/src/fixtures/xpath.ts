@@ -16,7 +16,7 @@ export const test = async (browser: Browser): Promise<Response> => {
 
   return new Response(content, {
     headers: {
-      'content-type': 'plain/text',
+      'content-type': 'text/plain',
     },
   });
 };
