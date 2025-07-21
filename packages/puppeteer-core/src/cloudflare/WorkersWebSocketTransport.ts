@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import type {ConnectionTransport} from '../common/ConnectionTransport.js';
+import {packageVersion} from '../generated/version.js';
 
 import type {BrowserWorker} from './BrowserWorker.js';
 import {messageToChunks, chunksToMessage} from './chunking.js';
@@ -24,7 +25,10 @@ export class WorkersWebSocketTransport implements ConnectionTransport {
   ): Promise<WorkersWebSocketTransport> {
     const path = `${FAKE_HOST}/v1/connectDevtools?browser_session=${sessionId}`;
     const response = await endpoint.fetch(path, {
-      headers: {Upgrade: 'websocket'},
+      headers: {
+        Upgrade: 'websocket',
+        'cf-brapi-client': `@cloudflare/puppeteer@${packageVersion}`,
+      },
     });
     response.webSocket!.accept();
     return new WorkersWebSocketTransport(response.webSocket!, sessionId);
