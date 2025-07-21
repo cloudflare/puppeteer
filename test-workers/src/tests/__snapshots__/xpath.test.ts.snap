@@ -1,0 +1,3 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`xpath selector > can use xpath selectors 1`] = `"Hello, World!"`;
