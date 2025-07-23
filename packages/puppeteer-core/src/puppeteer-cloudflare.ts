@@ -12,7 +12,7 @@ export * from './cloudflare/BrowserWorker.js';
 
 const puppeteer = new PuppeteerWorkers();
 
-export const {connect, history, launch, limits, sessions} = puppeteer;
+export const {connect, history, launch, limits, sessions, acquire} = puppeteer;
 
 export * from './cloudflare/PuppeteerWorkers.js';
 
