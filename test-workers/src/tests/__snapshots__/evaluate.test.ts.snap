@@ -1,3 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`browser evaluate > evaluates function with inner function 1`] = `"The meaning of life is 42"`;
