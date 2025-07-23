@@ -163,6 +163,7 @@
   },
   "workspaces": [
     "packages/*",
+    "!packages/puppeteer-cloudflare",
     "test",
     "test/installation",
     "tools/eslint",
