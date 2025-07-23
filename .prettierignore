@@ -54,3 +54,5 @@ versioned_*/
 /packages/ng-schematics/files/
 /packages/ng-schematics/sandbox/
 /packages/ng-schematics/multi/
+
+/packages/puppeteer-cloudflare

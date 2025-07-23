@@ -1,0 +1,22 @@
+name = "puppeteer-test-workers-rui"
+main = "src/server/index.ts"
+workers_dev = true
+compatibility_flags = ["nodejs_compat"]
+compatibility_date = "2025-03-05"
+upload_source_maps = true
+
+[browser]
+binding = "BROWSER"
+
+[assets]
+directory = "../../../test/assets"
+binding = "ASSETS"
+run_worker_first = true
+
+[[durable_objects.bindings]]
+name = "TESTS_SERVER"
+class_name = "TestsServer"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["TestsServer"]
