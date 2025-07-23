@@ -43,7 +43,7 @@ jobs:
               - 'test/**'
               - 'test-d/**'
               - 'tools/mocha-runner/**'
-              - 'test-workers/**'
+              - 'packages/puppeteer-cloudflare/**'
               - '.mocharc.cjs'
               - 'tools/doctest/**'
               - 'tsconfig.base.json'

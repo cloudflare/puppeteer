@@ -1,4 +1,4 @@
-name = "puppeteer-test-workers-rui"
+name = "puppeteer-test-workers-v2"
 main = "src/server/index.ts"
 workers_dev = true
 compatibility_flags = ["nodejs_compat"]
@@ -20,3 +20,6 @@ class_name = "TestsServer"
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["TestsServer"]
+
+[env.cross-origin]
+name = "puppeteer-test-workers-v2-cross-origin"

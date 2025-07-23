@@ -26,7 +26,6 @@
     "test": "wireit",
     "test-install": "npm run test --workspace @puppeteer-test/installation",
     "test-types": "wireit",
-    "test-workers": "wireit",
     "test:chrome": "wireit",
     "test:chrome:headful": "wireit",
     "test:chrome:headless": "wireit",
@@ -74,9 +73,6 @@
         "./packages/puppeteer-core:build",
         "./tools/doctest:build"
       ]
-    },
-    "test-workers": {
-      "command": "cd test-workers && npx run wrangler --remote"
     },
     "test:chrome": {
       "dependencies": [
