@@ -1,3 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`browser does basic manipulations > gets the title of google developers website 1`] = `"Bytes used: 78.76923076923077%"`;

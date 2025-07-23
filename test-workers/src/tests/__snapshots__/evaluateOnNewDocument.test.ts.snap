@@ -1,3 +1,0 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
-
-exports[`browser evaluateOnNewDocument > evaluates function with inner function on new document 1`] = `"The meaning of life is 42"`;
