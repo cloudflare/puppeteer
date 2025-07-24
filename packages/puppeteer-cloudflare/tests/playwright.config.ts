@@ -1,6 +1,8 @@
 import { defineConfig } from '@playwright/test';
 
-export default defineConfig({
+import type { WorkerOptions } from './src/proxy/proxyTests.js';
+
+export default defineConfig<object, WorkerOptions>({
   testDir: './proxyTests',
   reporter: process.env.CI ? 'dot' : 'list',
   // dev mode apparently doesn't support parallelism
@@ -9,7 +11,22 @@ export default defineConfig({
   timeout: 60 * 1000,
   projects: [
     {
-      name: 'workers',
+      name: 'BISO',
+      use: {
+        binding: 'BROWSER',
+      }
+    },
+    {
+      name: 'BRAPI Staging',
+      use: {
+        binding: 'BROWSER_BRAPI_STAGING',
+      }
+    },
+    {
+      name: 'BRAPI Production',
+      use: {
+        binding: 'BROWSER_BRAPI_PRODUCTION',
+      }
     },
   ]
 });

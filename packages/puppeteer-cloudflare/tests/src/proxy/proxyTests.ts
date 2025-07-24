@@ -9,17 +9,21 @@ type TestPayload = Pick<
   TestInfo,
   'testId' | 'status' | 'expectedStatus' | 'errors' | 'annotations'
 >;
+export interface WorkerOptions {
+  binding: 'BROWSER' | 'BROWSER_BRAPI_STAGING' | 'BROWSER_BRAPI_PRODUCTION';
+}
 
 export interface WorkerFixture {
   sessionId: string;
 }
 
-export const test = baseTest.extend<{}, WorkerFixture>({
+export const test = baseTest.extend<object, WorkerOptions & WorkerFixture>({
+  binding: ['BROWSER', {option: true, scope: 'worker'}],
   sessionId: [
-    async ({}, use, workerInfo) => {
+    async ({ binding }, use, workerInfo) => {
       const sessionFile = path.join(
         workerInfo.project.outputDir,
-        `session-${workerInfo.parallelIndex}.json`,
+        `session_${binding}_${workerInfo.parallelIndex}.json`,
       );
       let sessionId: string | undefined;
       if (fs.existsSync(sessionFile)) {
@@ -27,7 +31,7 @@ export const test = baseTest.extend<{}, WorkerFixture>({
           fs.readFileSync(sessionFile, 'utf-8'),
         ) as AcquireResponse;
         for (let i = 0; i < 5; i++) {
-          const response = await fetch(`${testsServerUrl}/v1/sessions`);
+          const response = await fetch(`${testsServerUrl}/v1/sessions?binding=${binding}`);
           const {sessions} = (await response.json()) as SessionsResponse;
           const activeSession = sessions.find(s => {
             return s.sessionId === session.sessionId;
@@ -50,7 +54,7 @@ export const test = baseTest.extend<{}, WorkerFixture>({
       }
 
       if (!sessionId) {
-        const response = await fetch(`${testsServerUrl}/v1/acquire`);
+        const response = await fetch(`${testsServerUrl}/v1/acquire?binding=${binding}`);
         const session = (await response.json()) as AcquireResponse;
         fs.writeFileSync(sessionFile, JSON.stringify(session));
         sessionId = session.sessionId!;
@@ -65,7 +69,7 @@ export const test = baseTest.extend<{}, WorkerFixture>({
 const testsServerUrl = process.env.TESTS_SERVER_URL ?? `http://localhost:8787`;
 
 interface ProxyTests {
-  beforeAll: ({sessionId}: WorkerFixture) => Promise<void>;
+  beforeAll: (fixtures: WorkerFixture & WorkerOptions) => Promise<void>;
   afterAll: () => Promise<void>;
   runTest: (
     test: {testId: string; fullTitle: string},
@@ -77,13 +81,12 @@ export async function proxyTests(file: string): Promise<ProxyTests> {
   const url = new URL(`${testsServerUrl}/${file}`);
 
   return {
-    beforeAll: async ({sessionId}: WorkerFixture) => {
+    beforeAll: async ({sessionId, binding}: WorkerFixture & WorkerOptions) => {
       if (process.env.CI) {
         url.searchParams.set('timeout', '30');
       }
-      if (sessionId) {
-        url.searchParams.set('sessionId', sessionId);
-      }
+      url.searchParams.set('sessionId', sessionId);
+      url.searchParams.set('binding', binding);
     },
 
     afterAll: async () => {},

@@ -46,9 +46,9 @@ ${indent}}, testInfo));`;
 
 let proxy: any;
 
-test.beforeAll(async ({ sessionId }) => {
+test.beforeAll(async ({ sessionId, binding }) => {
   proxy = await proxyTests('${suite.file}');
-  await proxy.beforeAll({ sessionId });
+  await proxy.beforeAll({ sessionId, binding });
 });
 
 test.afterAll(async () => await proxy.afterAll());

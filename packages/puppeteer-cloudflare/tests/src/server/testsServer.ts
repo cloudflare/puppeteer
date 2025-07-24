@@ -11,6 +11,7 @@ import {DurableObject} from 'cloudflare:workers';
 import {skipTests} from '../skipTests.js';
 
 import {setTestState, TestServer} from './mocha-utils.js';
+import { getBinding } from './utils.js';
 
 export interface TestRequestPayload {
   testId: string;
@@ -66,7 +67,8 @@ export class TestsServer extends DurableObject<Env> {
     // TODO __dirname is used to access local files, mabe we can polyfill that too?
     (globalThis as any).__dirname = '';
 
-    const browser = await puppeteer.connect(env.BROWSER, sessionId);
+    const binding = getBinding(url);
+    const browser = await puppeteer.connect(binding, sessionId);
     try {
       const page = await browser.newPage();
       setTestState({
