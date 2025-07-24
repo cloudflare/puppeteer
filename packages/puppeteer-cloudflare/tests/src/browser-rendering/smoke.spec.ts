@@ -57,7 +57,7 @@ test('should generate PDF @smoke', async () => {
   expect(Array.from(pdf.subarray(0, 4))).toEqual([0x25, 0x50, 0x44, 0x46]); // '%PDF'
 });
 
-test('should capture screenshot', async () => {
+test('should capture screenshot @smoke', async () => {
   const {page} = getTestState();
 
   await page.goto('https://example.com/');
