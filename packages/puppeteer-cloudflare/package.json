@@ -1,0 +1,34 @@
+{
+  "name": "puppeteer-cloudflare",
+  "description": "Puppeteer for Cloudflare Workers",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./lib/esm/index.js",
+      "require": "./lib/cjs/index.js",
+      "default": "./lib/esm/index.js"
+    },
+    "./internal/*": {
+      "import": "./lib/esm/packages/puppeteer-core/src/*",
+      "require": "./lib/cjs/packages/puppeteer-core/src/*",
+      "default": "./lib/esm/packages/puppeteer-core/src/*"
+    }
+  },
+  "scripts": {
+    "ci:tests": "cd tests && npm ci",
+    "test:generate:worker": "node ./utils/generate_worker_tests.js",
+    "test:generate:proxy": "node ./utils/generate_proxy_tests.js",
+    "test:deploy": "npm run test:generate:worker && npm run ci:tests && cd tests && npx wrangler deploy",
+    "test:dev": "npm run test:generate:worker && cd tests && npx wrangler dev --remote",
+    "test:full": "npm run test:generate:proxy && cd tests && npx playwright test",
+    "test:smoke": "npm run test:generate:proxy && cd tests && npx playwright test --grep \"@smoke\"",
+    "test:merge": "cd tests && npx playwright merge-reports --reporter html ./all-blob-reports"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250723.0",
+    "vite": "^6.3.5",
+    "wrangler": "^4.25.1"
+  }
+}

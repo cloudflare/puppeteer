@@ -1,0 +1,12 @@
+{
+  "name": "cloudflare-puppeteer-example",
+  "version": "1.0.0",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@cloudflare/puppeteer": "file:..",
+    "wrangler": "^4.12.0"
+  }
+}

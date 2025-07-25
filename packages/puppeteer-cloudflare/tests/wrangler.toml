@@ -1,0 +1,28 @@
+name = "puppeteer-test-workers-v2"
+main = "src/server/index.ts"
+workers_dev = true
+compatibility_flags = ["nodejs_compat"]
+compatibility_date = "2025-03-05"
+upload_source_maps = true
+
+unsafe.bindings = [
+   {name = "BROWSER_BRAPI_STAGING", type = "browser", internal_env = "https://core-staging.rendering.cfdata.org/"},
+   {name = "BROWSER_BRAPI_PRODUCTION", type = "browser", internal_env = "https://core-production.rendering.cfdata.org/"},
+   {name = "BROWSER", type = "browser"}
+]
+
+[assets]
+directory = "../../../test/assets"
+binding = "ASSETS"
+run_worker_first = true
+
+[[durable_objects.bindings]]
+name = "TESTS_SERVER"
+class_name = "TestsServer"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["TestsServer"]
+
+[env.cross-origin]
+name = "puppeteer-test-workers-v2-cross-origin"
