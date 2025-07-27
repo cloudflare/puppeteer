@@ -1,7 +1,10 @@
-import type {Cookie, Page} from '@cloudflare/puppeteer';
+import type {BrowserContext, Cookie, Page} from '@cloudflare/puppeteer';
 import expect from 'expect';
 
+import { Skipped } from './utils.js';
+
 export class TestServer {
+  PORT!: number;
   PREFIX: string;
   CROSS_PROCESS_PREFIX: string;
   EMPTY_PAGE: string;
@@ -14,11 +17,57 @@ export class TestServer {
     );
     this.EMPTY_PAGE = `${assetsUrl}/empty.html`;
   }
+
+  get port(): never {
+    throw new Skipped('TestServer.port is not supported in this environment');
+  }
+
+  enableHTTPCache(): never {
+    throw new Skipped('TestServer.enableHTTPCache is not supported in this environment');
+  }
+
+  setAuth(): never {
+    throw new Skipped('TestServer.setAuth is not supported in this environment');
+  }
+
+  enableGzip(): never {
+    throw new Skipped('TestServer.enableGzip is not supported in this environment');
+  }
+
+  setCSP(): never {
+    throw new Skipped('TestServer.setCSP is not supported in this environment');
+  }
+
+  async stop(): Promise<never> {
+    throw new Skipped('TestServer.stop is not supported in this environment');
+  }
+
+  setRoute(): never {
+    throw new Skipped('TestServer.setRoute is not supported in this environment');
+  }
+
+  setRedirect(): never {
+    throw new Skipped('TestServer.setRedirect is not supported in this environment');
+  }
+
+  waitForRequest(): Promise<never> {
+    throw new Skipped('TestServer.waitForRequest is not supported in this environment');
+  }
+
+  reset(): never {
+    throw new Skipped('TestServer.reset is not supported in this environment');
+  }
+
+  serveFile(): never {
+    throw new Skipped('TestServer.serveFile is not supported in this environment');
+  }
 }
 
 interface TestState {
+  context: BrowserContext;
   page: Page;
   server: TestServer;
+  httpsServer: TestServer;
 }
 
 export function setTestState(testState: TestState | undefined): void {
@@ -37,7 +86,7 @@ export function setupTestBrowserHooks(): void {
 }
 
 export function launch(): never {
-  throw new Error('Not implemented');
+  throw new Skipped('Skipped because launch is not supported in this environment');
 }
 
 export const expectCookieEquals = async (
