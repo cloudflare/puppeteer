@@ -3,3 +3,4 @@ node_modules
 workerTests
 proxyTests
 test-results
+playwright-report

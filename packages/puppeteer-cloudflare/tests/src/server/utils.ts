@@ -1,6 +1,12 @@
 import type { BrowserWorker } from "@cloudflare/puppeteer";
 import { env } from "cloudflare:workers";
 
+export class Skipped extends Error {
+  constructor(message?: string) {
+    super(message);
+  }
+}
+
 export function getBinding(url: URL): BrowserWorker {
   const bindingName = url.searchParams.get('binding');
   if (!bindingName) {

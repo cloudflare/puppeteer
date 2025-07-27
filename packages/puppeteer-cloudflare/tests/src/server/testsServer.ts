@@ -11,7 +11,7 @@ import {DurableObject} from 'cloudflare:workers';
 import {skipTests} from '../skipTests.js';
 
 import {setTestState, TestServer} from './mocha-utils.js';
-import { getBinding } from './utils.js';
+import { getBinding, Skipped } from './utils.js';
 
 export interface TestRequestPayload {
   testId: string;
@@ -53,7 +53,12 @@ export class TestsServer extends DurableObject<Env> {
       return Response.json({
         testId,
         status: 'skipped',
-        errors: [],
+        errors: [
+          {
+            type: 'skip',
+            description: `Test skipped because it is in the skipTests list`,
+          }
+        ],
         annotations: [],
         duration: 0,
         hasNonRetriableError: false,
@@ -70,13 +75,31 @@ export class TestsServer extends DurableObject<Env> {
     const binding = getBinding(url);
     const browser = await puppeteer.connect(binding, sessionId);
     try {
-      const page = await browser.newPage();
+      const context = await browser.createBrowserContext();
+      const page = await context.newPage();
       setTestState({
+        context,
         page,
         server: new TestServer(url.origin),
+        httpsServer: new TestServer(url.origin),
       });
 
       const result = await testRunner.runTest(file, testId);
+
+      // TODO handle skipped tests properly, probably requires a change in TestRunner
+      if (result.status === 'failed') {
+        const [error] = result.errors as Error[];
+        if (error.message.includes('is not supported in this environment')) {
+          result.status = "skipped";
+          result.expectedStatus = "skipped";
+          result.errors = [];
+          result.annotations.push({
+            type: 'skip',
+            description: error.message.replace(/^Error: /, ''),
+          });
+        }
+      }
+
       if (!['passed', 'skipped'].includes(result.status)) {
         log(
           `❌ ${fullTitle} failed with status ${result.status}${result.errors.length ? `: ${result.errors[0].message}` : ''}`,
