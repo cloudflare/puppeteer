@@ -5,13 +5,14 @@ import {
   // @ts-expect-error
 } from '@cloudflare/playwright/internal';
 import '@workerTests/index';
+import type { Browser} from '@cloudflare/puppeteer';
 import puppeteer from '@cloudflare/puppeteer';
 import {DurableObject} from 'cloudflare:workers';
 
 import {skipTests} from '../skipTests.js';
 
 import {setTestState, TestServer} from './mocha-utils.js';
-import { getBinding, Skipped } from './utils.js';
+import { getBinding } from './utils.js';
 
 export interface TestRequestPayload {
   testId: string;
@@ -30,7 +31,24 @@ const skipTestsFullTitles = new Set(
 // ensure we are in test mode
 setUnderTest(true);
 
+function parseTrace(trace: string) {
+  return Object.fromEntries(trace.split('\n').filter(line => {return line;}).map(line => {
+    const [key, value] = line.split('=');
+    return [key, value];
+  })) as { loc: string, colo: string };
+}
+
+interface CdnTrace {
+  loc: string;
+  colo: string;
+}
+
 export class TestsServer extends DurableObject<Env> {
+  private cdnTraces!: {
+    worker: CdnTrace;
+    browser: CdnTrace;
+  };
+
   constructor(state: DurableObjectState, env: Env) {
     super(state, env);
   }
@@ -75,6 +93,9 @@ export class TestsServer extends DurableObject<Env> {
     const binding = getBinding(url);
     const browser = await puppeteer.connect(binding, sessionId);
     try {
+      const { worker, browser: container } = await this.getCdnTraces(browser, sessionId);
+      const browserVersion = await browser.version();
+
       const context = await browser.createBrowserContext();
       const page = await context.newPage();
       setTestState({
@@ -100,6 +121,20 @@ export class TestsServer extends DurableObject<Env> {
         }
       }
 
+      result.annotations.push({
+        type: 'browser version',
+        description: browserVersion,
+      }, {
+        type: 'session id',
+        description: sessionId,
+      }, {
+        type: 'worker colo',
+        description: worker.colo,
+      }, {
+        type: 'browser colo',
+        description: container.colo,
+      });
+      
       if (!['passed', 'skipped'].includes(result.status)) {
         log(
           `❌ ${fullTitle} failed with status ${result.status}${result.errors.length ? `: ${result.errors[0].message}` : ''}`,
@@ -110,5 +145,27 @@ export class TestsServer extends DurableObject<Env> {
       setTestState(undefined);
       await browser.disconnect();
     }
+  }
+
+  private async getCdnTraces(browser: Browser, sessionId: string) {
+    if (!this.cdnTraces) {
+      const worker = parseTrace(await fetch('https://1.1.1.1/cdn-cgi/trace').then(resp => {
+        return resp.text();
+      }));
+      const context = await browser.createBrowserContext();
+      const page = await context.newPage();
+      const browserCdnTrace = parseTrace(await page.goto('https://1.1.1.1/cdn-cgi/trace').then(resp => {
+        return resp!.text();
+      }));
+      await page.close();
+      await context.close();
+  
+      // eslint-disable-next-line no-console
+      console.log(`ℹ️ Session ID: ${sessionId}, Worker: ${worker.colo}, Browser: ${browserCdnTrace.colo}`);
+  
+      this.cdnTraces = { worker, browser: browserCdnTrace };
+    }
+
+    return this.cdnTraces;
   }
 }
