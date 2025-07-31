@@ -1,6 +1,6 @@
 name: CI
 
-# Declare default permissions as read only.
+# Declare default permissions as rea only.
 permissions: read-all
 
 on:
