@@ -284,5 +284,12 @@ module.exports = {
         'tsdoc/syntax': 'error',
       },
     },
+
+    {
+      files: ['packages/puppeteer-cloudflare/**/*'],
+      rules: {
+        'rulesdir/check-license': 'off',
+      },
+    },
   ],
 };

@@ -1,0 +1,37 @@
+import {promises} from '@cloudflare/playwright/fs';
+
+export {promises} from '@cloudflare/playwright/fs';
+
+export const {
+  access,
+  appendFile,
+  chmod,
+  chown,
+  constants,
+  copyFile,
+  cp,
+  glob,
+  lchown,
+  link,
+  lstat,
+  lutimes,
+  mkdir,
+  mkdtemp,
+  open,
+  opendir,
+  readdir,
+  readFile,
+  readlink,
+  realpath,
+  rename,
+  rm,
+  rmdir,
+  stat,
+  statfs,
+  symlink,
+  truncate,
+  unlink,
+  utimes,
+  watch,
+  writeFile,
+} = promises;

@@ -1,0 +1,41 @@
+name: "Puppeteer for Cloudflare - Smoke Tests"
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  test_smoke:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      TESTS_SERVER_URL: https://puppeteer-test-workers-v2.cloudflare-browser-rendering-085.workers.dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: |
+          npm ci
+          npm run build
+          cd packages/puppeteer-cloudflare
+          npm ci
+          npm run test:deploy
+          npm run test:deploy -- --env=cross-origin
+
+      - name: Run Smoke Tests
+        run: |
+          cd packages/puppeteer-cloudflare
+          npm run test:smoke -- --reporter=html
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          # puppeteer tests run with playwright, that's why it's playwright-report
+          name: playwright-report
+          path: packages/puppeteer-cloudflare/tests/playwright-report/
+          retention-days: 30

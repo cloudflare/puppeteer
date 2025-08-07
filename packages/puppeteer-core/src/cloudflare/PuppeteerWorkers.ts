@@ -85,6 +85,7 @@ export interface WorkersLaunchOptions {
 export class PuppeteerWorkers extends Puppeteer {
   public constructor() {
     super({isPuppeteerCore: false});
+    this.acquire = this.acquire.bind(this);
     this.connect = this.connect.bind(this);
     this.launch = this.launch.bind(this);
     this.sessions = this.sessions.bind(this);
@@ -102,25 +103,7 @@ export class PuppeteerWorkers extends Puppeteer {
     endpoint: BrowserWorker,
     options?: WorkersLaunchOptions
   ): Promise<Browser> {
-    const searchParams = new URLSearchParams();
-    if (options?.keep_alive) {
-      searchParams.set('keep_alive', `${options.keep_alive}`);
-    }
-    if (options?.location) {
-      searchParams.set('location', options.location);
-    }
-
-    const acquireUrl = `${FAKE_HOST}/v1/acquire?${searchParams.toString()}`;
-    const res = await endpoint.fetch(acquireUrl);
-    const status = res.status;
-    const text = await res.text();
-    if (status !== 200) {
-      throw new Error(
-        `Unable to create new browser: code: ${status}: message: ${text}`
-      );
-    }
-    // Got a 200, so response text is actually an AcquireResponse
-    const response: AcquireResponse = JSON.parse(text);
+    const response: AcquireResponse = await this.acquire(endpoint, options);
     return await this.connect(endpoint, response.sessionId);
   }
 
@@ -221,5 +204,37 @@ export class PuppeteerWorkers extends Puppeteer {
         `Unable to connect to existing session ${sessionId} (it may still be in use or not ready yet) - retry or launch a new browser: ${e}`
       );
     }
+  }
+
+  /**
+   * Acquire a new browser session.
+   *
+   * @param borwserWorker - BrowserWorker
+   * @returns a new browser session
+   */
+  public async acquire(
+    endpoint: BrowserWorker,
+    options?: WorkersLaunchOptions
+  ): Promise<AcquireResponse> {
+    const searchParams = new URLSearchParams();
+    if (options?.keep_alive) {
+      searchParams.set('keep_alive', `${options.keep_alive}`);
+    }
+    if (options?.location) {
+      searchParams.set('location', options.location);
+    }
+
+    const acquireUrl = `${FAKE_HOST}/v1/acquire?${searchParams.toString()}`;
+    const res = await endpoint.fetch(acquireUrl);
+    const status = res.status;
+    const text = await res.text();
+    if (status !== 200) {
+      throw new Error(
+        `Unable to create new browser: code: ${status}: message: ${text}`
+      );
+    }
+    // Got a 200, so response text is actually an AcquireResponse
+    const response: AcquireResponse = JSON.parse(text);
+    return response;
   }
 }

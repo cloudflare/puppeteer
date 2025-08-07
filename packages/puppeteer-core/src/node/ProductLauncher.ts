@@ -89,6 +89,7 @@ export abstract class ProductLauncher {
       defaultViewport = DEFAULT_VIEWPORT,
       slowMo = 0,
       timeout = 30000,
+      waitForInitialPage = true,
       protocolTimeout,
     } = options;
 
@@ -146,6 +147,7 @@ export abstract class ProductLauncher {
           slowMo,
         });
       }
+
       browser = await CdpBrowser._create(
         this.product,
         cdpConnection,
@@ -162,6 +164,10 @@ export abstract class ProductLauncher {
         throw new TimeoutError(error.message);
       }
       throw error;
+    }
+
+    if (waitForInitialPage) {
+      await this.waitForPageTarget(browser, timeout);
     }
 
     return browser;

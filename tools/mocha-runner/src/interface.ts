@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import Mocha from 'mocha';
-import commonInterface from 'mocha/lib/interfaces/common';
 import {
   setLogCapture,
   getCapturedLogs,
-} from 'puppeteer-core/internal/common/Debug.js';
+} from '@cloudflare/puppeteer/internal/common/Debug.js';
+import Mocha from 'mocha';
+import commonInterface from 'mocha/lib/interfaces/common';
 
 import {testIdMatchesExpectationPattern} from './utils.js';
 
