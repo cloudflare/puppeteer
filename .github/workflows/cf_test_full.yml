@@ -28,7 +28,7 @@ jobs:
       - name: Run Full Tests
         run: |
           cd packages/puppeteer-cloudflare
-          npm run test:full -- --reporter=html
+          npm run test:full -- --reporter=html --project 'BISO' --project 'BRAPI Staging'
 
       - name: Upload HTML report
         uses: actions/upload-artifact@v4

@@ -29,7 +29,7 @@ jobs:
       - name: Run Smoke Tests
         run: |
           cd packages/puppeteer-cloudflare
-          npm run test:smoke -- --reporter=html
+          npm run test:smoke -- --reporter=html --project 'BISO' --project 'BRAPI Staging'
 
       - name: Upload HTML report
         uses: actions/upload-artifact@v4
