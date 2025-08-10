@@ -1,4 +1,4 @@
-import type {BrowserContext, Cookie, Page} from '@cloudflare/puppeteer';
+import type {BrowserContext, BrowserWorker, Cookie, Page} from '@cloudflare/puppeteer';
 import expect from 'expect';
 
 import { Skipped } from './utils.js';
@@ -64,6 +64,7 @@ export class TestServer {
 }
 
 interface TestState {
+  binding: BrowserWorker;
   context: BrowserContext;
   page: Page;
   server: TestServer;

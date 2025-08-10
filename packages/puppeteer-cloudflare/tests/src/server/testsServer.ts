@@ -99,6 +99,7 @@ export class TestsServer extends DurableObject<Env> {
       const context = await browser.createBrowserContext();
       const page = await context.newPage();
       setTestState({
+        binding,
         context,
         page,
         server: new TestServer(url.origin),
