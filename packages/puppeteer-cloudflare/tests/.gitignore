@@ -4,3 +4,4 @@ workerTests
 proxyTests
 test-results
 playwright-report
+wrangler-test.toml
