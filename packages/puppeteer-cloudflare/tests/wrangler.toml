@@ -1,9 +1,13 @@
-name = "puppeteer-test-workers-v2"
+name = "puppeteer-test-workers"
 main = "src/server/index.ts"
-workers_dev = true
+workers_dev = false
 compatibility_flags = ["nodejs_compat"]
 compatibility_date = "2025-03-05"
 upload_source_maps = true
+
+routes = [
+  { pattern = "puppeteer-test-workers.rendering.cfdata.org", custom_domain = true },
+]
 
 [browser]
 binding = "BROWSER"
@@ -22,4 +26,8 @@ tag = "v1"
 new_sqlite_classes = ["TestsServer"]
 
 [env.cross-origin]
-name = "puppeteer-test-workers-v2-cross-origin"
+name = "puppeteer-test-workers-cross-origin"
+
+routes = [
+  { pattern = "puppeteer-test-workers-cross-origin.rendering.cfdata.org", custom_domain = true },
+]

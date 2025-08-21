@@ -17,6 +17,11 @@ export interface WorkerFixture {
   sessionId: string;
 }
 
+const authHeaders = {
+  'CF-Access-Client-Id': process.env.CF_ACCESS_CLIENT_ID ?? '',
+  'CF-Access-Client-Secret': process.env.CF_ACCESS_CLIENT_SECRET ?? '',
+};
+
 export const test = baseTest.extend<object, WorkerOptions & WorkerFixture>({
   binding: ['BROWSER', {option: true, scope: 'worker'}],
   sessionId: [
@@ -31,7 +36,9 @@ export const test = baseTest.extend<object, WorkerOptions & WorkerFixture>({
           fs.readFileSync(sessionFile, 'utf-8'),
         ) as AcquireResponse;
         for (let i = 0; i < 5; i++) {
-          const response = await fetch(`${testsServerUrl}/v1/sessions?binding=${binding}`);
+          const response = await fetch(`${testsServerUrl}/v1/sessions?binding=${binding}`, {
+            headers: authHeaders,
+          });
           const {sessions} = (await response.json()) as SessionsResponse;
           const activeSession = sessions.find(s => {
             return s.sessionId === session.sessionId;
@@ -54,7 +61,9 @@ export const test = baseTest.extend<object, WorkerOptions & WorkerFixture>({
       }
 
       if (!sessionId) {
-        const response = await fetch(`${testsServerUrl}/v1/acquire?binding=${binding}`);
+        const response = await fetch(`${testsServerUrl}/v1/acquire?binding=${binding}`, {
+          headers: authHeaders,
+        });
         const session = (await response.json()) as AcquireResponse;
         fs.writeFileSync(sessionFile, JSON.stringify(session));
         sessionId = session.sessionId!;
@@ -98,6 +107,7 @@ export async function proxyTests(file: string): Promise<ProxyTests> {
       const response = await fetch(url, {
         body: JSON.stringify({testId, fullTitle}),
         method: 'POST',
+        headers: authHeaders,
       });
       if (!response.ok) {
         throw new Error(`Failed to run test ${fullTitle} (${testId})`);
