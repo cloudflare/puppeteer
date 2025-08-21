@@ -10,7 +10,9 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       BROWSER_BINDINGS: ${{ secrets.BROWSER_BINDINGS }}
-      TESTS_SERVER_URL: https://puppeteer-test-workers-v2.cloudflare-browser-rendering-085.workers.dev
+      TESTS_SERVER_URL: https://puppeteer-test-workers.rendering.cfdata.org
+      CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+      CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
