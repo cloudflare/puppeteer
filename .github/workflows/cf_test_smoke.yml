@@ -27,7 +27,6 @@ jobs:
           cd packages/puppeteer-cloudflare
           npm ci
           npm run test:deploy
-          npm run test:deploy -- --env=cross-origin
 
       - name: Run Smoke Tests
         run: |
