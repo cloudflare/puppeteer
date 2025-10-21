@@ -78,7 +78,7 @@ export interface LimitsResponse {
 export interface WorkersLaunchOptions {
   keep_alive?: number; // milliseconds to keep browser alive even if it has no activity (from 10_000ms to 600_000ms, default is 60_000)
   location?: Locations;
-  recordingEnabled?: boolean;
+  recording?: boolean;
 }
 /**
  * @public
@@ -224,11 +224,8 @@ export class PuppeteerWorkers extends Puppeteer {
     if (options?.location) {
       searchParams.set('location', options.location);
     }
-    if (options?.recordingEnabled) {
-      searchParams.set(
-        'recording_enabled',
-        options.recordingEnabled.toString()
-      );
+    if (options?.recording) {
+      searchParams.set('recording', options.recording.toString());
     }
 
     const acquireUrl = `${FAKE_HOST}/v1/acquire?${searchParams.toString()}`;
