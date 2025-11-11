@@ -24,7 +24,7 @@ jobs:
       issues: write
     steps:
       - name: Check out repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           script: |
             github.rest.issues.addLabels({
@@ -34,7 +34,7 @@ jobs:
               labels: ["confirmed"]
             })
       - name: Find Comment Id
-        uses: peter-evans/find-comment@a54c31d7fa095754bfef525c0c8e5e5674c4b4b1 # v2.4.0
+        uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4.0.0
         id: find-comment-id
         with:
           node-version: 18.18
