@@ -10,7 +10,7 @@
     "@cloudflare/puppeteer": "file:../../puppeteer-core"
   },
   "devDependencies": {
-    "@playwright/test": "^1.51.1",
+    "@playwright/test": "^1.56.1",
     "@puppeteer-test/test": "file:../../../test",
     "wrangler": "^4.25.1"
   }
