@@ -121,15 +121,15 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@puppeteer/browsers": "2.2.4",
-    "debug": "^4.3.5",
+    "debug": "^4.4.3",
     "devtools-protocol": "0.0.1299070",
-    "ws": "^8.18.0"
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@types/debug": "4.1.12",
     "@types/node": "18.17.15",
     "@types/chrome": "0.0.268",
-    "@types/ws": "8.5.11",
+    "@types/ws": "8.18.1",
     "mitt": "3.0.1",
     "parsel-js": "1.1.2",
     "rxjs": "7.8.1"
