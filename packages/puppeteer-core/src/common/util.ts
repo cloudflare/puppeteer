@@ -265,6 +265,11 @@ export async function getReadableFromProtocolStream(
     async pull(controller) {
       function getUnit8Array(data: string, isBase64: boolean): Uint8Array {
         if (isBase64) {
+          // Uses Buffer for performance reasons
+          // See: https://github.com/puppeteer/puppeteer/pull/13753/changes/41524ddbda75052a24b7f60693ad7d6a6f24ae65
+          if (typeof Buffer === 'function') {
+            return Buffer.from(data, 'base64');
+          }
           return Uint8Array.from(atob(data), m => {
             return m.codePointAt(0)!;
           });
