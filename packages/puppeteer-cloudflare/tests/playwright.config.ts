@@ -9,24 +9,4 @@ export default defineConfig<object, WorkerOptions>({
   workers: process.env.TESTS_SERVER_URL ? 6 : 1,
   retries: process.env.TESTS_SERVER_URL ? 1 : 0,
   timeout: 60 * 1000,
-  projects: [
-    {
-      name: 'BISO',
-      use: {
-        binding: 'BROWSER',
-      }
-    },
-    {
-      name: 'BRAPI Staging',
-      use: {
-        binding: 'BROWSER_BRAPI_STAGING',
-      }
-    },
-    {
-      name: 'BRAPI Production',
-      use: {
-        binding: 'BROWSER_BRAPI_PRODUCTION',
-      }
-    },
-  ]
 });
