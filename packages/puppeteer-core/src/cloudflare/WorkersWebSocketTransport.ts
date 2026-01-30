@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 import type {ConnectionTransport} from '../common/ConnectionTransport.js';
+import {debugError} from '../common/util.js';
 import {packageVersion} from '../generated/version.js';
 
 import type {BrowserWorker} from './BrowserWorker.js';
@@ -54,7 +55,8 @@ export class WorkersWebSocketTransport implements ConnectionTransport {
       }
     });
     this.ws.addEventListener('error', e => {
-      console.error(`Websocket error: SessionID: ${sessionId}`, e);
+      const message = (e as ErrorEvent).message || 'Unknown error';
+      debugError(`WebSocket error: SessionID: ${sessionId} - ${message}`);
       clearInterval(this.pingInterval as NodeJS.Timeout);
     });
   }
