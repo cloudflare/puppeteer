@@ -1,4 +1,6 @@
+import packageJSON from '../../package.json';
+
 /**
  * @internal
  */
-export const packageVersion = '1.0.4';
+export const packageVersion = packageJSON.version;
