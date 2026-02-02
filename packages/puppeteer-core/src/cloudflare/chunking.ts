@@ -23,7 +23,11 @@ export const messageToChunks = (data: string): Uint8Array[] => {
   );
 
   const chunks: Uint8Array[] = [firstChunk];
-  for (let i = FIRST_CHUNK_DATA_SIZE; i < data.length; i += MAX_MESSAGE_SIZE) {
+  for (
+    let i = FIRST_CHUNK_DATA_SIZE;
+    i < encodedUint8Array.length;
+    i += MAX_MESSAGE_SIZE
+  ) {
     chunks.push(encodedUint8Array.slice(i, i + MAX_MESSAGE_SIZE));
   }
   return chunks;
