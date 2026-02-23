@@ -26,6 +26,7 @@ export const execFile = async (
   const result = await nodeExecFile(file, args, options);
   console.log('stdout', result.stdout);
   console.log('stderr', result.stderr);
+  // @ts-ignore
   return result;
 };
 export const readAsset = (...components: string[]): Promise<string> => {

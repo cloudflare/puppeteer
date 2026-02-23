@@ -20,6 +20,41 @@ All notable changes to this project will be documented in this file. See [standa
   * dependencies
     * @puppeteer/browsers bumped from 1.5.1 to 1.6.0
 
+## [22.15.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v22.14.0...puppeteer-core-v22.15.0) (2024-07-31)
+
+
+### Features
+
+* support AbortSignal in waitForNavigation ([#12852](https://github.com/puppeteer/puppeteer/issues/12852)) ([9a35f7b](https://github.com/puppeteer/puppeteer/commit/9a35f7ba189e3a0250a4bd2e3b40efee9c6e2b18))
+
+
+### Bug Fixes
+
+* handle the string predicate in waitForFrame ([#12849](https://github.com/puppeteer/puppeteer/issues/12849)) ([9ec5f25](https://github.com/puppeteer/puppeteer/commit/9ec5f25ea6f9e60d250c7413e122a5c32faeb3f9))
+* roll to Chrome 127.0.6533.88 ([#12858](https://github.com/puppeteer/puppeteer/issues/12858)) ([4b0e889](https://github.com/puppeteer/puppeteer/commit/4b0e8890ef9fd4e581da49072f1a04118087a2a2))
+* **webdriver:** implement request timings ([#12831](https://github.com/puppeteer/puppeteer/issues/12831)) ([409d244](https://github.com/puppeteer/puppeteer/commit/409d244aed480fbb5254f852afb16bd101692f9a))
+
+## [22.14.0](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v22.13.1...puppeteer-core-v22.14.0) (2024-07-25)
+
+
+### Features
+
+* roll to Chrome 127.0.6533.72 ([#12821](https://github.com/puppeteer/puppeteer/issues/12821)) ([8e6fd74](https://github.com/puppeteer/puppeteer/commit/8e6fd74de15c773ffd046b313b681a4afd162d38))
+
+
+### Bug Fixes
+
+* **webdriver:** allow accessing raw CDP connection when using WebDriver BiDi ([#12771](https://github.com/puppeteer/puppeteer/issues/12771)) ([059cacc](https://github.com/puppeteer/puppeteer/commit/059caccad7dab47f2351f1307210aef77c356bb3))
+* **webdriver:** dispose resources to abort active listeners ([#12817](https://github.com/puppeteer/puppeteer/issues/12817)) ([c452c5f](https://github.com/puppeteer/puppeteer/commit/c452c5f7e5b9bb202d3dac35eeac031fb8ff55bb))
+* **webdriver:** in page.goto consider only the first emitted navigation event ([#12777](https://github.com/puppeteer/puppeteer/issues/12777)) ([cd740b2](https://github.com/puppeteer/puppeteer/commit/cd740b2eeffc6cf6b38a94522e87b1a597647513))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @puppeteer/browsers bumped from 2.2.4 to 2.3.0
+
 ## [22.13.1](https://github.com/puppeteer/puppeteer/compare/puppeteer-core-v22.13.0...puppeteer-core-v22.13.1) (2024-07-17)
 
 

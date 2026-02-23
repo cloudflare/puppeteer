@@ -171,7 +171,7 @@
     "testIdPattern": "[accessibility.spec] *",
     "platforms": ["darwin", "linux", "win32"],
     "parameters": ["cdp", "firefox"],
-    "expectations": ["SKIP", "TIMEOUT"],
+    "expectations": ["SKIP"],
     "comment": "TODO: add a comment explaining why this expectation is required (include links to issues)"
   },
   {
@@ -235,6 +235,13 @@
     "parameters": ["firefox"],
     "expectations": ["SKIP"],
     "comment": "The test relies on the default page partition key do not contain the source origin. This is not the case for Firefox."
+  },
+  {
+    "testIdPattern": "[cookies.spec] Cookie specs Page.setCookie should set cookie with all available properties",
+    "platforms": ["darwin", "linux", "win32"],
+    "parameters": ["firefox"],
+    "expectations": ["FAIL"],
+    "comment": "Chromium-specific test. The sourceScheme property is chromium-specific."
   },
   {
     "testIdPattern": "[cookies.spec] Cookie specs Page.setCookie should set secure same-site cookies from a frame",
@@ -535,13 +542,6 @@
     "comment": "TODO: add a comment explaining why this expectation is required (include links to issues)"
   },
   {
-    "testIdPattern": "[network.spec] network Response.timing returns timing information",
-    "platforms": ["darwin", "linux", "win32"],
-    "parameters": ["webDriverBiDi"],
-    "expectations": ["FAIL"],
-    "comment": "TODO: add a comment explaining why this expectation is required (include links to issues)"
-  },
-  {
     "testIdPattern": "[oopif.spec] *",
     "platforms": ["darwin", "linux", "win32"],
     "parameters": ["cdp", "firefox"],
@@ -678,7 +678,7 @@
     "testIdPattern": "[requestinterception-experimental.spec] *",
     "platforms": ["darwin", "linux", "win32"],
     "parameters": ["cdp", "firefox"],
-    "expectations": ["FAIL", "SKIP"],
+    "expectations": ["SKIP"],
     "comment": "TODO: add a comment explaining why this expectation is required (include links to issues)"
   },
   {
@@ -699,7 +699,7 @@
     "testIdPattern": "[requestinterception.spec] *",
     "platforms": ["darwin", "linux", "win32"],
     "parameters": ["cdp", "firefox"],
-    "expectations": ["FAIL", "SKIP"],
+    "expectations": ["SKIP"],
     "comment": "TODO: add a comment explaining why this expectation is required (include links to issues)"
   },
   {
@@ -775,7 +775,7 @@
     "testIdPattern": "[TargetManager.spec] *",
     "platforms": ["darwin", "linux", "win32"],
     "parameters": ["cdp", "firefox"],
-    "expectations": ["FAIL", "SKIP"],
+    "expectations": ["SKIP"],
     "comment": "TODO: add a comment explaining why this expectation is required (include links to issues)"
   },
   {
@@ -940,11 +940,11 @@
     "comment": "TODO: add a comment explaining why this expectation is required (include links to issues)"
   },
   {
-    "testIdPattern": "[CDPSession.spec] Target.createCDPSession should expose the underlying connection",
+    "testIdPattern": "[CDPSession.spec] Target.createCDPSession should not send extra events",
     "platforms": ["darwin", "linux", "win32"],
-    "parameters": ["chrome", "webDriverBiDi"],
+    "parameters": ["cdp", "firefox"],
     "expectations": ["FAIL"],
-    "comment": "TODO: add a comment explaining why this expectation is required (include links to issues)"
+    "comment": "Fails with Firefox CDP"
   },
   {
     "testIdPattern": "[CDPSession.spec] Target.createCDPSession should respect custom timeout",
@@ -1929,7 +1929,7 @@
     "platforms": ["darwin", "linux", "win32"],
     "parameters": ["firefox", "webDriverBiDi"],
     "expectations": ["FAIL"],
-    "comment": "https://github.com/puppeteer/puppeteer/issues/11849"
+    "comment": "Requires support for multiple sessions"
   },
   {
     "testIdPattern": "[launcher.spec] Launcher specs Puppeteer Puppeteer.connect should be able to close remote browser",
@@ -2053,9 +2053,9 @@
   {
     "testIdPattern": "[launcher.spec] Launcher specs Puppeteer Puppeteer.launch should filter out ignored default arguments in Chrome",
     "platforms": ["darwin", "linux", "win32"],
-    "parameters": ["cdp", "firefox"],
+    "parameters": ["firefox", "headful"],
     "expectations": ["SKIP"],
-    "comment": "TODO: add a comment explaining why this expectation is required (include links to issues)"
+    "comment": "Test is testing chrome specific ignore and fails"
   },
   {
     "testIdPattern": "[launcher.spec] Launcher specs Puppeteer Puppeteer.launch should have custom URL when launching browser",
@@ -2198,6 +2198,13 @@
     "comment": "TODO: add a comment explaining why this expectation is required (include links to issues)"
   },
   {
+    "testIdPattern": "[navigation.spec] navigation Page.goto should return response when page replaces its state during load",
+    "platforms": ["darwin", "linux", "win32"],
+    "parameters": ["cdp", "firefox"],
+    "expectations": ["SKIP"],
+    "comment": "times out with Firefox CDP"
+  },
+  {
     "testIdPattern": "[navigation.spec] navigation Page.goto should send referer",
     "platforms": ["darwin", "linux", "win32"],
     "parameters": ["cdp", "firefox"],
@@ -2308,6 +2315,13 @@
     "parameters": ["cdp", "firefox"],
     "expectations": ["FAIL"],
     "comment": "TODO: add a comment explaining why this expectation is required (include links to issues)"
+  },
+  {
+    "testIdPattern": "[network.spec] network Network Events Page.Events.RequestServedFromCache for script",
+    "platforms": ["darwin", "linux", "win32"],
+    "parameters": ["firefox", "webDriverBiDi"],
+    "expectations": ["FAIL", "PASS"],
+    "comment": "On Firefox, the responseCompleted event for the cached script might be emitted too late (Bug 1907589)"
   },
   {
     "testIdPattern": "[network.spec] network Network Events Page.Events.RequestServedFromCache for stylesheet",
@@ -2511,6 +2525,13 @@
     "parameters": ["cdp", "firefox"],
     "expectations": ["SKIP"],
     "comment": "TODO: add a comment explaining why this expectation is required (include links to issues)"
+  },
+  {
+    "testIdPattern": "[network.spec] network Response.fromCache should work for script",
+    "platforms": ["darwin", "linux", "win32"],
+    "parameters": ["firefox", "webDriverBiDi"],
+    "expectations": ["FAIL", "PASS"],
+    "comment": "On Firefox, the responseCompleted event for the cached script might be emitted too late (Bug 1907589)"
   },
   {
     "testIdPattern": "[network.spec] network Response.fromCache should work for stylesheet",
@@ -2721,13 +2742,6 @@
     "parameters": ["cdp", "firefox"],
     "expectations": ["SKIP"],
     "comment": "TODO: add a comment explaining why this expectation is required (include links to issues)"
-  },
-  {
-    "testIdPattern": "[page.spec] Page Page.close should run beforeunload if asked for",
-    "platforms": ["darwin", "linux", "win32"],
-    "parameters": ["chrome", "webDriverBiDi"],
-    "expectations": ["FAIL"],
-    "comment": "https://github.com/GoogleChromeLabs/chromium-bidi/pull/2412"
   },
   {
     "testIdPattern": "[page.spec] Page Page.close should terminate network waiters",
@@ -3008,6 +3022,13 @@
     "comment": "TODO: Needs support for data URIs in Firefox in content process https://bugzilla.mozilla.org/show_bug.cgi?id=1903060"
   },
   {
+    "testIdPattern": "[requestinterception-experimental.spec] cooperative request interception Page.setRequestInterception should cache script if cache enabled",
+    "platforms": ["darwin", "linux", "win32"],
+    "parameters": ["firefox", "webDriverBiDi"],
+    "expectations": ["FAIL", "PASS"],
+    "comment": "On Firefox, the responseCompleted event for the cached script might be emitted too late (Bug 1907589)"
+  },
+  {
     "testIdPattern": "[requestinterception-experimental.spec] cooperative request interception Page.setRequestInterception should cache stylesheet if cache enabled",
     "platforms": ["darwin", "linux", "win32"],
     "parameters": ["firefox", "webDriverBiDi"],
@@ -3020,6 +3041,13 @@
     "parameters": ["firefox", "webDriverBiDi"],
     "expectations": ["SKIP"],
     "comment": "TODO: Needs support for file URIs in Firefox https://bugzilla.mozilla.org/show_bug.cgi?id=1826210"
+  },
+  {
+    "testIdPattern": "[requestinterception-experimental.spec] cooperative request interception Page.setRequestInterception should work with missing stylesheets",
+    "platforms": ["darwin", "linux", "win32"],
+    "parameters": ["firefox", "webDriverBiDi"],
+    "expectations": ["FAIL", "PASS"],
+    "comment": "On Firefox, the responseCompleted event for the missing stylesheet might be emitted too late (Bug 1907589)"
   },
   {
     "testIdPattern": "[requestinterception-experimental.spec] cooperative request interception Page.setRequestInterception should work with requests without networkId",
@@ -3092,6 +3120,13 @@
     "comment": "TODO: BiDi does not support custom errors - https://github.com/w3c/webdriver-bidi/issues/508"
   },
   {
+    "testIdPattern": "[requestinterception.spec] request interception Page.setRequestInterception should cache script if cache enabled",
+    "platforms": ["darwin", "linux", "win32"],
+    "parameters": ["firefox", "webDriverBiDi"],
+    "expectations": ["FAIL", "PASS"],
+    "comment": "On Firefox, the responseCompleted event for the cached script might be emitted too late (Bug 1907589)"
+  },
+  {
     "testIdPattern": "[requestinterception.spec] request interception Page.setRequestInterception should cache stylesheet if cache enabled",
     "platforms": ["darwin", "linux", "win32"],
     "parameters": ["firefox", "webDriverBiDi"],
@@ -3111,6 +3146,13 @@
     "parameters": ["firefox", "webDriverBiDi"],
     "expectations": ["SKIP"],
     "comment": "TODO: Needs support for file URIs in Firefox https://bugzilla.mozilla.org/show_bug.cgi?id=1826210"
+  },
+  {
+    "testIdPattern": "[requestinterception.spec] request interception Page.setRequestInterception should work with missing stylesheets",
+    "platforms": ["darwin", "linux", "win32"],
+    "parameters": ["firefox", "webDriverBiDi"],
+    "expectations": ["FAIL", "PASS"],
+    "comment": "On Firefox, the responseCompleted event for the missing stylesheet might be emitted too late (Bug 1907589)"
   },
   {
     "testIdPattern": "[requestinterception.spec] request interception Page.setRequestInterception should work with requests without networkId",

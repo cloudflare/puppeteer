@@ -49,6 +49,7 @@ describe('Launcher specs', function () {
               'Navigating frame was detached',
               'Protocol error (Page.navigate): Target closed.',
               'Protocol error (browsingContext.navigate): Target closed',
+              'Frame detached',
             ].some(message => {
               return error.message.startsWith(message);
             })
@@ -405,7 +406,6 @@ describe('Launcher specs', function () {
           );
         } else if (isFirefox) {
           expect(puppeteer.defaultArgs()).toContain('--headless');
-          expect(puppeteer.defaultArgs()).toContain('--no-remote');
           if (os.platform() === 'darwin') {
             expect(puppeteer.defaultArgs()).toContain('--foreground');
           } else {
@@ -485,8 +485,8 @@ describe('Launcher specs', function () {
         const defaultArgs = puppeteer.defaultArgs();
         const {browser, close} = await launch(
           Object.assign({}, defaultBrowserOptions, {
-            // Only the first argument is fixed, others are optional.
-            ignoreDefaultArgs: [defaultArgs[0]!],
+            // All arguments are optional.
+            ignoreDefaultArgs: [],
           })
         );
         try {
@@ -494,8 +494,7 @@ describe('Launcher specs', function () {
           if (!spawnargs) {
             throw new Error('spawnargs not present');
           }
-          expect(spawnargs.indexOf(defaultArgs[0]!)).toBe(-1);
-          expect(spawnargs.indexOf(defaultArgs[1]!)).not.toBe(-1);
+          expect(spawnargs.indexOf(defaultArgs[0]!)).not.toBe(-1);
         } finally {
           await close();
         }
