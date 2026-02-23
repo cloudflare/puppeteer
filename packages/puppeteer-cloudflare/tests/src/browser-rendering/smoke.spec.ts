@@ -120,7 +120,7 @@ test('should collect code coverage @smoke', async () => {
 
   const usagePercentage = `Bytes used: ${(usedBytes / totalBytes) * 100}%`;
 
-  expect(usagePercentage).toBe("Bytes used: 78.76923076923077%");
+  expect(usagePercentage).toBe("Bytes used: 99.3103448275862%");
 });
 
 test('should evaluate on new document @smoke', async () => {

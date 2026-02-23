@@ -11,6 +11,7 @@ import type {
   BrowserWorker,
   Browser,
   WorkersLaunchOptions,
+  ActiveSession,
 } from '@cloudflare/puppeteer';
 import {env} from 'cloudflare:workers';
 import {expect} from 'expect';
@@ -25,21 +26,25 @@ async function launchAndGetSession(
   return [browser, sessionId];
 }
 
+async function fetchSingleSession(endpoint: BrowserWorker, sessionId: string) {
+  const response = await endpoint.fetch(`http://fake.host/v1/sessions?sessionId=${sessionId}`);
+  const { sessions } = await response.json() as { sessions: ActiveSession[] };
+  expect(sessions).toHaveLength(1);
+  const session = sessions[0];
+  expect(session.sessionId).toBe(sessionId);
+  return session;
+}
+
 test(`should list sessions @smoke`, async () => {
   const before = await sessions(env.BROWSER);
   const [browser, sessionId] = await launchAndGetSession(env.BROWSER);
-  const after = await sessions(env.BROWSER);
-
   expect(
     before.map(a => {
       return a.sessionId;
     }),
   ).not.toContain(sessionId);
-  expect(
-    after.map(a => {
-      return a.sessionId;
-    }),
-  ).toContain(sessionId);
+  // fails if session doesn't exist
+  await fetchSingleSession(env.BROWSER, browser.sessionId());
 
   await browser.close();
 });

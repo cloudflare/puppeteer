@@ -114,7 +114,7 @@ export class FirefoxLauncher extends ProductLauncher {
     if (profileArgIndex !== -1) {
       userDataDir = firefoxArguments[profileArgIndex + 1];
       if (!userDataDir) {
-        throw new Error(`Firefox profile not found at '${userDataDir}'`);
+        throw new Error(`Missing value for profile command line argument`);
       }
 
       // When using a custom Firefox profile it needs to be populated
@@ -210,7 +210,7 @@ export class FirefoxLauncher extends ProductLauncher {
       userDataDir = null,
     } = options;
 
-    const firefoxArguments = ['--no-remote'];
+    const firefoxArguments = [];
 
     switch (os.platform()) {
       case 'darwin':
