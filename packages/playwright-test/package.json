@@ -17,7 +17,8 @@
   ],
   "scripts": {
     "build": "tsc",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "playwright test"
   },
   "peerDependencies": {
     "@playwright/test": ">=1.40.0"
