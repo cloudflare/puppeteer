@@ -1,0 +1,13 @@
+{
+  "name": "@cloudflare/browser",
+  "private": true,
+  "description": "Cloudflare Browser Rendering packages",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "clean": "npm run clean --workspaces"
+  },
+  "license": "Apache-2.0"
+}
