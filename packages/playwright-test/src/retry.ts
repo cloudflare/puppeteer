@@ -20,18 +20,17 @@ export const defaultRetryOptions: Required<RetryOptions> = {
 };
 
 /**
- * Fetch with automatic retry on 429 responses.
+ * Retry a fetch operation on 429 responses.
  * Honors the retry-after header when present, otherwise uses exponential backoff with jitter.
  */
-export async function fetchWithRetry(
-  input: RequestInfo | URL,
-  init?: RequestInit,
+export async function retry(
+  fn: () => Promise<Response>,
   opts?: RetryOptions
 ): Promise<Response> {
   const { maxRetries, baseDelay, maxDelay, jitterFactor } = { ...defaultRetryOptions, ...opts };
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    const response = await fetch(input, init);
+    const response = await fn();
 
     if (response.status !== 429)
       return response;

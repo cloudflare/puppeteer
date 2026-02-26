@@ -1,7 +1,7 @@
 import { test as baseTest, chromium } from '@playwright/test';
 import type { Browser } from '@playwright/test';
 
-import { fetchWithRetry, defaultRetryOptions } from './retry.js';
+import { retry, defaultRetryOptions } from './retry.js';
 import type { RetryOptions } from './retry.js';
 
 export { expect } from '@playwright/test';
@@ -95,15 +95,14 @@ export const test = baseTest.extend<
 
   acquireSession: [async ({ browserRenderingBaseURL, browserRenderingHeaders, retryOptions }, use) => {
     await use(async () => {
-      const response = await fetchWithRetry(
-        `${browserRenderingBaseURL}/devtools/browser`,
-        {
+      const response = await retry(
+        () => fetch(`${browserRenderingBaseURL}/devtools/browser`, {
           method: 'POST',
           headers: {
             ...browserRenderingHeaders,
             'Content-Type': 'application/json',
           },
-        },
+        }),
         retryOptions
       );
 
