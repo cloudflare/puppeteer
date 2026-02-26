@@ -43,19 +43,23 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './tests',
   use: {
-    // Optional: Override credentials (defaults to env vars)
-    cloudflareCredentials: {
-      accountId: process.env.CLOUDFLARE_ACCOUNT_ID!,
-      apiToken: process.env.CLOUDFLARE_API_TOKEN!,
-    },
-    // Optional: Custom base URL
-    browserRenderingBaseURL: 'https://api.cloudflare.com/client/v4/accounts/{accountId}/browser-rendering',
-    // Optional: Custom retry options for 429 responses
-    retryOptions: {
-      maxRetries: 3,
-      baseDelay: 1000,
-      maxDelay: 5000,
-      jitterFactor: 0.5,
+    browserRendering: {
+      // Optional: Override credentials (defaults to env vars)
+      credentials: {
+        accountId: process.env.CLOUDFLARE_ACCOUNT_ID!,
+        apiToken: process.env.CLOUDFLARE_API_TOKEN!,
+      },
+      // Optional: Session options
+      sessions: {
+        keepAlive: 60000,  // Keep-alive timeout in ms
+        lab: false,        // Use lab environment
+        retry: {           // Retry options for 429 responses
+          maxRetries: 3,
+          baseDelay: 1000,
+          maxDelay: 5000,
+          jitterFactor: 0.5,
+        },
+      },
     },
   },
 });
@@ -63,12 +67,21 @@ export default defineConfig({
 
 ## Options
 
+All options are nested under `browserRendering`:
+
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `cloudflareCredentials` | `{ accountId, apiToken }` | From env vars | Cloudflare API credentials |
-| `browserRenderingBaseURL` | `string` | Production API | Base URL for Browser Rendering API |
-| `browserRenderingHeaders` | `Record<string, string>` | Bearer token | HTTP headers for authentication |
-| `retryOptions` | `RetryOptions` | See below | Retry configuration for 429 responses |
+| `credentials` | `{ accountId, apiToken }` | From env vars | Cloudflare API credentials |
+| `sessions` | `SessionsOptions` | See below | Session options |
+| `annotations` | `'on' \| 'off'` | `'on'` | Add annotations to test results |
+
+### SessionsOptions
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `keepAlive` | `number` | `60000` | Keep-alive timeout in ms |
+| `lab` | `boolean` | `false` | Use lab environment |
+| `retry` | `RetryOptions` | See below | Retry configuration for 429 responses |
 
 ### RetryOptions
 

@@ -1,11 +1,40 @@
-import { test as baseTest, chromium } from '@playwright/test';
-import type { Browser } from '@playwright/test';
+import { test as baseTest, chromium, defineConfig as baseDefineConfig } from '@playwright/test';
+import type { Browser, PlaywrightTestConfig } from '@playwright/test';
 
 import { retry, defaultRetryOptions } from './retry.js';
 import type { RetryOptions } from './retry.js';
 
 export { expect } from '@playwright/test';
 export type { RetryOptions } from './retry.js';
+
+/**
+ * Define Playwright Test configuration with Browser Rendering support.
+ *
+ * @example
+ * ```typescript
+ * import { defineConfig } from '@cloudflare/browser-playwright-test';
+ *
+ * export default defineConfig({
+ *   use: {
+ *     browserRendering: {
+ *       credentials: {
+ *         accountId: process.env.CLOUDFLARE_ACCOUNT_ID!,
+ *         apiToken: process.env.CLOUDFLARE_API_TOKEN!,
+ *       },
+ *       sessions: {
+ *         keepAlive: 120_000,
+ *         retry: {
+ *           maxRetries: 3,
+ *         },
+ *       },
+ *     },
+ *   },
+ * });
+ * ```
+ */
+export function defineConfig<T extends {}, W extends BrowserRenderingWorkerOptions>(config: PlaywrightTestConfig<T, W>): PlaywrightTestConfig<T, W> {
+  return baseDefineConfig<T, W>(config);
+}
 
 /**
  * Cloudflare API credentials for Browser Rendering.
@@ -18,17 +47,38 @@ export type CloudflareCredentials = {
 };
 
 /**
+ * Options for Browser Rendering API configuration.
+ */
+export type BrowserRenderingOptions = {
+  /** Cloudflare credentials (defaults to CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN env vars) */
+  credentials?: CloudflareCredentials;
+  /** Session options */
+  sessions?: {
+    /** Keep-alive timeout in ms (default: 60000) */
+    keepAlive?: number;
+    /** Use lab environment (default: false) */
+    lab?: boolean;
+    /** Retry options for 429 responses */
+    retry?: RetryOptions;
+  };
+  /** Whether to add annotations to test results (default: 'on') */
+  annotations?: 'on' | 'off';
+};
+
+/**
  * Worker-scoped options that can be configured in playwright.config.ts
  */
 export type BrowserRenderingWorkerOptions = {
-  /** Base URL for Browser Rendering API */
+  /** Browser Rendering API configuration */
+  browserRendering?: BrowserRenderingOptions;
+};
+
+/**
+ * Internal fixtures for Browser Rendering (not exported to users).
+ */
+type BrowserRenderingInternalFixtures = {
   browserRenderingBaseURL: string;
-  /** HTTP headers for API authentication */
   browserRenderingHeaders: Record<string, string>;
-  /** Cloudflare credentials (accountId and apiToken) */
-  cloudflareCredentials: CloudflareCredentials;
-  /** Retry options for 429 responses */
-  retryOptions: RetryOptions;
 };
 
 type SessionInfo = {
@@ -40,6 +90,10 @@ type BrowserRenderingWorkerFixtures = {
   closeSession: (sessionId: string) => Promise<void>;
   connectToBrowser: (sessionId: string) => Promise<Browser>;
   sessionId: string;
+};
+
+type BrowserRenderingTestFixtures = {
+  _annotate: void;
 };
 
 /**
@@ -61,42 +115,55 @@ type BrowserRenderingWorkerFixtures = {
  *
  * export default defineConfig({
  *   use: {
- *     cloudflareCredentials: {
- *       accountId: process.env.CLOUDFLARE_ACCOUNT_ID,
- *       apiToken: process.env.CLOUDFLARE_API_TOKEN,
+ *     browserRendering: {
+ *       credentials: {
+ *         accountId: process.env.CLOUDFLARE_ACCOUNT_ID,
+ *         apiToken: process.env.CLOUDFLARE_API_TOKEN,
+ *       },
+ *       sessions: {
+ *         keepAlive: 60000,
+ *         lab: false,
+ *       },
  *     },
  *   },
  * });
  * ```
  */
 export const test = baseTest.extend<
-  {},
-  BrowserRenderingWorkerOptions & BrowserRenderingWorkerFixtures
+  BrowserRenderingTestFixtures,
+  BrowserRenderingWorkerOptions & BrowserRenderingInternalFixtures & BrowserRenderingWorkerFixtures
 >({
-  cloudflareCredentials: [async ({}, use) => {
-    const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
-    const apiToken = process.env.CLOUDFLARE_API_TOKEN;
-    if (!accountId || !apiToken)
-      throw new Error('CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN environment variables are required');
-    await use({ accountId, apiToken });
-  }, { scope: 'worker', option: true }],
+  // Public option - the single entry point for configuration
+  browserRendering: [{}, { scope: 'worker', option: true }],
 
-  retryOptions: [defaultRetryOptions, { scope: 'worker', option: true }],
+  // Internal fixtures (computed from browserRendering, not exposed as options)
+  browserRenderingBaseURL: [async ({ browserRendering }, use) => {
+    const accountId = browserRendering?.credentials?.accountId ?? process.env.CLOUDFLARE_ACCOUNT_ID;
+    if (!accountId)
+      throw new Error('Cloudflare account ID is required. Set browserRendering.credentials.accountId or CLOUDFLARE_ACCOUNT_ID environment variable.');
+    await use(`https://api.cloudflare.com/client/v4/accounts/${accountId}/browser-rendering`);
+  }, { scope: 'worker' }],
 
-  browserRenderingBaseURL: [async ({ cloudflareCredentials }, use) => {
-    await use(`https://api.cloudflare.com/client/v4/accounts/${cloudflareCredentials.accountId}/browser-rendering`);
-  }, { scope: 'worker', option: true }],
-
-  browserRenderingHeaders: [async ({ cloudflareCredentials }, use) => {
+  browserRenderingHeaders: [async ({ browserRendering }, use) => {
+    const apiToken = browserRendering?.credentials?.apiToken ?? process.env.CLOUDFLARE_API_TOKEN;
+    if (!apiToken)
+      throw new Error('Cloudflare API token is required. Set browserRendering.credentials.apiToken or CLOUDFLARE_API_TOKEN environment variable.');
     await use({
-      'Authorization': `Bearer ${cloudflareCredentials.apiToken}`,
+      'Authorization': `Bearer ${apiToken}`,
     });
-  }, { scope: 'worker', option: true }],
+  }, { scope: 'worker' }],
 
-  acquireSession: [async ({ browserRenderingBaseURL, browserRenderingHeaders, retryOptions }, use) => {
+  acquireSession: [async ({ browserRenderingBaseURL, browserRenderingHeaders, browserRendering }, use) => {
     await use(async () => {
+      const sessions = browserRendering?.sessions;
+      const body = {
+        keep_alive: sessions?.keepAlive ?? 60000,
+        lab: sessions?.lab ?? false,
+      };
+      const retryOptions = sessions?.retry ?? defaultRetryOptions;
       const response = await retry(
         () => fetch(`${browserRenderingBaseURL}/devtools/browser`, {
+          body: JSON.stringify(body),
           method: 'POST',
           headers: {
             ...browserRenderingHeaders,
@@ -146,4 +213,17 @@ export const test = baseTest.extend<
     await use(browser);
     await browser.close();
   }, { scope: 'worker' }],
+
+  _annotate: [async ({ browser, sessionId, browserRendering }, use, testInfo) => {
+    if (browserRendering?.annotations !== 'off') {
+      const labAnnotation = browserRendering?.sessions?.lab ? [{ type: 'lab-session', description: 'true' }] : [];
+      // Add annotations for debugging
+      testInfo.annotations.push(
+        { type: 'session-id', description: sessionId },
+        { type: 'browser-version', description: browser.version() },
+        ...labAnnotation,
+      );
+    }
+    await use();
+  }, { auto: true }],
 });
