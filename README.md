@@ -38,7 +38,7 @@ export CLOUDFLARE_API_TOKEN="your-api-token"
 Configure in `playwright.config.ts`:
 
 ```typescript
-import { defineConfig } from '@playwright/test';
+import { defineConfig } from '@cloudflare/browser-playwright-test';
 
 export default defineConfig({
   testDir: './tests',
