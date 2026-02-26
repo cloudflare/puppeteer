@@ -73,9 +73,6 @@ export type BrowserRenderingWorkerOptions = {
   browserRendering?: BrowserRenderingOptions;
 };
 
-/**
- * Internal fixtures for Browser Rendering (not exported to users).
- */
 type BrowserRenderingInternalFixtures = {
   browserRenderingBaseURL: string;
   browserRenderingHeaders: Record<string, string>;
@@ -133,10 +130,8 @@ export const test = baseTest.extend<
   BrowserRenderingTestFixtures,
   BrowserRenderingWorkerOptions & BrowserRenderingInternalFixtures & BrowserRenderingWorkerFixtures
 >({
-  // Public option - the single entry point for configuration
   browserRendering: [{}, { scope: 'worker', option: true }],
 
-  // Internal fixtures (computed from browserRendering, not exposed as options)
   browserRenderingBaseURL: [async ({ browserRendering }, use) => {
     const accountId = browserRendering?.credentials?.accountId ?? process.env.CLOUDFLARE_ACCOUNT_ID;
     if (!accountId)
@@ -217,7 +212,6 @@ export const test = baseTest.extend<
   _annotate: [async ({ browser, sessionId, browserRendering }, use, testInfo) => {
     if (browserRendering?.annotations !== 'off') {
       const labAnnotation = browserRendering?.sessions?.lab ? [{ type: 'lab-session', description: 'true' }] : [];
-      // Add annotations for debugging
       testInfo.annotations.push(
         { type: 'session-id', description: sessionId },
         { type: 'browser-version', description: browser.version() },
