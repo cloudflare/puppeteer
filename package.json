@@ -3,7 +3,8 @@
   "private": true,
   "description": "Cloudflare Browser Rendering packages",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "examples/*"
   ],
   "scripts": {
     "build": "npm run build --workspaces",
