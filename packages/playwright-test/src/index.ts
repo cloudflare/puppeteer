@@ -73,16 +73,13 @@ export type BrowserRenderingWorkerOptions = {
   browserRendering?: BrowserRenderingOptions;
 };
 
-type BrowserRenderingInternalFixtures = {
-  browserRenderingBaseURL: string;
-  browserRenderingHeaders: Record<string, string>;
-};
-
 type SessionInfo = {
   sessionId: string;
 };
 
 type BrowserRenderingWorkerFixtures = {
+  browserRenderingBaseURL: string;
+  browserRenderingHeaders: Record<string, string>;
   acquireSession: () => Promise<string>;
   closeSession: (sessionId: string) => Promise<void>;
   connectToBrowser: (sessionId: string) => Promise<Browser>;
@@ -128,7 +125,7 @@ type BrowserRenderingTestFixtures = {
  */
 export const test = baseTest.extend<
   BrowserRenderingTestFixtures,
-  BrowserRenderingWorkerOptions & BrowserRenderingInternalFixtures & BrowserRenderingWorkerFixtures
+  BrowserRenderingWorkerOptions & BrowserRenderingWorkerFixtures
 >({
   browserRendering: [{}, { scope: 'worker', option: true }],
 
@@ -210,11 +207,11 @@ export const test = baseTest.extend<
   }, { scope: 'worker' }],
 
   _annotate: [async ({ browser, sessionId, browserRendering }, use, testInfo) => {
-    if (browserRendering?.annotations !== 'off') {
-      const labAnnotation = browserRendering?.sessions?.lab ? [{ type: 'lab-session', description: 'true' }] : [];
+    if (browserRendering?.annotations === 'on') {
+      const labAnnotation = browserRendering?.sessions?.lab ? [{ type: 'browser-rendering-lab', description: 'true' }] : [];
       testInfo.annotations.push(
-        { type: 'session-id', description: sessionId },
-        { type: 'browser-version', description: browser.version() },
+        { type: 'browser-rendering-session-id', description: sessionId },
+        { type: 'browser-rendering-version', description: browser.version() },
         ...labAnnotation,
       );
     }
