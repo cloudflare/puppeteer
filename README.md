@@ -102,7 +102,7 @@ Retries use exponential backoff with jitter. When the server returns a `retry-af
 
 ## Examples
 
-See the [examples/basic](./examples/basic) directory for a complete working example.
+See the [examples/basic](./examples/basic) and [examples/todomvc](./examples/todomvc) directories for complete working examples.
 
 ## License
 
