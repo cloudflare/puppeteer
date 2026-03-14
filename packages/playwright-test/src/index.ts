@@ -187,7 +187,7 @@ export const test = !_isBrowserRendering ? baseTest : baseTest.extend<
   }, { scope: 'worker' }],
 
   _annotate: [async ({ browser, _sessionId, browserRendering }, use, testInfo) => {
-    if (browserRendering?.annotations === 'on') {
+    if (browserRendering?.annotations !== 'off') {
       const labAnnotation = browserRendering?.sessions?.lab ? [{ type: 'browser-rendering-lab', description: 'true' }] : [];
       testInfo.annotations.push(
         { type: 'browser-rendering-session-id', description: _sessionId },
