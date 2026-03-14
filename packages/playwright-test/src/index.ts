@@ -1,4 +1,4 @@
-import { test as baseTest, chromium, defineConfig as baseDefineConfig } from '@playwright/test';
+import { test as baseTest, defineConfig as baseDefineConfig } from '@playwright/test';
 import type { Browser, PlaywrightTestConfig } from '@playwright/test';
 
 import { retry, defaultRetryOptions } from './retry.js';
@@ -78,12 +78,12 @@ type SessionInfo = {
 };
 
 type BrowserRenderingWorkerFixtures = {
-  browserRenderingBaseURL: string;
-  browserRenderingHeaders: Record<string, string>;
-  acquireSession: () => Promise<string>;
-  closeSession: (sessionId: string) => Promise<void>;
-  connectToBrowser: (sessionId: string) => Promise<Browser>;
-  sessionId: string;
+  acquireBrowserRenderingSession: () => Promise<string>;
+  closeBrowserRenderingSession: (sessionId: string) => Promise<void>;
+  _browserRenderingBaseURL: string;
+  _browserRenderingHeaders: Record<string, string>;
+  _connectToBrowser: (sessionId: string) => Promise<Browser>;
+  _sessionId: string;
 };
 
 type BrowserRenderingTestFixtures = {
@@ -129,23 +129,23 @@ export const test = baseTest.extend<
 >({
   browserRendering: [{}, { scope: 'worker', option: true }],
 
-  browserRenderingBaseURL: [async ({ browserRendering }, use) => {
+  _browserRenderingBaseURL: [async ({ browserRendering }, use) => {
     const accountId = browserRendering?.credentials?.accountId ?? process.env.CLOUDFLARE_ACCOUNT_ID;
     if (!accountId)
       throw new Error('Cloudflare account ID is required. Set browserRendering.credentials.accountId or CLOUDFLARE_ACCOUNT_ID environment variable.');
     await use(`https://api.cloudflare.com/client/v4/accounts/${accountId}/browser-rendering`);
-  }, { scope: 'worker' }],
+  }, { scope: 'worker', box: true }],
 
-  browserRenderingHeaders: [async ({ browserRendering }, use) => {
+  _browserRenderingHeaders: [async ({ browserRendering }, use) => {
     const apiToken = browserRendering?.credentials?.apiToken ?? process.env.CLOUDFLARE_API_TOKEN;
     if (!apiToken)
       throw new Error('Cloudflare API token is required. Set browserRendering.credentials.apiToken or CLOUDFLARE_API_TOKEN environment variable.');
     await use({
       'Authorization': `Bearer ${apiToken}`,
     });
-  }, { scope: 'worker' }],
+  }, { scope: 'worker', box: true }],
 
-  acquireSession: [async ({ browserRenderingBaseURL, browserRenderingHeaders, browserRendering }, use) => {
+  acquireBrowserRenderingSession: [async ({ _browserRenderingBaseURL, _browserRenderingHeaders, browserRendering }, use) => {
     await use(async () => {
       const sessions = browserRendering?.sessions;
       const body = {
@@ -154,11 +154,11 @@ export const test = baseTest.extend<
       };
       const retryOptions = sessions?.retry ?? defaultRetryOptions;
       const response = await retry(
-        () => fetch(`${browserRenderingBaseURL}/devtools/browser`, {
+        () => fetch(`${_browserRenderingBaseURL}/devtools/browser`, {
           body: JSON.stringify(body),
           method: 'POST',
           headers: {
-            ...browserRenderingHeaders,
+            ..._browserRenderingHeaders,
             'Content-Type': 'application/json',
           },
         }),
@@ -173,48 +173,48 @@ export const test = baseTest.extend<
     });
   }, { scope: 'worker' }],
 
-  closeSession: [async ({ browserRenderingBaseURL, browserRenderingHeaders }, use) => {
+  closeBrowserRenderingSession: [async ({ _browserRenderingBaseURL, _browserRenderingHeaders }, use) => {
     await use(async (sessionId: string) => {
-      const response = await fetch(`${browserRenderingBaseURL}/devtools/browser/${sessionId}`, {
+      const response = await fetch(`${_browserRenderingBaseURL}/devtools/browser/${sessionId}`, {
         method: 'DELETE',
-        headers: browserRenderingHeaders,
+        headers: _browserRenderingHeaders,
       });
 
       if (!response.ok)
         throw new Error(`Failed to close browser session: ${response.status} ${response.statusText}`);
     });
-  }, { scope: 'worker' }],
+  }, { scope: 'worker', box: true }],
 
-  connectToBrowser: [async ({ browserRenderingBaseURL, browserRenderingHeaders }, use) => {
+  _connectToBrowser: [async ({ _browserRenderingBaseURL, _browserRenderingHeaders, playwright }, use) => {
     await use(async (sessionId: string) => {
-      const wsEndpoint = browserRenderingBaseURL.replace('https://', 'wss://') + `/devtools/browser/${sessionId}`;
-      return chromium.connectOverCDP(wsEndpoint, {
-        headers: browserRenderingHeaders,
+      const wsEndpoint = _browserRenderingBaseURL.replace('https://', 'wss://') + `/devtools/browser/${sessionId}`;
+      return playwright.chromium.connectOverCDP(wsEndpoint, {
+        headers: _browserRenderingHeaders,
       });
     });
-  }, { scope: 'worker' }],
+  }, { scope: 'worker', box: true }],
 
-  sessionId: [async ({ acquireSession, closeSession }, use, workerInfo) => {
-    const sessionId = await acquireSession();
+  _sessionId: [async ({ acquireBrowserRenderingSession, closeBrowserRenderingSession }, use, workerInfo) => {
+    const sessionId = await acquireBrowserRenderingSession();
     await use(sessionId);
-    await closeSession(sessionId);
-  }, { scope: 'worker' }],
+    await closeBrowserRenderingSession(sessionId);
+  }, { scope: 'worker', box: true }],
 
-  browser: [async ({ sessionId, connectToBrowser }, use) => {
-    const browser = await connectToBrowser(sessionId);
+  browser: [async ({ _sessionId, _connectToBrowser }, use) => {
+    const browser = await _connectToBrowser(_sessionId);
     await use(browser);
     await browser.close();
   }, { scope: 'worker' }],
 
-  _annotate: [async ({ browser, sessionId, browserRendering }, use, testInfo) => {
+  _annotate: [async ({ browser, _sessionId, browserRendering }, use, testInfo) => {
     if (browserRendering?.annotations === 'on') {
       const labAnnotation = browserRendering?.sessions?.lab ? [{ type: 'browser-rendering-lab', description: 'true' }] : [];
       testInfo.annotations.push(
-        { type: 'browser-rendering-session-id', description: sessionId },
+        { type: 'browser-rendering-session-id', description: _sessionId },
         { type: 'browser-rendering-version', description: browser.version() },
         ...labAnnotation,
       );
     }
     await use();
-  }, { auto: true }],
+  }, { auto: true, box: true }],
 });
