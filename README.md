@@ -33,6 +33,8 @@ export CLOUDFLARE_ACCOUNT_ID="your-account-id"
 export CLOUDFLARE_API_TOKEN="your-api-token"
 ```
 
+To create an API token, go to [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens) and create a token with **Browser Rendering Edit** permissions.
+
 ### Configuration
 
 Configure in `playwright.config.ts`:
@@ -44,12 +46,6 @@ export default defineConfig({
   testDir: './tests',
   use: {
     browserRendering: {
-      // Optional: Override credentials (defaults to env vars)
-      credentials: {
-        accountId: process.env.CLOUDFLARE_ACCOUNT_ID!,
-        apiToken: process.env.CLOUDFLARE_API_TOKEN!,
-      },
-      // Optional: Session options
       sessions: {
         keepAlive: 60000,  // Keep-alive timeout in ms
         lab: false,        // Use lab environment
@@ -71,7 +67,6 @@ All options are nested under `browserRendering`:
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `credentials` | `{ accountId, apiToken }` | From env vars | Cloudflare API credentials |
 | `sessions` | `SessionsOptions` | See below | Session options |
 | `annotations` | `'on' \| 'off'` | `'on'` | Add annotations to test results |
 
@@ -96,9 +91,13 @@ Retries use exponential backoff with jitter. When the server returns a `retry-af
 
 ## How It Works
 
+When `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` environment variables are set:
+
 1. **Session Management**: Each Playwright worker acquires its own Browser Rendering session via the API
-2. **Connection**: The session is connected using `chromium.connectOverCDP()`
+2. **Connection**: The session is connected using `playwright.chromium.connectOverCDP()`
 3. **Cleanup**: Sessions are automatically closed when the worker finishes
+
+When the environment variables are not set, tests run locally using Playwright's default browser launch.
 
 ## Examples
 

@@ -17,10 +17,6 @@ export type { RetryOptions } from './retry.js';
  * export default defineConfig({
  *   use: {
  *     browserRendering: {
- *       credentials: {
- *         accountId: process.env.CLOUDFLARE_ACCOUNT_ID!,
- *         apiToken: process.env.CLOUDFLARE_API_TOKEN!,
- *       },
  *       sessions: {
  *         keepAlive: 120_000,
  *         retry: {
@@ -37,21 +33,9 @@ export function defineConfig<T extends {}, W extends BrowserRenderingWorkerOptio
 }
 
 /**
- * Cloudflare API credentials for Browser Rendering.
- */
-export type CloudflareCredentials = {
-  /** Cloudflare account ID (by default read from CLOUDFLARE_ACCOUNT_ID environment variable) */
-  accountId: string;
-  /** Cloudflare API token (by default read from CLOUDFLARE_API_TOKEN environment variable) */
-  apiToken: string;
-};
-
-/**
  * Options for Browser Rendering API configuration.
  */
 export type BrowserRenderingOptions = {
-  /** Cloudflare credentials (defaults to CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN env vars) */
-  credentials?: CloudflareCredentials;
   /** Session options */
   sessions?: {
     /** Keep-alive timeout in ms (default: 60000) */
@@ -90,8 +74,14 @@ type BrowserRenderingTestFixtures = {
   _annotate: void;
 };
 
+const _isBrowserRendering = !!(process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_API_TOKEN);
+
 /**
  * Playwright Test with Browser Rendering fixtures.
+ *
+ * When CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN environment variables are set,
+ * tests run against Cloudflare's Browser Rendering API. Otherwise, tests run locally
+ * using Playwright's default browser launch.
  *
  * @example
  * ```typescript
@@ -105,15 +95,11 @@ type BrowserRenderingTestFixtures = {
  *
  * @example Configure in playwright.config.ts
  * ```typescript
- * import { defineConfig } from '@playwright/test';
+ * import { defineConfig } from '@cloudflare/browser-playwright-test';
  *
  * export default defineConfig({
  *   use: {
  *     browserRendering: {
- *       credentials: {
- *         accountId: process.env.CLOUDFLARE_ACCOUNT_ID,
- *         apiToken: process.env.CLOUDFLARE_API_TOKEN,
- *       },
  *       sessions: {
  *         keepAlive: 60000,
  *         lab: false,
@@ -123,25 +109,19 @@ type BrowserRenderingTestFixtures = {
  * });
  * ```
  */
-export const test = baseTest.extend<
+export const test = !_isBrowserRendering ? baseTest : baseTest.extend<
   BrowserRenderingTestFixtures,
   BrowserRenderingWorkerOptions & BrowserRenderingWorkerFixtures
 >({
   browserRendering: [{}, { scope: 'worker', option: true }],
 
-  _browserRenderingBaseURL: [async ({ browserRendering }, use) => {
-    const accountId = browserRendering?.credentials?.accountId ?? process.env.CLOUDFLARE_ACCOUNT_ID;
-    if (!accountId)
-      throw new Error('Cloudflare account ID is required. Set browserRendering.credentials.accountId or CLOUDFLARE_ACCOUNT_ID environment variable.');
-    await use(`https://api.cloudflare.com/client/v4/accounts/${accountId}/browser-rendering`);
+  _browserRenderingBaseURL: [async ({}, use) => {
+    await use(`https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/browser-rendering`);
   }, { scope: 'worker', box: true }],
 
-  _browserRenderingHeaders: [async ({ browserRendering }, use) => {
-    const apiToken = browserRendering?.credentials?.apiToken ?? process.env.CLOUDFLARE_API_TOKEN;
-    if (!apiToken)
-      throw new Error('Cloudflare API token is required. Set browserRendering.credentials.apiToken or CLOUDFLARE_API_TOKEN environment variable.');
+  _browserRenderingHeaders: [async ({}, use) => {
     await use({
-      'Authorization': `Bearer ${apiToken}`,
+      'Authorization': `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
     });
   }, { scope: 'worker', box: true }],
 
@@ -194,7 +174,7 @@ export const test = baseTest.extend<
     });
   }, { scope: 'worker', box: true }],
 
-  _sessionId: [async ({ acquireBrowserRenderingSession, closeBrowserRenderingSession }, use, workerInfo) => {
+  _sessionId: [async ({ acquireBrowserRenderingSession, closeBrowserRenderingSession }, use) => {
     const sessionId = await acquireBrowserRenderingSession();
     await use(sessionId);
     await closeBrowserRenderingSession(sessionId);
