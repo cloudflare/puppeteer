@@ -6,7 +6,7 @@
     "test": "playwright test"
   },
   "devDependencies": {
-    "@cloudflare/browser-playwright-test": "^0.1.0",
+    "@cloudflare/browser-playwright-test": "^0.2.0",
     "@playwright/test": "^1.50.0"
   }
 }
