@@ -128,14 +128,16 @@ export const test = !_isBrowserRendering ? baseTest : baseTest.extend<
   acquireBrowserRenderingSession: [async ({ _browserRenderingBaseURL, _browserRenderingHeaders, browserRendering }, use) => {
     await use(async () => {
       const sessions = browserRendering?.sessions;
-      const body = {
-        keep_alive: sessions?.keepAlive ?? 60000,
-        lab: sessions?.lab ?? false,
-      };
+      const params = new URLSearchParams();
+      if (sessions?.keepAlive) {
+        params.set('keep_alive', sessions.keepAlive.toString());
+      }
+      if (sessions?.lab) {
+        params.set('lab', sessions.lab.toString());
+      }
       const retryOptions = sessions?.retry ?? defaultRetryOptions;
       const response = await retry(
-        () => fetch(`${_browserRenderingBaseURL}/devtools/browser`, {
-          body: JSON.stringify(body),
+        () => fetch(`${_browserRenderingBaseURL}/devtools/browser${params.size > 0 ? '?' + params.toString() : ''}`, {
           method: 'POST',
           headers: {
             ..._browserRenderingHeaders,
