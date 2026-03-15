@@ -74,14 +74,18 @@ type BrowserRenderingTestFixtures = {
   _annotate: void;
 };
 
-const _isBrowserRendering = !!(process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_API_TOKEN);
+/**
+ * Whether Browser Rendering is enabled. True when both CLOUDFLARE_ACCOUNT_ID / CF_ACCOUNT_ID
+ * and CLOUDFLARE_API_TOKEN / CF_API_TOKEN environment variables are set.
+ */
+export const usesBrowserRendering = !!((process.env.CLOUDFLARE_ACCOUNT_ID || process.env.CF_ACCOUNT_ID) && (process.env.CLOUDFLARE_API_TOKEN || process.env.CF_API_TOKEN));
 
 /**
  * Playwright Test with Browser Rendering fixtures.
  *
- * When CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN environment variables are set,
- * tests run against Cloudflare's Browser Rendering API. Otherwise, tests run locally
- * using Playwright's default browser launch.
+ * When CLOUDFLARE_ACCOUNT_ID / CF_ACCOUNT_ID and CLOUDFLARE_API_TOKEN / CF_API_TOKEN
+ * environment variables are set, tests run against Cloudflare's Browser Rendering API.
+ * Otherwise, tests run locally using Playwright's default browser launch.
  *
  * @example
  * ```typescript
@@ -109,19 +113,20 @@ const _isBrowserRendering = !!(process.env.CLOUDFLARE_ACCOUNT_ID && process.env.
  * });
  * ```
  */
-export const test = !_isBrowserRendering ? baseTest : baseTest.extend<
+export const test = !usesBrowserRendering ? baseTest : baseTest.extend<
   BrowserRenderingTestFixtures,
   BrowserRenderingWorkerOptions & BrowserRenderingWorkerFixtures
 >({
   browserRendering: [{}, { scope: 'worker', option: true }],
 
   _browserRenderingBaseURL: [async ({}, use) => {
-    await use(`https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/browser-rendering`);
+    const accountId = process.env.CLOUDFLARE_ACCOUNT_ID || process.env.CF_ACCOUNT_ID;
+    await use(`https://api.cloudflare.com/client/v4/accounts/${accountId}/browser-rendering`);
   }, { scope: 'worker', box: true }],
 
   _browserRenderingHeaders: [async ({}, use) => {
     await use({
-      'Authorization': `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
+      'Authorization': `Bearer ${process.env.CLOUDFLARE_API_TOKEN || process.env.CF_API_TOKEN}`,
     });
   }, { scope: 'worker', box: true }],
 
