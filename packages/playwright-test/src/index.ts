@@ -75,17 +75,18 @@ type BrowserRenderingTestFixtures = {
 };
 
 /**
- * Whether Browser Rendering is enabled. True when both CLOUDFLARE_ACCOUNT_ID / CF_ACCOUNT_ID
- * and CLOUDFLARE_API_TOKEN / CF_API_TOKEN environment variables are set.
+ * Whether Browser Rendering is enabled. True when both BRAPI_ACCOUNT_ID / CLOUDFLARE_ACCOUNT_ID / CF_ACCOUNT_ID
+ * and BRAPI_API_TOKEN / CLOUDFLARE_API_TOKEN / CF_API_TOKEN environment variables are set.
  */
-export const usesBrowserRendering = !!((process.env.CLOUDFLARE_ACCOUNT_ID || process.env.CF_ACCOUNT_ID) && (process.env.CLOUDFLARE_API_TOKEN || process.env.CF_API_TOKEN));
+export const usesBrowserRendering = !!((process.env.BRAPI_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID || process.env.CF_ACCOUNT_ID) && (process.env.BRAPI_API_TOKEN || process.env.CLOUDFLARE_API_TOKEN || process.env.CF_API_TOKEN));
 
 /**
  * Playwright Test with Browser Rendering fixtures.
  *
- * When CLOUDFLARE_ACCOUNT_ID / CF_ACCOUNT_ID and CLOUDFLARE_API_TOKEN / CF_API_TOKEN
- * environment variables are set, tests run against Cloudflare's Browser Rendering API.
- * Otherwise, tests run locally using Playwright's default browser launch.
+ * When BRAPI_ACCOUNT_ID / CLOUDFLARE_ACCOUNT_ID / CF_ACCOUNT_ID and
+ * BRAPI_API_TOKEN / CLOUDFLARE_API_TOKEN / CF_API_TOKEN environment variables are set,
+ * tests run against Cloudflare's Browser Rendering API. Otherwise, tests run locally
+ * using Playwright's default browser launch.
  *
  * @example
  * ```typescript
@@ -120,13 +121,13 @@ export const test = !usesBrowserRendering ? baseTest : baseTest.extend<
   browserRendering: [{}, { scope: 'worker', option: true }],
 
   _browserRenderingBaseURL: [async ({}, use) => {
-    const accountId = process.env.CLOUDFLARE_ACCOUNT_ID || process.env.CF_ACCOUNT_ID;
+    const accountId = process.env.BRAPI_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID || process.env.CF_ACCOUNT_ID;
     await use(`https://api.cloudflare.com/client/v4/accounts/${accountId}/browser-rendering`);
   }, { scope: 'worker', box: true }],
 
   _browserRenderingHeaders: [async ({}, use) => {
     await use({
-      'Authorization': `Bearer ${process.env.CLOUDFLARE_API_TOKEN || process.env.CF_API_TOKEN}`,
+      'Authorization': `Bearer ${process.env.BRAPI_API_TOKEN || process.env.CLOUDFLARE_API_TOKEN || process.env.CF_API_TOKEN}`,
     });
   }, { scope: 'worker', box: true }],
 

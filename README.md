@@ -33,7 +33,7 @@ export CLOUDFLARE_ACCOUNT_ID="your-account-id"
 export CLOUDFLARE_API_TOKEN="your-api-token"
 ```
 
-The `CF_ACCOUNT_ID` and `CF_API_TOKEN` aliases are also supported.
+The `BRAPI_ACCOUNT_ID` / `CF_ACCOUNT_ID` and `BRAPI_API_TOKEN` / `CF_API_TOKEN` aliases are also supported. `BRAPI_` takes precedence.
 
 To create an API token, go to [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens) and create a token with **Browser Rendering Edit** permissions.
 
@@ -93,7 +93,7 @@ Retries use exponential backoff with jitter. When the server returns a `retry-af
 
 ## How It Works
 
-When `CLOUDFLARE_ACCOUNT_ID` / `CF_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` / `CF_API_TOKEN` environment variables are set:
+When `BRAPI_ACCOUNT_ID` / `CLOUDFLARE_ACCOUNT_ID` / `CF_ACCOUNT_ID` and `BRAPI_API_TOKEN` / `CLOUDFLARE_API_TOKEN` / `CF_API_TOKEN` environment variables are set:
 
 1. **Session Management**: Each Playwright worker acquires its own Browser Rendering session via the API
 2. **Connection**: The session is connected using `playwright.chromium.connectOverCDP()`
