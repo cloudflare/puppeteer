@@ -41,8 +41,14 @@ export class WorkersWebSocketTransport implements ConnectionTransport {
     }, 1000); // TODO more investigation
     this.ws = ws;
     this.sessionId = sessionId;
-    this.ws.addEventListener('message', event => {
-      this.chunks.push(new Uint8Array(event.data as ArrayBuffer));
+    this.ws.addEventListener('message', async event => {
+      let data: ArrayBuffer;
+      if (event.data instanceof Blob) {
+        data = await event.data.arrayBuffer();
+      } else {
+        data = event.data as ArrayBuffer;
+      }
+      this.chunks.push(new Uint8Array(data));
       const message = chunksToMessage(this.chunks, sessionId);
       if (message && this.onmessage) {
         this.onmessage!(message);
