@@ -11,7 +11,12 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname.startsWith('/v1')) {
-      return await getBinding(url).fetch(`http://fake.host${url.pathname}`);
+      const binding = getBinding(url);
+      const targetUrl = new URL(request.url);
+      targetUrl.hostname = 'fake.host';
+      targetUrl.protocol = 'http:';
+      targetUrl.searchParams.delete('binding');
+      return await binding.fetch(new Request(targetUrl.toString(), request));
     }
     if (url.pathname === '/') {
       return Response.json(await testSuites());

@@ -12,6 +12,6 @@
   "devDependencies": {
     "@playwright/test": "^1.51.1",
     "@puppeteer-test/test": "file:../../../test",
-    "wrangler": "^4.35.0"
+    "wrangler": "^4.81.0"
   }
 }
