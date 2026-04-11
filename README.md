@@ -14,6 +14,28 @@ Note that the main branch in this repo is branched off of version 22.13.1 of
 the library, to match the currently deployed version of Chromium on the
 edge.
 
+## CDP Protocol Support
+
+[Browser Rendering now has full CDP support](https://developers.cloudflare.com/changelog/post/2026-04-10-browser-rendering-cdp-endpoint/),
+so starting with `@cloudflare/puppeteer` version 1.1.0, the library uses the
+standard CDP (Chrome DevTools Protocol) internally to communicate with Browser
+Rendering.
+
+Everything should work the same way, but if you encounter any issues, please
+[report them](https://github.com/cloudflare/puppeteer/issues). You can also
+downgrade to a previous puppeteer version by using `compatibility_date` prior to
+`2026-03-17` or by adding the `no_websocket_standard_binary_type` flag:
+
+```toml
+compatibility_date = "2026-03-16"
+# or
+compatibility_flags = ["nodejs_compat", "no_websocket_standard_binary_type", ...]
+```
+
+See [cloudflare/puppeteer#193](https://github.com/cloudflare/puppeteer/issues/193)
+and [cloudflare/workerd#6442](https://github.com/cloudflare/workerd/issues/6442)
+for details.
+
 More information in the [developer docs](https://developers.cloudflare.com/browser-rendering/).
 
 Original README follows...
