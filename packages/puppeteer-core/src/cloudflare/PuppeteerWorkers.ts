@@ -79,6 +79,7 @@ export interface WorkersLaunchOptions {
   keep_alive?: number; // milliseconds to keep browser alive even if it has no activity (from 10_000ms to 600_000ms, default is 60_000)
   location?: Locations;
   recording?: boolean;
+  lab?: boolean;
 }
 /**
  * @public
@@ -226,6 +227,9 @@ export class PuppeteerWorkers extends Puppeteer {
     }
     if (options?.recording) {
       searchParams.set('recording', options.recording.toString());
+    }
+    if (options?.lab) {
+      searchParams.set('lab', options.lab.toString());
     }
 
     const acquireUrl = `${FAKE_HOST}/v1/devtools/browser?${searchParams.toString()}`;
