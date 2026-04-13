@@ -27,10 +27,9 @@ async function launchAndGetSession(
 }
 
 async function fetchSingleSession(endpoint: BrowserWorker, sessionId: string) {
-  const response = await endpoint.fetch(`http://fake.host/v1/sessions?sessionId=${sessionId}`);
-  const { sessions } = await response.json() as { sessions: ActiveSession[] };
-  expect(sessions).toHaveLength(1);
-  const session = sessions[0];
+  const response = await endpoint.fetch(`http://fake.host/v1/devtools/session/${sessionId}`);
+  expect(response.ok).toBe(true);
+  const session = await response.json() as ActiveSession;
   expect(session.sessionId).toBe(sessionId);
   return session;
 }

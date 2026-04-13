@@ -2,7 +2,7 @@ name = "puppeteer-test-workers"
 main = "src/server/index.ts"
 workers_dev = false
 compatibility_flags = ["nodejs_compat"]
-compatibility_date = "2025-03-05"
+compatibility_date = "2026-04-04"
 upload_source_maps = true
 
 routes = [

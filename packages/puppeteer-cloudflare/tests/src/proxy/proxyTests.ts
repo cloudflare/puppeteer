@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import type {AcquireResponse, SessionsResponse} from '@cloudflare/puppeteer';
+import type {AcquireResponse} from '@cloudflare/puppeteer';
 import {test as baseTest} from '@playwright/test';
 import type {TestInfo} from '@playwright/test';
 
@@ -35,33 +35,18 @@ export const test = baseTest.extend<object, WorkerOptions & WorkerFixture>({
         const session = JSON.parse(
           fs.readFileSync(sessionFile, 'utf-8'),
         ) as AcquireResponse;
-        for (let i = 0; i < 5; i++) {
-          const response = await fetch(`${testsServerUrl}/v1/sessions?binding=${binding}`, {
-            headers: authHeaders,
-          });
-          const {sessions} = (await response.json()) as SessionsResponse;
-          const activeSession = sessions.find(s => {
-            return s.sessionId === session.sessionId;
-          });
+        const response = await fetch(`${testsServerUrl}/v1/devtools/session/${session.sessionId}?binding=${binding}`, {
+          headers: authHeaders,
+        });
 
-          if (!activeSession) {
-            break;
-          }
-
-          if (!activeSession.connectionId) {
-            sessionId = session.sessionId;
-            break;
-          }
-
-          // wait for the session to be released and try again
-          await new Promise(resolve => {
-            return setTimeout(resolve, 1000);
-          });
+        if (response.ok) {
+          sessionId = session.sessionId;
         }
       }
 
       if (!sessionId) {
-        const response = await fetch(`${testsServerUrl}/v1/acquire?binding=${binding}`, {
+        const response = await fetch(`${testsServerUrl}/v1/devtools/browser?binding=${binding}`, {
+          method: 'POST',
           headers: authHeaders,
         });
         const session = (await response.json()) as AcquireResponse;

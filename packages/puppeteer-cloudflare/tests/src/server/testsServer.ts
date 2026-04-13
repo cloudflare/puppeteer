@@ -22,11 +22,7 @@ export interface TestRequestPayload {
 
 const log = console.log.bind(console);
 
-const skipTestsFullTitles = new Set(
-  skipTests.map(t => {
-    return t.join(' > ');
-  }),
-);
+const skipTestsFullTitles = new Set(skipTests);
 
 // ensure we are in test mode
 setUnderTest(true);
