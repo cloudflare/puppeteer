@@ -1,7 +1,7 @@
-# Workers version of Puppeteer Core
+# Puppeteer for Browser Run
 
 This repo is a fork of main puppeteer project. It creates a version of
-puppeteer core specialized for use in Cloudflare workers.
+puppeteer core specialized for use with Cloudflare [Browser Run](https://developers.cloudflare.com/browser-rendering/) (formerly Browser Rendering).
 
 The goals of the fork are:
 
@@ -16,10 +16,10 @@ edge.
 
 ## CDP Protocol Support
 
-[Browser Rendering now has full CDP support](https://developers.cloudflare.com/changelog/post/2026-04-10-browser-rendering-cdp-endpoint/),
+[Browser Run now has full CDP support](https://developers.cloudflare.com/changelog/post/2026-04-10-browser-rendering-cdp-endpoint/),
 so starting with `@cloudflare/puppeteer` version 1.1.0, the library uses the
 standard CDP (Chrome DevTools Protocol) internally to communicate with Browser
-Rendering.
+Run.
 
 Everything should work the same way, but if you encounter any issues, please
 [report them](https://github.com/cloudflare/puppeteer/issues). You can also
