@@ -45,7 +45,9 @@
     "assets"
   ],
   "dependencies": {
-    "glob": "10.4.3",
-    "mocha": "10.6.0"
+    "diff": "^9.0.0",
+    "glob": "13.0.6",
+    "mocha": "11.7.5",
+    "pixelmatch": "^7.1.0"
   }
 }
