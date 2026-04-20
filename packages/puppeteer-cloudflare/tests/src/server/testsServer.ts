@@ -51,7 +51,7 @@ export class TestsServer extends DurableObject<Env> {
 
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
-    const file = url.pathname.substring(1);
+    const file = url.pathname;
     const sessionId = url.searchParams.get('sessionId');
     if (!sessionId) {
       return new Response('sessionId is required', {status: 400});

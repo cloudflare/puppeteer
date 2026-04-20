@@ -1,0 +1,20 @@
+# This ignores everything by default, except for package.json and LICENSE and README.md.
+# See https://docs.npmjs.com/misc/developers
+**/*
+
+# Include sources from lib, but not map files.
+!lib/**/*.js
+
+# Include playwright types
+!types/**/*.d.ts
+
+# Include playwright core and test entry points
+!index.d.ts
+!internal.d.ts
+!test.d.ts
+!fs.d.ts
+
+# Anything re-exported by the entry points must be listed here too, otherwise
+# it is dropped from the tarball and consumers get unresolved-module errors
+# even though the workspace builds fine.
+!cloudflare-cdp.d.ts

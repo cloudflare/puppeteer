@@ -1,0 +1,21 @@
+{
+  "name": "stagehand-example",
+  "main": "src/worker/index.ts",
+  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_date": "2025-09-17",
+  "workers_dev": true,
+  "upload_source_maps": true,
+  "observability": {
+    "enabled": true
+  },
+  "browser": {
+    "binding": "BROWSER"
+  },
+  "ai": {
+    "binding": "AI"
+  },
+  "assets": {
+    "directory": "./dist/client",
+    "not_found_handling": "single-page-application"
+  }
+}

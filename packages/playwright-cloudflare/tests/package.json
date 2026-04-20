@@ -1,0 +1,38 @@
+{
+  "name": "cloudflare-playwright-tests",
+  "version": "1.0.0",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "types": "./test-d/index.d.ts",
+  "scripts": {
+    "test-types": "tsd"
+  },
+  "devDependencies": {
+    "@cloudflare/playwright": "file:..",
+    "@cloudflare/workers-types": "^4.20260702.1",
+    "@playwright/test": "^1.57.0",
+    "@types/node": "^26.1.1",
+    "tsd": "^0.31.1",
+    "wrangler": "^4.81.0"
+  },
+  "tsd": {
+    "directory": "test-d",
+    "compilerOptions": {
+      "module": "esnext",
+      "moduleResolution": "bundler",
+      "target": "esnext",
+      "lib": [
+        "esnext",
+        "DOM"
+      ],
+      "strict": false,
+      "skipLibCheck": true,
+      "types": [
+        "node",
+        "@cloudflare/workers-types"
+      ]
+    }
+  }
+}

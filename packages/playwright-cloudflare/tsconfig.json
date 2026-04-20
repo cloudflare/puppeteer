@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "lib": ["esnext", "DOM"],
+    "paths": {
+      "playwright-core/lib/*": ["../../submodules/playwright/packages/playwright-core/src/*"],
+      "playwright/lib/*": ["../../submodules/playwright/packages/playwright/src/*"]
+    },
+    "baseUrl": ".",
+    "types": ["@cloudflare/workers-types"]
+  },
+  "include": ["src/**/*.ts"]
+}
