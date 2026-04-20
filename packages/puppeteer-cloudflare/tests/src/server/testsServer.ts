@@ -106,7 +106,7 @@ export class TestsServer extends DurableObject<Env> {
       // TODO handle skipped tests properly, probably requires a change in TestRunner
       if (result.status === 'failed') {
         const [error] = result.errors as Error[];
-        if (error.message.includes('is not supported in this environment')) {
+        if (error?.message?.includes('is not supported in this environment')) {
           result.status = "skipped";
           result.expectedStatus = "skipped";
           result.errors = [];
@@ -145,21 +145,29 @@ export class TestsServer extends DurableObject<Env> {
 
   private async getCdnTraces(browser: Browser, sessionId: string) {
     if (!this.cdnTraces) {
-      const worker = parseTrace(await fetch('https://1.1.1.1/cdn-cgi/trace').then(resp => {
-        return resp.text();
-      }));
-      const context = await browser.createBrowserContext();
-      const page = await context.newPage();
-      const browserCdnTrace = parseTrace(await page.goto('https://1.1.1.1/cdn-cgi/trace').then(resp => {
-        return resp!.text();
-      }));
-      await page.close();
-      await context.close();
-  
-      // eslint-disable-next-line no-console
-      console.log(`ℹ️ Session ID: ${sessionId}, Worker: ${worker.colo}, Browser: ${browserCdnTrace.colo}`);
-  
-      this.cdnTraces = { worker, browser: browserCdnTrace };
+      try {
+        const worker = parseTrace(await fetch('https://1.1.1.1/cdn-cgi/trace').then(resp => {
+          return resp.text();
+        }));
+        const context = await browser.createBrowserContext();
+        const page = await context.newPage();
+        const browserCdnTrace = parseTrace(await page.goto('https://1.1.1.1/cdn-cgi/trace').then(resp => {
+          return resp!.text();
+        }));
+        await page.close();
+        await context.close();
+    
+        // eslint-disable-next-line no-console
+        console.log(`ℹ️ Session ID: ${sessionId}, Worker: ${worker.colo}, Browser: ${browserCdnTrace.colo}`);
+    
+        this.cdnTraces = { worker, browser: browserCdnTrace };
+      } catch {
+        // CDN trace not available locally, use fallback
+        this.cdnTraces = {
+          worker: { loc: 'local', colo: 'local' },
+          browser: { loc: 'local', colo: 'local' },
+        };
+      }
     }
 
     return this.cdnTraces;

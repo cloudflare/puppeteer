@@ -85,6 +85,30 @@ export function setupTestBrowserHooks(): void {
   // do nothing
 }
 
+export function setupSeparateTestBrowserHooks(): void {
+  // do nothing
+}
+
+export const isHeadless = true;
+
+export interface PuppeteerTestState {
+  context: BrowserContext;
+  page: Page;
+  server: TestServer;
+  httpsServer: TestServer;
+}
+
+export const mochaHooks: Record<string, unknown> = {};
+
+export const createTimeout = <T>(
+  n: number,
+  value?: T
+): Promise<T | undefined> => {
+  return new Promise(resolve => {
+    return setTimeout(() => { return resolve(value); }, n);
+  });
+};
+
 export function launch(): never {
   throw new Skipped('Skipped because launch is not supported in this environment');
 }
