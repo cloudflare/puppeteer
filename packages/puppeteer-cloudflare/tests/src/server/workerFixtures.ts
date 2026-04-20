@@ -1,4 +1,3 @@
-// @ts-expect-error internal types missing
 import {_baseTest} from '@cloudflare/playwright/internal';
 
 export const test = _baseTest.extend({});

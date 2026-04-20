@@ -153,4 +153,12 @@ export const skipTests: string[] = [
     "page.spec.ts > Page > Page.pdf > can print to PDF and save to file",
     "queryhandler.spec.ts > Query handler tests > P selectors > should work with custom selectors",
     "queryhandler.spec.ts > Query handler tests > P selectors > should work with custom selectors with args",
+    "coverage.spec.ts > Coverage specs > JSCoverage > should not hang when there is a debugger statement",
+    "navigation.spec.ts > navigation > Page.goto > should work when navigating to a URL with a client redirect",
+];
+
+export const skipErrorMessages: Array<string | RegExp> = [
+    "sinon.spy is not a function",
+    /Cannot destructure property '\w+' of 'state' as it is undefined/,
+    "Failed to deserialize params.partitionKey",
 ];

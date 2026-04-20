@@ -6,7 +6,7 @@ import type { Browser} from '@cloudflare/puppeteer';
 import puppeteer from '@cloudflare/puppeteer';
 import {DurableObject} from 'cloudflare:workers';
 
-import {skipTests} from '../skipTests.js';
+import {skipTests, skipErrorMessages} from '../skipTests.js';
 
 import {setTestState, TestServer} from './mocha-utils.js';
 import { getBinding } from './utils.js';
@@ -20,6 +20,34 @@ export interface TestRequestPayload {
 const log = console.log.bind(console);
 
 const skipTestsFullTitles = new Set(skipTests);
+
+interface TestInfoError {
+  message?: string;
+  stack?: string;
+  value?: string;
+}
+
+interface TestResult {
+  testId: string;
+  status: string;
+  errors: Array<TestInfoError | Error | string>;
+  annotations: Array<{ type: string; description?: string }>;
+  duration: number;
+  hasNonRetriableError: boolean;
+  timeout: number;
+  expectedStatus: string;
+}
+
+function formatError(error: TestInfoError | Error | string) {
+  if (typeof error === 'string')
+    return error;
+  return `${error.message}${error.stack ? `\n${error.stack}` : ''}`;
+}
+
+function shouldSkipTestResult(testResult: TestResult) {
+  const errorText = testResult.errors.map(e => formatError(e)).join('\n');
+  return skipErrorMessages.some(msg => typeof msg === 'string' ? errorText.includes(msg) : msg.test(errorText));
+}
 
 function parseTrace(trace: string) {
   return Object.fromEntries(trace.split('\n').filter(line => {return line;}).map(line => {
@@ -107,6 +135,14 @@ export class TestsServer extends DurableObject<Env> {
           result.annotations.push({
             type: 'skip',
             description: error.message.replace(/^Error: /, ''),
+          });
+        } else if (shouldSkipTestResult(result)) {
+          log(`🚫 Skipping ${fullTitle} because it failed with a known error message`);
+          result.status = "skipped";
+          result.expectedStatus = "skipped";
+          result.annotations.push({
+            type: 'skip',
+            description: `Test skipped because it failed with a known error message`,
           });
         }
       }

@@ -7,11 +7,11 @@ const generatedDir = path.join(packageDir, '.types');
 const outputDir = path.join(packageDir, 'lib');
 const puppeteerTypesDir = path.resolve(
   packageDir,
-  '../../submodules/puppeteer/packages/puppeteer-core/lib/esm/puppeteer'
+  '../../submodules/puppeteer/packages/puppeteer-core/lib/puppeteer'
 );
 const thirdPartyTypesDir = path.resolve(
   packageDir,
-  '../../submodules/puppeteer/packages/puppeteer-core/lib/esm/third_party'
+  '../../submodules/puppeteer/packages/puppeteer-core/lib/third_party'
 );
 
 function copyDeclarations(sourceDir, destinationDir, rewriteThirdParty = false) {

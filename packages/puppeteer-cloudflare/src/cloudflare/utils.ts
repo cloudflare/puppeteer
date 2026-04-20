@@ -8,10 +8,9 @@ export const DEFAULT_VIEWPORT = Object.freeze({width: 800, height: 600});
 import {CdpBrowser} from 'puppeteer-core/lib/cdp/Browser.js';
 import {Connection} from 'puppeteer-core/lib/cdp/Connection.js';
 import type {ConnectionTransport} from 'puppeteer-core/lib/common/ConnectionTransport.js';
-import type {
-  BrowserConnectOptions,
-  ConnectOptions,
-} from 'puppeteer-core/lib/common/ConnectOptions.js';
+import type {ConnectOptions} from 'puppeteer-core/lib/common/ConnectOptions.js';
+import {debug, DEBUG_PREFIXES} from 'puppeteer-core/lib/common/Debug.js';
+import {createIncrementalIdGenerator} from 'puppeteer-core/lib/util/incremental-id-generator.js';
 /**
  * Users should never call this directly; it's called when calling
  * `puppeteer.connect` with `protocol: 'cdp'`.
@@ -20,15 +19,23 @@ import type {
  */
 export async function connectToCDPBrowser(
   connectionTransport: ConnectionTransport,
-  options: BrowserConnectOptions & ConnectOptions & {sessionId?: string}
+  options: ConnectOptions & {sessionId?: string}
 ): Promise<CdpBrowser> {
   const {
-    ignoreHTTPSErrors = false,
+    acceptInsecureCerts = false,
     defaultViewport = DEFAULT_VIEWPORT,
+    downloadBehavior,
     targetFilter,
     _isPageTarget: isPageTarget,
     slowMo = 0,
     protocolTimeout,
+    networkEnabled = true,
+    issuesEnabled = true,
+    handleDevToolsAsPage = false,
+    idGenerator = createIncrementalIdGenerator(),
+    blocklist,
+    allowlist,
+    logger = debug,
     sessionId = 'unknown',
   } = options;
 
@@ -36,30 +43,36 @@ export async function connectToCDPBrowser(
     '',
     connectionTransport,
     slowMo,
-    protocolTimeout
+    protocolTimeout,
+    false,
+    idGenerator,
+    logger
   );
-
-  const version = await connection.send('Browser.getVersion');
-  const product = version.product.toLowerCase().includes('firefox')
-    ? 'firefox'
-    : 'chrome';
 
   const {browserContextIds} = await connection.send(
     'Target.getBrowserContexts'
   );
   const browser = await CdpBrowser._create(
-    product || 'chrome',
     connection,
     browserContextIds,
-    ignoreHTTPSErrors,
+    acceptInsecureCerts,
     defaultViewport,
-    undefined,
+    downloadBehavior,
+    undefined, // process
     () => {
-      return connection.send('Browser.close').catch(console.log);
+      return connection.send('Browser.close').catch(error => {
+        logger(DEBUG_PREFIXES.error)?.(error);
+      });
     },
     targetFilter,
     isPageTarget,
-    true,
+    true, // waitForInitiallyDiscoveredTargets
+    networkEnabled,
+    issuesEnabled,
+    handleDevToolsAsPage,
+    blocklist,
+    allowlist,
+    logger,
     sessionId
   );
   return browser;

@@ -85,9 +85,11 @@ const testFiles = listFiles(sourceTestsDir)
     return /\.(test|spec)\.ts$/.test(file);
   })
   .filter(file => {
-    return !excludedFiles.includes(
-      path.relative(sourceTestsDir, file).replace(/\\/g, '/'),
-    );
+    const relativePath = path
+      .relative(sourceTestsDir, file)
+      .replace(/\\/g, '/')
+      .replace(/\.test\.ts$/, '.spec.ts');
+    return !excludedFiles.includes(relativePath);
   })
   .map(file => {
     return `@workerTests/${path.relative(sourceTestsDir, file)}`
@@ -164,6 +166,7 @@ ${[...testFiles, ...cloudflareTestFiles]
 
         'puppeteer-core/internal': '@cloudflare/puppeteer/internal',
         'puppeteer-core': '@cloudflare/puppeteer',
+        'puppeteer/internal/puppeteer.js': '@cloudflare/puppeteer',
         'puppeteer/lib/cjs/puppeteer/puppeteer.js': '@cloudflare/puppeteer',
         puppeteer: '@cloudflare/puppeteer',
 
@@ -183,6 +186,11 @@ ${[...testFiles, ...cloudflareTestFiles]
 
         sinon: path.resolve(basedir, '../tests/src/server/mocks/sinon.ts'),
       },
+    },
+    define: {
+      // import.meta.dirname doesn't exist in Workers, use globalThis.__dirname
+      // which is set by the setTestFilePlugin for each test file
+      'import.meta.dirname': 'globalThis.__dirname',
     },
     build: {
       emptyOutDir: false,

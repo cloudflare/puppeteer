@@ -20,7 +20,7 @@
   "scripts": {
     "patch": "cd ../.. && npm run patch:puppeteer",
     "ci:puppeteer": "cd ../../submodules/puppeteer && npm ci --ignore-scripts",
-    "build:puppeteer": "cd ../../submodules/puppeteer && npm run build --workspace puppeteer-core",
+    "build:puppeteer": "cd ../../submodules/puppeteer && npm run build --workspace @puppeteer/eslint && npm run build --workspace puppeteer-core",
     "build": "node ../../scripts/with-patch.mjs puppeteer npm run build:patched",
     "build:patched": "npm run ci:puppeteer && npm run build:puppeteer && npx vite build && npm run build:types",
     "build:types": "node ../../submodules/puppeteer/node_modules/typescript/bin/tsc -p tsconfig.types.json && node ./utils/copy_types.js",
