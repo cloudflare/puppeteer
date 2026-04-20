@@ -72,7 +72,7 @@ interface ProxyTests {
 }
 
 export async function proxyTests(file: string): Promise<ProxyTests> {
-  const url = new URL(`${testsServerUrl}/${file}`);
+  const url = new URL(file, testsServerUrl);
 
   return {
     beforeAll: async ({sessionId, binding}: WorkerFixture & WorkerOptions) => {

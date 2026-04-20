@@ -1,0 +1,54 @@
+{
+  "name": "@cloudflare/playwright",
+  "description": "Playwright for Cloudflare Browser Run (formerly Browser Rendering)",
+  "version": "1.0.0-next",
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./test": {
+      "types": "./test.d.ts",
+      "default": "./lib/test.js"
+    },
+    "./internal": {
+      "types": "./internal.d.ts",
+      "default": "./lib/internal.js"
+    }
+  },
+  "scripts": {
+    "generate-injected:core": "cd ../../submodules/playwright && node ./utils/generate_injected.js",
+    "ci:core:bundles:utils": "cd ../../submodules/playwright/packages/playwright-core/bundles/utils && npm ci",
+    "ci:core:bundles:zip": "cd ../../submodules/playwright/packages/playwright-core/bundles/zip && npm ci",
+    "ci:core:bundles:mcp": "cd ../../submodules/playwright/packages/playwright-core/bundles/mcp && npm ci",
+    "ci:test:bundles:expect": "cd ../../submodules/playwright/packages/playwright/bundles/expect && npm ci",
+    "ci:bundles:pngjs": "cd ./bundles/pngjs && npm ci",
+    "ci:bundles": "npm run ci:core:bundles:utils && npm run ci:core:bundles:zip && npm run ci:core:bundles:mcp && npm run ci:test:bundles:expect && npm run ci:bundles:pngjs",
+    "ci:tests": "cd tests && npm ci",
+    "build:bundles": "node utils/build_bundles.js",
+    "build:types": "node utils/copy_types.js",
+    "patch": "cd ../.. && npm run patch:playwright",
+    "build": "npm run patch && npm run generate-injected:core && npm run ci:bundles && npm run build:bundles && npm run build:types && npx vite build",
+    "test:generate:worker": "npm run patch && node ./utils/generate_worker_tests.js && cd tests && npx vite build",
+    "test:generate:proxy": "node ./utils/generate_proxy_tests.js",
+    "test:deploy": "npm run test:generate:worker && npm run ci:tests && cd tests && npx wrangler deploy",
+    "test:dev": "npm run test:generate:worker && cd tests && npx wrangler dev",
+    "test:full": "npm run test:generate:proxy && cd tests && npx playwright test",
+    "test:smoke": "npm run test:generate:proxy && cd tests && npx playwright test --grep \"@smoke\""
+  },
+  "devDependencies": {
+    "@tsconfig/node18": "^18.2.6",
+    "pkg-pr-new": "^0.0.59",
+    "vite": "^6.1.0"
+  },
+  "peerDependencies": {
+    "playwright-core": "*"
+  },
+  "peerDependenciesMeta": {
+    "playwright-core": {
+      "optional": true
+    }
+  }
+}

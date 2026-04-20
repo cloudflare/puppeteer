@@ -1,0 +1,20 @@
+{
+  "name": "cloudflare-playwright-example",
+  "version": "1.0.0",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "scripts": {
+    "build": "tsc",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "typescript": "^5.8.3",
+    "wrangler": "^4.57.0"
+  },
+  "dependencies": {
+    "@cloudflare/playwright": "^1.2.0"
+  }
+}
