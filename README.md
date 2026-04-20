@@ -7,8 +7,7 @@ This monorepo contains Cloudflare's browser automation libraries for [Browser Ru
 | Package | Description |
 | --- | --- |
 | [`@cloudflare/puppeteer`](./packages/puppeteer-cloudflare) | Puppeteer port for Cloudflare Workers and Browser Run |
-
-More browser automation ports and shared packages will move into this repository over time.
+| [`@cloudflare/playwright`](./packages/playwright-cloudflare) | Playwright port for Cloudflare Workers and Browser Run |
 
 ## Setup
 
@@ -20,18 +19,18 @@ npm run build
 
 ## Upstream Patches
 
-The ports use unmodified upstream repositories as Git submodules. Cloudflare-specific changes live in small patches under [`patches/`](./patches).
+The ports use upstream repositories as Git submodules. Cloudflare-specific changes live in patches under [`patches/`](./patches).
 
-Apply the Puppeteer patch:
+Apply all patches:
 
 ```shell
-npm run patch:puppeteer
+npm run patch
 ```
 
-Regenerate it after changing the submodule:
+Regenerate them after changing the submodules:
 
 ```shell
-npm run diff:puppeteer
+npm run diff
 ```
 
 ## Route selected browser requests through your Worker
