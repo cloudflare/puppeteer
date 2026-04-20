@@ -4,12 +4,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import './globalPatcher.js';
-
-import type {Browser} from '../api/Browser.js';
-import type {ConnectionTransport} from '../common/ConnectionTransport.js';
-import type {ConnectOptions} from '../common/ConnectOptions.js';
-import {Puppeteer} from '../common/Puppeteer.js';
+import type {Browser} from 'puppeteer-core/lib/api/Browser.js';
+import type {ConnectionTransport} from 'puppeteer-core/lib/common/ConnectionTransport.js';
+import type {ConnectOptions} from 'puppeteer-core/lib/common/ConnectOptions.js';
+import {Puppeteer} from 'puppeteer-core/lib/common/Puppeteer.js';
 
 import type {BrowserWorker} from './BrowserWorker.js';
 import {

@@ -1,0 +1,851 @@
+diff --git a/packages/puppeteer-core/src/api/Browser.ts b/packages/puppeteer-core/src/api/Browser.ts
+index 04b012448e8..97a66b35164 100644
+--- a/packages/puppeteer-core/src/api/Browser.ts
++++ b/packages/puppeteer-core/src/api/Browser.ts
+@@ -454,4 +454,13 @@ export abstract class Browser extends EventEmitter<BrowserEvents> {
+    * @experimental
+    */
+   abstract get debugInfo(): DebugInfo;
++
++  /**
++   * Get the BISO session ID associated with this browser
++   *
++   * @public
++   */
++  sessionId(): string {
++    throw new Error('Not implemented');
++  }
+ }
+diff --git a/packages/puppeteer-core/src/api/Page.ts b/packages/puppeteer-core/src/api/Page.ts
+index 446af8d4cee..87a41728fa8 100644
+--- a/packages/puppeteer-core/src/api/Page.ts
++++ b/packages/puppeteer-core/src/api/Page.ts
+@@ -63,7 +63,6 @@ import {
+   debugError,
+   fromEmitterEvent,
+   filterAsync,
+-  importFSPromises,
+   isString,
+   NETWORK_IDLE_TIME,
+   timeout,
+@@ -71,12 +70,11 @@ import {
+   fromAbortSignal,
+ } from '../common/util.js';
+ import type {Viewport} from '../common/Viewport.js';
+-import type {ScreenRecorder} from '../node/ScreenRecorder.js';
++// import type {ScreenRecorder} from '../node/ScreenRecorder.js';
+ import {guarded} from '../util/decorators.js';
+ import {
+   AsyncDisposableStack,
+   asyncDisposeSymbol,
+-  DisposableStack,
+   disposeSymbol,
+ } from '../util/disposable.js';
+ 
+@@ -2280,15 +2278,15 @@ export abstract class Page extends EventEmitter<PageEvents> {
+    */
+   async _maybeWriteBufferToFile(
+     path: string | undefined,
+-    buffer: Buffer
++    _: Buffer
+   ): Promise<void> {
+     if (!path) {
+       return;
+     }
+ 
+-    const fs = await importFSPromises();
+-
+-    await fs.writeFile(path, buffer);
++    throw new Error(
++      'Cannot write to a path outside of a Node-like environment.'
++    );
+   }
+ 
+   /**
+@@ -2331,79 +2329,79 @@ export abstract class Page extends EventEmitter<PageEvents> {
+    *
+    * You must have {@link https://ffmpeg.org/ | ffmpeg} installed on your system.
+    */
+-  async screencast(
+-    options: Readonly<ScreencastOptions> = {}
+-  ): Promise<ScreenRecorder> {
+-    const [{ScreenRecorder}, [width, height, devicePixelRatio]] =
+-      await Promise.all([
+-        import('../node/ScreenRecorder.js'),
+-        this.#getNativePixelDimensions(),
+-      ]);
+-
+-    let crop: BoundingBox | undefined;
+-    if (options.crop) {
+-      const {
+-        x,
+-        y,
+-        width: cropWidth,
+-        height: cropHeight,
+-      } = roundRectangle(normalizeRectangle(options.crop));
+-      if (x < 0 || y < 0) {
+-        throw new Error(
+-          `\`crop.x\` and \`crop.y\` must be greater than or equal to 0.`
+-        );
+-      }
+-      if (cropWidth <= 0 || cropHeight <= 0) {
+-        throw new Error(
+-          `\`crop.height\` and \`crop.width\` must be greater than or equal to 0.`
+-        );
+-      }
+-
+-      const viewportWidth = width / devicePixelRatio;
+-      const viewportHeight = height / devicePixelRatio;
+-      if (x + cropWidth > viewportWidth) {
+-        throw new Error(
+-          `\`crop.width\` cannot be larger than the viewport width (${viewportWidth}).`
+-        );
+-      }
+-      if (y + cropHeight > viewportHeight) {
+-        throw new Error(
+-          `\`crop.height\` cannot be larger than the viewport height (${viewportHeight}).`
+-        );
+-      }
+-
+-      crop = {
+-        x: x * devicePixelRatio,
+-        y: y * devicePixelRatio,
+-        width: cropWidth * devicePixelRatio,
+-        height: cropHeight * devicePixelRatio,
+-      };
+-    }
+-    if (options.speed !== undefined && options.speed <= 0) {
+-      throw new Error(`\`speed\` must be greater than 0.`);
+-    }
+-    if (options.scale !== undefined && options.scale <= 0) {
+-      throw new Error(`\`scale\` must be greater than 0.`);
+-    }
+-
+-    const recorder = new ScreenRecorder(this, width, height, {
+-      ...options,
+-      path: options.ffmpegPath,
+-      crop,
+-    });
+-    try {
+-      await this._startScreencast();
+-    } catch (error) {
+-      void recorder.stop();
+-      throw error;
+-    }
+-    if (options.path) {
+-      const {createWriteStream} = await import('fs');
+-      const stream = createWriteStream(options.path, 'binary');
+-      recorder.pipe(stream);
+-    }
+-    return recorder;
+-  }
++  // async screencast(
++  //   options: Readonly<ScreencastOptions> = {}
++  // ): Promise<ScreenRecorder> {
++  //   const [{ScreenRecorder}, [width, height, devicePixelRatio]] =
++  //     await Promise.all([
++  //       import('../node/ScreenRecorder.js'),
++  //       this.#getNativePixelDimensions(),
++  //     ]);
++
++  //   let crop: BoundingBox | undefined;
++  //   if (options.crop) {
++  //     const {
++  //       x,
++  //       y,
++  //       width: cropWidth,
++  //       height: cropHeight,
++  //     } = roundRectangle(normalizeRectangle(options.crop));
++  //     if (x < 0 || y < 0) {
++  //       throw new Error(
++  //         `\`crop.x\` and \`crop.y\` must be greater than or equal to 0.`
++  //       );
++  //     }
++  //     if (cropWidth <= 0 || cropHeight <= 0) {
++  //       throw new Error(
++  //         `\`crop.height\` and \`crop.width\` must be greater than or equal to 0.`
++  //       );
++  //     }
++
++  //     const viewportWidth = width / devicePixelRatio;
++  //     const viewportHeight = height / devicePixelRatio;
++  //     if (x + cropWidth > viewportWidth) {
++  //       throw new Error(
++  //         `\`crop.width\` cannot be larger than the viewport width (${viewportWidth}).`
++  //       );
++  //     }
++  //     if (y + cropHeight > viewportHeight) {
++  //       throw new Error(
++  //      `\`crop.height\` cannot be larger than the viewport height (${viewportHeight}).`
++  //       );
++  //     }
++
++  //     crop = {
++  //       x: x * devicePixelRatio,
++  //       y: y * devicePixelRatio,
++  //       width: cropWidth * devicePixelRatio,
++  //       height: cropHeight * devicePixelRatio,
++  //     };
++  //   }
++  //   if (options.speed !== undefined && options.speed <= 0) {
++  //     throw new Error(`\`speed\` must be greater than 0.`);
++  //   }
++  //   if (options.scale !== undefined && options.scale <= 0) {
++  //     throw new Error(`\`scale\` must be greater than 0.`);
++  //   }
++
++  //   const recorder = new ScreenRecorder(this, width, height, {
++  //     ...options,
++  //     path: options.ffmpegPath,
++  //     crop,
++  //   });
++  //   try {
++  //     await this._startScreencast();
++  //   } catch (error) {
++  //     void recorder.stop();
++  //     throw error;
++  //   }
++  //   if (options.path) {
++  //     const {createWriteStream} = await import('fs');
++  //     const stream = createWriteStream(options.path, 'binary');
++  //     recorder.pipe(stream);
++  //   }
++  //   return recorder;
++  // }
+ 
+   #screencastSessionCount = 0;
+   #startScreencastPromise: Promise<void> | undefined;
+@@ -2445,27 +2443,27 @@ export abstract class Page extends EventEmitter<PageEvents> {
+   /**
+    * Gets the native, non-emulated dimensions of the viewport.
+    */
+-  async #getNativePixelDimensions(): Promise<
+-    readonly [width: number, height: number, devicePixelRatio: number]
+-  > {
+-    const viewport = this.viewport();
+-    using stack = new DisposableStack();
+-    if (viewport && viewport.deviceScaleFactor !== 0) {
+-      await this.setViewport({...viewport, deviceScaleFactor: 0});
+-      stack.defer(() => {
+-        void this.setViewport(viewport).catch(debugError);
+-      });
+-    }
+-    return await this.mainFrame()
+-      .isolatedRealm()
+-      .evaluate(() => {
+-        return [
+-          window.visualViewport!.width * window.devicePixelRatio,
+-          window.visualViewport!.height * window.devicePixelRatio,
+-          window.devicePixelRatio,
+-        ] as const;
+-      });
+-  }
++  // async #getNativePixelDimensions(): Promise<
++  //   readonly [width: number, height: number, devicePixelRatio: number]
++  // > {
++  //   const viewport = this.viewport();
++  //   using stack = new DisposableStack();
++  //   if (viewport && viewport.deviceScaleFactor !== 0) {
++  //     await this.setViewport({...viewport, deviceScaleFactor: 0});
++  //     stack.defer(() => {
++  //       void this.setViewport(viewport).catch(debugError);
++  //     });
++  //   }
++  //   return await this.mainFrame()
++  //     .isolatedRealm()
++  //     .evaluate(() => {
++  //       return [
++  //         window.visualViewport!.width * window.devicePixelRatio,
++  //         window.visualViewport!.height * window.devicePixelRatio,
++  //         window.devicePixelRatio,
++  //       ] as const;
++  //     });
++  // }
+ 
+   /**
+    * Captures a screenshot of this {@link Page | page}.
+diff --git a/packages/puppeteer-core/src/cdp/Browser.ts b/packages/puppeteer-core/src/cdp/Browser.ts
+index bd8ea1564c9..599b800f068 100644
+--- a/packages/puppeteer-core/src/cdp/Browser.ts
++++ b/packages/puppeteer-core/src/cdp/Browser.ts
+@@ -53,7 +53,8 @@ export class CdpBrowser extends BrowserBase {
+     closeCallback?: BrowserCloseCallback,
+     targetFilterCallback?: TargetFilterCallback,
+     isPageTargetCallback?: IsPageTargetCallback,
+-    waitForInitiallyDiscoveredTargets = true
++    waitForInitiallyDiscoveredTargets = true,
++    sessionId?: string
+   ): Promise<CdpBrowser> {
+     const browser = new CdpBrowser(
+       product,
+@@ -64,7 +65,8 @@ export class CdpBrowser extends BrowserBase {
+       closeCallback,
+       targetFilterCallback,
+       isPageTargetCallback,
+-      waitForInitiallyDiscoveredTargets
++      waitForInitiallyDiscoveredTargets,
++      sessionId
+     );
+     if (ignoreHTTPSErrors) {
+       await connection.send('Security.setIgnoreCertificateErrors', {
+@@ -83,6 +85,7 @@ export class CdpBrowser extends BrowserBase {
+   #defaultContext: CdpBrowserContext;
+   #contexts = new Map<string, CdpBrowserContext>();
+   #targetManager: TargetManager;
++  #sessionId: string;
+ 
+   constructor(
+     product: 'chrome' | 'firefox' | undefined,
+@@ -93,7 +96,8 @@ export class CdpBrowser extends BrowserBase {
+     closeCallback?: BrowserCloseCallback,
+     targetFilterCallback?: TargetFilterCallback,
+     isPageTargetCallback?: IsPageTargetCallback,
+-    waitForInitiallyDiscoveredTargets = true
++    waitForInitiallyDiscoveredTargets = true,
++    sessionId?: string
+   ) {
+     super();
+     product = product || 'chrome';
+@@ -128,6 +132,7 @@ export class CdpBrowser extends BrowserBase {
+         new CdpBrowserContext(this.#connection, this, contextId)
+       );
+     }
++    this.#sessionId = sessionId || 'unknown';
+   }
+ 
+   #emitDisconnected = () => {
+@@ -420,4 +425,12 @@ export class CdpBrowser extends BrowserBase {
+       pendingProtocolErrors: this.#connection.getPendingProtocolErrors(),
+     };
+   }
++
++  /**
++   * Get the BISO session ID associated with this browser
++   * @public
++   */
++  override sessionId(): string {
++    return this.#sessionId;
++  }
+ }
+diff --git a/packages/puppeteer-core/src/common/BrowserConnector.ts b/packages/puppeteer-core/src/common/BrowserConnector.ts
+index 4c8308da6e6..e5380d200d6 100644
+--- a/packages/puppeteer-core/src/common/BrowserConnector.ts
++++ b/packages/puppeteer-core/src/common/BrowserConnector.ts
+@@ -5,7 +5,6 @@
+  */
+ 
+ import type {Browser} from '../api/Browser.js';
+-import {_connectToBiDiBrowser} from '../bidi/BrowserConnector.js';
+ import {_connectToCdpBrowser} from '../cdp/BrowserConnector.js';
+ import {isNode} from '../environment.js';
+ import {assert} from '../util/assert.js';
+@@ -34,21 +33,12 @@ export async function _connectToBrowser(
+   const {connectionTransport, endpointUrl} =
+     await getConnectionTransport(options);
+ 
+-  if (options.protocol === 'webDriverBiDi') {
+-    const bidiBrowser = await _connectToBiDiBrowser(
+-      connectionTransport,
+-      endpointUrl,
+-      options
+-    );
+-    return bidiBrowser;
+-  } else {
+-    const cdpBrowser = await _connectToCdpBrowser(
+-      connectionTransport,
+-      endpointUrl,
+-      options
+-    );
+-    return cdpBrowser;
+-  }
++  const cdpBrowser = await _connectToCdpBrowser(
++    connectionTransport,
++    endpointUrl,
++    options
++  );
++  return cdpBrowser;
+ }
+ 
+ /**
+diff --git a/packages/puppeteer-core/src/common/ConnectOptions.ts b/packages/puppeteer-core/src/common/ConnectOptions.ts
+index ce465851623..029d3a9368c 100644
+--- a/packages/puppeteer-core/src/common/ConnectOptions.ts
++++ b/packages/puppeteer-core/src/common/ConnectOptions.ts
+@@ -15,7 +15,7 @@ import type {Viewport} from './Viewport.js';
+ /**
+  * @public
+  */
+-export type ProtocolType = 'cdp' | 'webDriverBiDi';
++export type ProtocolType = 'cdp';
+ 
+ /**
+  * Generic browser options that can be passed when launching any browser or when
+diff --git a/packages/puppeteer-core/src/common/Debug.ts b/packages/puppeteer-core/src/common/Debug.ts
+index 20b8df13a7d..75ec316af03 100644
+--- a/packages/puppeteer-core/src/common/Debug.ts
++++ b/packages/puppeteer-core/src/common/Debug.ts
+@@ -70,6 +70,18 @@ export const debug = (prefix: string): ((...args: unknown[]) => void) => {
+       if (captureLogs) {
+         capturedLogs.push(prefix + logArgs);
+       }
++      const debugLevel = process.env['DEBUG'] || '';
++      const everythingShouldBeLogged = debugLevel === '*';
++
++      const prefixMatchesDebugLevel =
++        everythingShouldBeLogged ||
++        (debugLevel.endsWith('*')
++          ? prefix.startsWith(debugLevel)
++          : prefix === debugLevel);
++
++      if (!prefixMatchesDebugLevel) {
++        return;
++      }
+       (await importDebug())(prefix)(logArgs);
+     };
+   }
+diff --git a/packages/puppeteer-core/src/common/PDFOptions.ts b/packages/puppeteer-core/src/common/PDFOptions.ts
+index 8f2a6de91fc..140e10639f1 100644
+--- a/packages/puppeteer-core/src/common/PDFOptions.ts
++++ b/packages/puppeteer-core/src/common/PDFOptions.ts
+@@ -98,7 +98,7 @@ export interface PDFOptions {
+   headerTemplate?: string;
+   /**
+    * HTML template for the print footer. Has the same constraints and support
+-   * for special classes as {@link PDFOptions.headerTemplate}.
++   * for special classes as {@link PDFOptions | PDFOptions.headerTemplate}.
+    */
+   footerTemplate?: string;
+   /**
+diff --git a/packages/puppeteer-core/src/common/util.ts b/packages/puppeteer-core/src/common/util.ts
+index d251deac02e..3b7768e99e9 100644
+--- a/packages/puppeteer-core/src/common/util.ts
++++ b/packages/puppeteer-core/src/common/util.ts
+@@ -19,6 +19,7 @@ import {
+ } from '../../third_party/rxjs/rxjs.js';
+ import type {CDPSession} from '../api/CDPSession.js';
+ import {packageVersion} from '../generated/version.js';
++// import {isNode} from '../environment.js';
+ import {assert} from '../util/assert.js';
+ 
+ import {debug} from './Debug.js';
+@@ -186,8 +187,13 @@ export function evaluationString(
+     }
+     return JSON.stringify(arg);
+   }
+-
+-  return `(${fun})(${args.map(serializeArgument).join(',')})`;
++  // function is most likely bundled with wrangler,
++  // which uses esbuild with keepNames enabled.
++  // See: https://github.com/cloudflare/workers-sdk/issues/7107
++  const script = `(${fun})(${args.map(serializeArgument).join(',')})`;
++  return globalThis.navigator?.userAgent === 'Cloudflare-Workers'
++    ? `((__name => (${script}))(t => t))`
++    : script;
+ }
+ 
+ /**
+@@ -204,7 +210,7 @@ export async function importFSPromises(): Promise<typeof FS> {
+     } catch (error) {
+       if (error instanceof TypeError) {
+         throw new Error(
+-          'Cannot write to a path outside of a Node-like environment.'
++          'Cannot write to a path outside of a Node-like environment. fs'
+         );
+       }
+       throw error;
+@@ -223,20 +229,9 @@ export async function getReadableAsBuffer(
+   const buffers: Uint8Array[] = [];
+   const reader = readable.getReader();
+   if (path) {
+-    const fs = await importFSPromises();
+-    const fileHandle = await fs.open(path, 'w+');
+-    try {
+-      while (true) {
+-        const {done, value} = await reader.read();
+-        if (done) {
+-          break;
+-        }
+-        buffers.push(value);
+-        await fileHandle.writeFile(value);
+-      }
+-    } finally {
+-      await fileHandle.close();
+-    }
++    throw new Error(
++      'Cannot write to a path outside of a Node-like environment.'
++    );
+   } else {
+     while (true) {
+       const {done, value} = await reader.read();
+@@ -269,6 +264,11 @@ export async function getReadableFromProtocolStream(
+     async pull(controller) {
+       function getUnit8Array(data: string, isBase64: boolean): Uint8Array {
+         if (isBase64) {
++          // Uses Buffer for performance reasons
++          // See: https://github.com/puppeteer/puppeteer/pull/13753/changes/41524ddbda75052a24b7f60693ad7d6a6f24ae65
++          if (typeof Buffer === 'function') {
++            return Buffer.from(data, 'base64');
++          }
+           return Uint8Array.from(atob(data), m => {
+             return m.codePointAt(0)!;
+           });
+diff --git a/packages/puppeteer-core/src/node/FirefoxLauncher.test.ts b/packages/puppeteer-core/src/node/FirefoxLauncher.test.ts
+index b0b1f812498..e03067df51c 100644
+--- a/packages/puppeteer-core/src/node/FirefoxLauncher.test.ts
++++ b/packages/puppeteer-core/src/node/FirefoxLauncher.test.ts
+@@ -31,17 +31,5 @@ describe('FirefoxLauncher', function () {
+         )
+       );
+     });
+-
+-    it('should return preferences for WebDriver BiDi', async () => {
+-      const prefs: Record<string, unknown> = FirefoxLauncher.getPreferences(
+-        {
+-          test: 1,
+-        },
+-        'webDriverBiDi'
+-      );
+-      expect(prefs['test']).toBe(1);
+-      expect(prefs['fission.bfcacheInParent']).toBe(undefined);
+-      expect(prefs['fission.webContentIsolationStrategy']).toBe(0);
+-    });
+   });
+ });
+diff --git a/packages/puppeteer-core/src/node/FirefoxLauncher.ts b/packages/puppeteer-core/src/node/FirefoxLauncher.ts
+index 1df8a9d8c92..4af74619ca0 100644
+--- a/packages/puppeteer-core/src/node/FirefoxLauncher.ts
++++ b/packages/puppeteer-core/src/node/FirefoxLauncher.ts
+@@ -38,26 +38,19 @@ export class FirefoxLauncher extends ProductLauncher {
+ 
+   static getPreferences(
+     extraPrefsFirefox?: Record<string, unknown>,
+-    protocol?: 'cdp' | 'webDriverBiDi'
++    _?: 'cdp'
+   ): Record<string, unknown> {
+     return {
+       ...extraPrefsFirefox,
+-      ...(protocol === 'webDriverBiDi'
+-        ? {
+-            // Only enable the WebDriver BiDi protocol
+-            'remote.active-protocols': 1,
+-          }
+-        : {
+-            // Do not close the window when the last tab gets closed
+-            'browser.tabs.closeWindowWithLastTab': false,
+-            // Prevent various error message on the console
+-            // jest-puppeteer asserts that no error message is emitted by the console
+-            'network.cookie.cookieBehavior': 0,
+-            // Temporarily force disable BFCache in parent (https://bit.ly/bug-1732263)
+-            'fission.bfcacheInParent': false,
+-            // Only enable the CDP protocol
+-            'remote.active-protocols': 2,
+-          }),
++      // Do not close the window when the last tab gets closed
++      'browser.tabs.closeWindowWithLastTab': false,
++      // Prevent various error message on the console
++      // jest-puppeteer asserts that no error message is emitted by the console
++      'network.cookie.cookieBehavior': 0,
++      // Temporarily force disable BFCache in parent (https://bit.ly/bug-1732263)
++      'fission.bfcacheInParent': false,
++      // Only enable the CDP protocol
++      'remote.active-protocols': 2,
+       // Force all web content to use a single content process. TODO: remove
+       // this once Firefox supports mouse event dispatch from the main frame
+       // context. Once this happens, webContentIsolationStrategy should only
+diff --git a/packages/puppeteer-core/src/node/ProductLauncher.ts b/packages/puppeteer-core/src/node/ProductLauncher.ts
+index ff42729f801..d7e27e249ac 100644
+--- a/packages/puppeteer-core/src/node/ProductLauncher.ts
++++ b/packages/puppeteer-core/src/node/ProductLauncher.ts
+@@ -12,7 +12,6 @@ import {
+   CDP_WEBSOCKET_ENDPOINT_REGEX,
+   launch,
+   TimeoutError as BrowsersTimeoutError,
+-  WEBDRIVER_BIDI_WEBSOCKET_ENDPOINT_REGEX,
+   computeExecutablePath,
+ } from '@puppeteer/browsers';
+ 
+@@ -29,7 +28,6 @@ import {Connection} from '../cdp/Connection.js';
+ import {TimeoutError} from '../common/Errors.js';
+ import type {Product} from '../common/Product.js';
+ import {debugError, DEFAULT_VIEWPORT} from '../common/util.js';
+-import type {Viewport} from '../common/Viewport.js';
+ 
+ import type {
+   BrowserLaunchArgumentOptions,
+@@ -93,7 +91,6 @@ export abstract class ProductLauncher {
+       timeout = 30000,
+       waitForInitialPage = true,
+       protocolTimeout,
+-      protocol,
+     } = options;
+ 
+     const launchArgs = await this.computeLaunchArguments(options);
+@@ -112,18 +109,6 @@ export abstract class ProductLauncher {
+       });
+     };
+ 
+-    if (
+-      this.#product === 'firefox' &&
+-      protocol !== 'webDriverBiDi' &&
+-      this.puppeteer.configuration.logLevel === 'warn'
+-    ) {
+-      console.warn(
+-        `Chrome DevTools Protocol (CDP) support for Firefox is deprecated in Puppeteer ` +
+-          `and it will be eventually removed. ` +
+-          `Use WebDriver BiDi instead (see https://pptr.dev/webdriver-bidi#get-started).`
+-      );
+-    }
+-
+     const browserProcess = launch({
+       executablePath: launchArgs.executablePath,
+       args: launchArgs.args,
+@@ -149,55 +134,30 @@ export abstract class ProductLauncher {
+     };
+ 
+     try {
+-      if (this.#product === 'firefox' && protocol === 'webDriverBiDi') {
+-        browser = await this.createBiDiBrowser(
+-          browserProcess,
+-          browserCloseCallback,
+-          {
+-            timeout,
+-            protocolTimeout,
+-            slowMo,
+-            defaultViewport,
+-            ignoreHTTPSErrors,
+-          }
+-        );
++      if (usePipe) {
++        cdpConnection = await this.createCdpPipeConnection(browserProcess, {
++          timeout,
++          protocolTimeout,
++          slowMo,
++        });
+       } else {
+-        if (usePipe) {
+-          cdpConnection = await this.createCdpPipeConnection(browserProcess, {
+-            timeout,
+-            protocolTimeout,
+-            slowMo,
+-          });
+-        } else {
+-          cdpConnection = await this.createCdpSocketConnection(browserProcess, {
+-            timeout,
+-            protocolTimeout,
+-            slowMo,
+-          });
+-        }
+-        if (protocol === 'webDriverBiDi') {
+-          browser = await this.createBiDiOverCdpBrowser(
+-            browserProcess,
+-            cdpConnection,
+-            browserCloseCallback,
+-            {
+-              defaultViewport,
+-              ignoreHTTPSErrors,
+-            }
+-          );
+-        } else {
+-          browser = await CdpBrowser._create(
+-            this.product,
+-            cdpConnection,
+-            [],
+-            ignoreHTTPSErrors,
+-            defaultViewport,
+-            browserProcess.nodeProcess,
+-            browserCloseCallback,
+-            options.targetFilter
+-          );
+-        }
++        cdpConnection = await this.createCdpSocketConnection(browserProcess, {
++          timeout,
++          protocolTimeout,
++          slowMo,
++        });
+       }
++
++      browser = await CdpBrowser._create(
++        this.product,
++        cdpConnection,
++        [],
++        ignoreHTTPSErrors,
++        defaultViewport,
++        browserProcess.nodeProcess,
++        browserCloseCallback,
++        options.targetFilter
++      );
+     } catch (error) {
+       void browserCloseCallback();
+       if (error instanceof BrowsersTimeoutError) {
+@@ -329,67 +289,6 @@ export abstract class ProductLauncher {
+     return new Connection('', transport, opts.slowMo, opts.protocolTimeout);
+   }
+ 
+-  /**
+-   * @internal
+-   */
+-  protected async createBiDiOverCdpBrowser(
+-    browserProcess: ReturnType<typeof launch>,
+-    connection: Connection,
+-    closeCallback: BrowserCloseCallback,
+-    opts: {
+-      defaultViewport: Viewport | null;
+-      ignoreHTTPSErrors?: boolean;
+-    }
+-  ): Promise<Browser> {
+-    const BiDi = await import(/* webpackIgnore: true */ '../bidi/bidi.js');
+-    const bidiConnection = await BiDi.connectBidiOverCdp(connection, {
+-      acceptInsecureCerts: opts.ignoreHTTPSErrors ?? false,
+-    });
+-    return await BiDi.BidiBrowser.create({
+-      connection: bidiConnection,
+-      closeCallback,
+-      process: browserProcess.nodeProcess,
+-      defaultViewport: opts.defaultViewport,
+-      ignoreHTTPSErrors: opts.ignoreHTTPSErrors,
+-    });
+-  }
+-
+-  /**
+-   * @internal
+-   */
+-  protected async createBiDiBrowser(
+-    browserProcess: ReturnType<typeof launch>,
+-    closeCallback: BrowserCloseCallback,
+-    opts: {
+-      timeout: number;
+-      protocolTimeout: number | undefined;
+-      slowMo: number;
+-      defaultViewport: Viewport | null;
+-      ignoreHTTPSErrors?: boolean;
+-    }
+-  ): Promise<Browser> {
+-    const browserWSEndpoint =
+-      (await browserProcess.waitForLineOutput(
+-        WEBDRIVER_BIDI_WEBSOCKET_ENDPOINT_REGEX,
+-        opts.timeout
+-      )) + '/session';
+-    const transport = await WebSocketTransport.create(browserWSEndpoint);
+-    const BiDi = await import(/* webpackIgnore: true */ '../bidi/bidi.js');
+-    const bidiConnection = new BiDi.BidiConnection(
+-      browserWSEndpoint,
+-      transport,
+-      opts.slowMo,
+-      opts.protocolTimeout
+-    );
+-    return await BiDi.BidiBrowser.create({
+-      connection: bidiConnection,
+-      closeCallback,
+-      process: browserProcess.nodeProcess,
+-      defaultViewport: opts.defaultViewport,
+-      ignoreHTTPSErrors: opts.ignoreHTTPSErrors,
+-    });
+-  }
+-
+   /**
+    * @internal
+    */
+diff --git a/packages/puppeteer-core/src/tsconfig.cjs.json b/packages/puppeteer-core/src/tsconfig.cjs.json
+index 897b1a03dfd..76291c17a87 100644
+--- a/packages/puppeteer-core/src/tsconfig.cjs.json
++++ b/packages/puppeteer-core/src/tsconfig.cjs.json
+@@ -5,5 +5,8 @@
+     "moduleResolution": "Node",
+     "outDir": "../lib/cjs/puppeteer"
+   },
++  "exclude": [
++    "bidi/**"
++  ],
+   "references": [{"path": "../third_party/tsconfig.cjs.json"}]
+ }
+diff --git a/packages/puppeteer-core/src/tsconfig.esm.json b/packages/puppeteer-core/src/tsconfig.esm.json
+index 2cd2ab579fc..1827e154317 100644
+--- a/packages/puppeteer-core/src/tsconfig.esm.json
++++ b/packages/puppeteer-core/src/tsconfig.esm.json
+@@ -3,5 +3,8 @@
+   "compilerOptions": {
+     "outDir": "../lib/esm/puppeteer"
+   },
++  "exclude": [
++    "bidi/**"
++  ],
+   "references": [{"path": "../third_party/tsconfig.json"}]
+ }
+diff --git a/packages/puppeteer-core/src/util/Function.ts b/packages/puppeteer-core/src/util/Function.ts
+index 411fd401f4b..f9d4557bfde 100644
+--- a/packages/puppeteer-core/src/util/Function.ts
++++ b/packages/puppeteer-core/src/util/Function.ts
+@@ -28,34 +28,46 @@ export const createFunction = (
+  * @internal
+  */
+ export function stringifyFunction(fn: (...args: never) => unknown): string {
+-  let value = fn.toString();
+-  try {
+-    new Function(`(${value})`);
+-  } catch (err) {
+-    if (
+-      (err as Error).message.includes(
+-        `Refused to evaluate a string as JavaScript because 'unsafe-eval' is not an allowed source of script in the following Content Security Policy directive`
+-      )
+-    ) {
+-      // The content security policy does not allow Function eval. Let's
+-      // assume the value might be valid as is.
+-      return value;
+-    }
+-    // This means we might have a function shorthand (e.g. `test(){}`). Let's
+-    // try prefixing.
+-    let prefix = 'function ';
+-    if (value.startsWith('async ')) {
+-      prefix = `async ${prefix}`;
+-      value = value.substring('async '.length);
+-    }
+-    value = `${prefix}${value}`;
+-    try {
+-      new Function(`(${value})`);
+-    } catch {
+-      // We tried hard to serialize, but there's a weird beast here.
+-      throw new Error('Passed function cannot be serialized!');
+-    }
++  let value;
++  if (
++    typeof fn === 'function' &&
++    globalThis.navigator?.userAgent === 'Cloudflare-Workers'
++  ) {
++    // function is most likely bundled with wrangler,
++    // which uses esbuild with keepNames enabled.
++    // See: https://github.com/cloudflare/workers-sdk/issues/7107
++    value = `((__name => (${fn}))(t => t))`;
++  } else {
++    value = fn.toString();
+   }
++
++  /**
++   * We remove the check for the ability for dynamic javascript to be
++   * serializable, because the Workers runtime does not allow dynamic
++   * javascript to be executed, as a security precaution. In the
++   * future, we can consider the serialization check in the back end
++   * but before the message gets to the remote browser.
++   */
++  // original implementationn
++  // try {
++  //   new Function(`(${value})`);
++  // } catch {
++  //   // This means we might have a function shorthand (e.g. `test(){}`). Let's
++  //   // try prefixing.
++  //   let prefix = 'function ';
++  //   if (value.startsWith('async ')) {
++  //     prefix = `async ${prefix}`;
++  //     value = value.substring('async '.length);
++  //   }
++  //   value = `${prefix}${value}`;
++  //   try {
++  //     new Function(`(${value})`);
++  //   } catch {
++  //     console.log('functions::::', value);
++  //     // We tried hard to serialize, but there's a weird beast here.
++  //     throw new Error('Passed function cannot be serialized!');
++  //   }
++  // }
+   return value;
+ }
+ 

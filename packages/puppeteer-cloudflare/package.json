@@ -1,24 +1,26 @@
 {
-  "name": "puppeteer-cloudflare",
+  "name": "@cloudflare/puppeteer",
   "description": "Puppeteer for Cloudflare Workers",
-  "private": true,
+  "version": "1.0.0-next",
+  "license": "Apache-2.0",
   "type": "module",
+  "files": [
+    "lib/"
+  ],
   "exports": {
     ".": {
-      "types": "./index.d.ts",
-      "import": "./lib/esm/index.js",
-      "require": "./lib/cjs/index.js",
-      "default": "./lib/esm/index.js"
+      "default": "./lib/index.js"
     },
     "./internal/*": {
-      "import": "./lib/esm/packages/puppeteer-core/src/*",
-      "require": "./lib/cjs/packages/puppeteer-core/src/*",
-      "default": "./lib/esm/packages/puppeteer-core/src/*"
+      "default": "./lib/submodules/puppeteer/packages/puppeteer-core/lib/esm/puppeteer/*"
     }
   },
   "scripts": {
+    "patch": "cd ../.. && npm run patch:puppeteer",
+    "build:puppeteer": "cd ../../submodules/puppeteer/packages/puppeteer-core && npx tsc -p src/tsconfig.esm.json",
+    "build": "npm run patch && npm run build:puppeteer && npx vite build",
     "ci:tests": "cd tests && npm ci",
-    "test:generate:worker": "node ./utils/generate_worker_tests.js",
+    "test:generate:worker": "npm run patch && npm run build:puppeteer && node ./utils/generate_worker_tests.js",
     "test:generate:proxy": "node ./utils/generate_proxy_tests.js",
     "test:deploy": "npm run test:generate:worker && npm run ci:tests && cd tests && npx wrangler deploy",
     "test:dev": "npm run test:generate:worker && cd tests && npx wrangler dev",
@@ -28,7 +30,10 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250723.0",
+    "mitt": "^3.0.1",
+    "parsel-js": "^1.1.2",
+    "rxjs": "^7.8.1",
     "vite": "^6.3.5",
-    "wrangler": "^4.59.2"
+    "wrangler": "4.85.0"
   }
 }

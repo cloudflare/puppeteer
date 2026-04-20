@@ -7,10 +7,10 @@ import {PuppeteerWorkers} from './cloudflare/PuppeteerWorkers.js';
 // Side-effect import: registers the Cloudflare.* CDP command augmentation of
 // ProtocolMapping.Commands so session.send('Cloudflare.*', ...) is typed.
 import './cloudflare/protocol.js';
-export * from './api/api.js';
-export * from './common/common.js';
-export * from './revisions.js';
-export * from './util/util.js';
+export * from 'puppeteer-core/lib/api/api.js';
+export * from 'puppeteer-core/lib/common/common.js';
+export * from 'puppeteer-core/lib/revisions.js';
+export * from 'puppeteer-core/lib/util/util.js';
 export * from './cloudflare/BrowserWorker.js';
 export * from './cloudflare/protocol.js';
 

@@ -12,9 +12,10 @@ routes = [
 
 [browser]
 binding = "BROWSER"
+remote = true
 
 [assets]
-directory = "../../../test/assets"
+directory = "../../../submodules/puppeteer/test/assets"
 binding = "ASSETS"
 run_worker_first = true
 

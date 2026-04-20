@@ -5,13 +5,13 @@
  */
 export const DEFAULT_VIEWPORT = Object.freeze({width: 800, height: 600});
 
-import {CdpBrowser} from '../cdp/Browser.js';
-import {Connection} from '../cdp/Connection.js';
-import type {ConnectionTransport} from '../common/ConnectionTransport.js';
+import {CdpBrowser} from 'puppeteer-core/lib/cdp/Browser.js';
+import {Connection} from 'puppeteer-core/lib/cdp/Connection.js';
+import type {ConnectionTransport} from 'puppeteer-core/lib/common/ConnectionTransport.js';
 import type {
   BrowserConnectOptions,
   ConnectOptions,
-} from '../common/ConnectOptions.js';
+} from 'puppeteer-core/lib/common/ConnectOptions.js';
 /**
  * Users should never call this directly; it's called when calling
  * `puppeteer.connect` with `protocol: 'cdp'`.

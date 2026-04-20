@@ -3,9 +3,9 @@
  * Copyright 2025 Google Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
-import type {ConnectionTransport} from '../common/ConnectionTransport.js';
-import {debugError} from '../common/util.js';
-import {packageVersion} from '../generated/version.js';
+import type {ConnectionTransport} from 'puppeteer-core/lib/common/ConnectionTransport.js';
+import {debugError} from 'puppeteer-core/lib/common/util.js';
+import {packageVersion} from 'puppeteer-core/lib/util/version.js';
 
 import type {BrowserWorker} from './BrowserWorker.js';
 import {

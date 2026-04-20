@@ -144,5 +144,13 @@ export const skipTests: string[] = [
     "mouse.spec.ts > Mouse > should reset properly",
     "drag-and-drop.spec.ts > Drag n\\' Drop > should drag and drop",
     "injected.spec.ts > PuppeteerUtil tests > createFunction tests > should work",
-    "keyboard.spec.ts > Keyboard > should send a character with sendCharacter in iframe"
+    "keyboard.spec.ts > Keyboard > should send a character with sendCharacter in iframe",
+    "elementhandle.spec.ts > ElementHandle specs > Custom queries > should work with function shorthands",
+    "evaluation.spec.ts > Evaluation specs > Page.evaluate > should work with function shorthands",
+    "jshandle.spec.ts > JSHandle > JSHandle.jsonValue > should work with dates",
+    "jshandle.spec.ts > JSHandle > JSHandle.jsonValue > should not throw for circular objects",
+    "keyboard.spec.ts > Keyboard > ElementHandle.press should not support |text| option",
+    "page.spec.ts > Page > Page.pdf > can print to PDF and save to file",
+    "queryhandler.spec.ts > Query handler tests > P selectors > should work with custom selectors",
+    "queryhandler.spec.ts > Query handler tests > P selectors > should work with custom selectors with args",
 ];

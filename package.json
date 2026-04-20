@@ -34,7 +34,9 @@
     "test:firefox:headful": "wireit",
     "test:firefox:headless": "wireit",
     "validate-licenses": "tsx tools/third_party/validate-licenses.ts",
-    "unit": "npm run unit --workspaces --if-present"
+    "unit": "npm run unit --workspaces --if-present",
+    "diff:puppeteer": "cd submodules/puppeteer && git diff HEAD > ../../patches/puppeteer.patch",
+    "patch:puppeteer": "cd submodules/puppeteer && git apply --reverse --check ../../patches/puppeteer.patch 2>/dev/null && echo 'puppeteer patch already applied' || git apply ../../patches/puppeteer.patch"
   },
   "wireit": {
     "build": {

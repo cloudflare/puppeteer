@@ -48,7 +48,7 @@ const excludedFiles = [
   'worker.spec.ts',
 ];
 
-const sourceTestsDir = path.join(basedir, '..', '..', '..', 'test', 'src');
+const sourceTestsDir = path.join(basedir, '..', '..', '..', 'submodules', 'puppeteer', 'test', 'src');
 const cloudflareSourceTestsDir = path.join(basedir, '..', 'tests', 'src');
 const workerTestsDir = path.join(basedir, '..', 'tests', 'workerTests');
 
@@ -163,6 +163,7 @@ ${[...testFiles, ...cloudflareTestFiles]
         ),
 
         'puppeteer-core/internal': '@cloudflare/puppeteer/internal',
+        'puppeteer-core': '@cloudflare/puppeteer',
         'puppeteer/lib/cjs/puppeteer/puppeteer.js': '@cloudflare/puppeteer',
         puppeteer: '@cloudflare/puppeteer',
 
@@ -246,12 +247,19 @@ ${[...testFiles, ...cloudflareTestFiles]
           '@cloudflare/playwright/test',
           '@cloudflare/playwright/internal',
           '@cloudflare/playwright/fs',
+          'expect',
+          'diff',
+          'jpeg-js',
+          'mime',
+          'mocha',
+          'pixelmatch',
+          'pngjs',
         ],
       },
       commonjsOptions: {
         transformMixedEsModules: true,
         extensions: ['.ts', '.js'],
-        include: [path.resolve(basedir, '../../../test/**/*'), /node_modules/],
+        include: [path.resolve(basedir, '../../../submodules/puppeteer/test/**/*'), /node_modules/],
       },
     },
   });
