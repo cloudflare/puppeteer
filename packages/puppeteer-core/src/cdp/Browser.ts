@@ -340,7 +340,11 @@ export class CdpBrowser extends BrowserBase {
   }
 
   override async newPage(): Promise<Page> {
-    return await this.#defaultContext.newPage();
+    const page = await this.#defaultContext.newPage();
+    await page.setUserAgent(
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36'
+    );
+    return page;
   }
 
   async _createPageInContext(contextId?: string): Promise<Page> {
