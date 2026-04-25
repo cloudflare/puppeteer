@@ -1,4 +1,4 @@
-import { currentlyLoadingFileSuite } from 'playwright/lib/common/globals';
+import { currentlyLoadingFileSuite } from 'playwright/lib/globals';
 
 import { playwrightTestConfig, configLocation } from '../internal';
 
@@ -17,6 +17,14 @@ export const requireOrImport = (file: string) => {
 export const setTransformConfig = () => {
   // do nothing
 };
+
+export async function startCollectingFileDeps() {
+  // do nothing
+}
+
+export async function stopCollectingFileDeps() {
+  // do nothing
+}
 
 export function transformConfig() {
   return {

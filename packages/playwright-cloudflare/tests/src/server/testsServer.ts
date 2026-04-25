@@ -1,6 +1,5 @@
 import { TestRunner, TestEndPayload, isUnderTest, TestInfoError, TestResult } from '@cloudflare/playwright/internal';
 import { DurableObject } from 'cloudflare:workers';
-import '@workerTests/index';
 
 import { skipTests, skipErrorMessages } from '../skipTests';
 import { BrowserBindingName } from '../utils';
@@ -36,6 +35,8 @@ export class TestsServer extends DurableObject<Env> {
   async fetch(request: Request): Promise<Response> {
     if (!isUnderTest())
       return new Response('Not under test', { status: 500 });
+
+    await import('@workerTests/index');
 
     const url = new URL(request.url);
     const file = url.pathname.substring(1);

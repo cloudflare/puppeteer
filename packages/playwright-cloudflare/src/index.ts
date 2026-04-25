@@ -1,7 +1,7 @@
-import { createInProcessPlaywright } from 'playwright-core/lib/inProcessFactory';
+import { createInProcessPlaywright } from 'playwright-core/lib/inprocess';
 import { kBrowserCloseMessageId } from 'playwright-core/lib/server/chromium/crConnection';
 import { env } from 'cloudflare:workers';
-import { setTimeOrigin, timeOrigin } from 'playwright-core/lib/utils/isomorphic/time';
+import { setTimeOrigin, timeOrigin } from '@isomorphic/time';
 
 import { transportZone, WebSocketTransport } from './cloudflare/webSocketTransport';
 import { wrapClientApis } from './cloudflare/wrapClientApis';

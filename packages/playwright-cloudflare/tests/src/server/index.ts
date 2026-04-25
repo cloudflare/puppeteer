@@ -19,8 +19,10 @@ export default {
       forwardUrl.host = 'fake.host';
       return await binding.fetch(new Request(forwardUrl.toString(), request));
     }
-    if (url.pathname === '/')
+    if (url.pathname === '/') {
+      await import('@workerTests/index');
       return Response.json(await testSuites());
+    }
 
     const bindingName = url.searchParams.get('binding') ?? 'BROWSER';
 

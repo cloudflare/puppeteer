@@ -11,8 +11,16 @@ const pathMappings = [
   { glob: '**/packages/playwright-cloudflare/src/bundles/**', target: 'bundles' },
   { glob: '**/packages/playwright-cloudflare/src/**', target: 'playwright-cloudflare' },
   { glob: '**/packages/playwright-cloudflare/*.json', target: 'playwright-cloudflare' },
+  { glob: '**/packages/playwright-cloudflare/node_modules/**', target: 'vendor' },
+  { glob: '**/submodules/playwright/node_modules/**', target: 'playwright-core/vendor' },
+  { glob: '**/node_modules/**', target: 'vendor' },
   { glob: '**/submodules/playwright/packages/playwright-core/src/**', target: 'playwright-core' },
   { glob: '**/submodules/playwright/packages/playwright-core/*.json', target: 'playwright-core' },
+  { glob: '**/submodules/playwright/packages/injected/src/**', target: 'playwright-core/injected' },
+  { glob: '**/submodules/playwright/packages/isomorphic/**', target: 'playwright-core/isomorphic' },
+  { glob: '**/submodules/playwright/packages/protocol/src/**', target: 'playwright-core/protocol' },
+  { glob: '**/submodules/playwright/packages/recorder/src/**', target: 'playwright-core/recorder' },
+  { glob: '**/submodules/playwright/packages/utils/**', target: 'playwright-core/utils' },
   { glob: '**/submodules/playwright/packages/playwright/src/**', target: 'playwright' },
   { glob: '**/submodules/playwright/packages/playwright/*.json', target: 'playwright' },
 ];
@@ -63,6 +71,13 @@ export default defineConfig({
       'playwright-core/lib': path.resolve(__dirname, '../../submodules/playwright/packages/playwright-core/src'),
       'playwright/lib': path.resolve(__dirname, '../../submodules/playwright/packages/playwright/src'),
       'playwright-core': path.resolve(__dirname, './src/index'),
+      '@injected': path.resolve(__dirname, '../../submodules/playwright/packages/injected/src'),
+      '@isomorphic': path.resolve(__dirname, '../../submodules/playwright/packages/isomorphic'),
+      '@protocol': path.resolve(__dirname, '../../submodules/playwright/packages/protocol/src'),
+      '@recorder': path.resolve(__dirname, '../../submodules/playwright/packages/recorder/src'),
+      '@utils': path.resolve(__dirname, '../../submodules/playwright/packages/utils'),
+      'debug': path.resolve(__dirname, '../../submodules/playwright/node_modules/debug'),
+      'jpeg-js': path.resolve(__dirname, '../../submodules/playwright/node_modules/jpeg-js'),
 
       // https://workers-nodejs-compat-matrix.pages.dev/
       'async_hooks': 'node:async_hooks',
@@ -86,13 +101,10 @@ export default defineConfig({
       'tls': 'node:tls',
       'url': 'node:url',
       'util': 'node:util',
+      'vm': 'node:vm',
       'zlib': 'node:zlib',
 
       // bundles
-      './utilsBundleImpl': path.resolve(__dirname, './src/bundles/utilsBundleImpl'),
-      './zipBundleImpl': path.resolve(__dirname, './src/bundles/zipBundleImpl'),
-      './mcpBundleImpl': path.resolve(__dirname, './src/bundles/mcpBundleImpl'),
-      './expectBundleImpl': path.resolve(__dirname, './src/bundles/expectBundleImpl'),
       'pngjs': path.resolve(__dirname, './src/bundles/pngjs'),
 
       "child_process": path.resolve(__dirname, './src/mocks/childProcess'),
@@ -101,6 +113,7 @@ export default defineConfig({
       "node:readline": path.resolve(__dirname, './src/mocks/readline'),
       "inspector": path.resolve(__dirname, './src/mocks/inspector'),
       "node:inspector": path.resolve(__dirname, './src/mocks/inspector'),
+      "open": path.resolve(__dirname, './src/mocks/open'),
 
       // replace playwright transport with cloudflare workers transport
       './transport': path.resolve(__dirname, './src/cloudflare/webSocketTransport'),
@@ -114,6 +127,7 @@ export default defineConfig({
       '../transform/transform': path.resolve(__dirname, './src/mocks/transform'),
 
       '../transform/compilationCache': path.resolve(__dirname, './src/mocks/compilationCache'),
+      './testLoader': path.resolve(__dirname, './src/mocks/testLoader'),
       '../common/testLoader': path.resolve(__dirname, './src/mocks/testLoader'),
       '../common/esmLoaderHost': path.resolve(__dirname, './src/mocks/esmLoaderHost'),
       './esmLoaderHost': path.resolve(__dirname, './src/mocks/esmLoaderHost'),
@@ -161,6 +175,7 @@ export default defineConfig({
         'node:dns',
         'node:events',
         'node:fs',
+        'node:fs/promises',
         'node:http',
         'node:http2',
         'node:https',
@@ -175,6 +190,8 @@ export default defineConfig({
         'node:tls',
         'node:url',
         'node:util',
+        'node:util/types',
+        'node:vm',
         'node:zlib',
         'cloudflare:workers',
       ]
@@ -186,8 +203,7 @@ export default defineConfig({
         path.resolve(__dirname, '../../submodules/playwright/packages/playwright-core/src/cli/**/*.ts'),
       ],
       include: [
-        path.resolve(__dirname, '../../submodules/playwright/packages/playwright-core/src/**/*'),
-        path.resolve(__dirname, '../../submodules/playwright/packages/playwright/src/**/*'),
+        path.resolve(__dirname, '../../submodules/playwright/packages/**/*'),
         /node_modules/,
       ],
     }

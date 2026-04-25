@@ -6,12 +6,8 @@ import { fileURLToPath } from 'url';
 const bundles = {
   // pngjs needs to bundle browserify-zlib, it throws an error when trying to use workers runtime zlib:
   // Error: Class constructor Inflate cannot be invoked without 'new'
-  // It needs to build before other bundles, because they may depend on it
+  // Playwright's other dependencies now come from its root workspace.
   'pngjs': '../bundles/pngjs',
-  'utilsBundleImpl': '../../../submodules/playwright/packages/playwright-core/bundles/utils',
-  'zipBundleImpl': '../../../submodules/playwright/packages/playwright-core/bundles/zip',
-  'mcpBundleImpl': '../../../submodules/playwright/packages/playwright-core/bundles/mcp',
-  'expectBundleImpl': '../../../submodules/playwright/packages/playwright/bundles/expect',
 };
 
 const external = [

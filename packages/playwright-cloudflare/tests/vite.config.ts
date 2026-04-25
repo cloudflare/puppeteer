@@ -90,6 +90,7 @@ export default defineConfig({
 
       '@workerTests': sourceTestsDir,
       '@cloudflareTests': path.resolve(basedir, './src'),
+      '@playwright-cloudflare': path.resolve(basedir, '../src'),
 
       '../config/browserTest': path.resolve(basedir, './src/server/workerFixtures'),
       '../page/pageTest': path.resolve(basedir, './src/server/workerFixtures'),
@@ -100,18 +101,32 @@ export default defineConfig({
 
       '../../zipBundle': '@cloudflare/playwright/internal',
       '../../utilsBundle': '@cloudflare/playwright/internal',
+      './bidiOverCdp': path.resolve(basedir, '../src/mocks/empty'),
+      './utilsBundleImpl': path.resolve(basedir, '../src/bundles/utilsBundleImpl'),
+      './zipBundleImpl': path.resolve(basedir, '../src/bundles/zipBundleImpl'),
+      'pngjs': path.resolve(basedir, '../src/bundles/pngjs'),
       'playwright-core/lib/utilsBundle': '@cloudflare/playwright/internal',
       'playwright-core/lib/utils': '@cloudflare/playwright/internal',
 
+      // The upstream coreBundle barrel includes the full Node.js browser server.
+      '../../packages/playwright-core/lib/coreBundle': path.resolve(basedir, './src/server/coreBundleServer'),
+      '../../packages/playwright-core/lib/utilsBundle': '@cloudflare/playwright/internal',
       '../../packages/playwright-core/lib': path.resolve(basedir, '../../../submodules/playwright/packages/playwright-core/src'),
       '../../../packages/playwright-core/lib': path.resolve(basedir, '../../../submodules/playwright/packages/playwright-core/src'),
       'packages/playwright-core/lib': path.resolve(basedir, '../../../submodules/playwright/packages/playwright-core/src'),
       'playwright': '@cloudflare/playwright',
       'playwright-core': '@cloudflare/playwright',
       '@playwright/test': path.resolve(basedir, './src/server/workerFixtures'),
-      '@isomorphic': path.resolve(basedir, '../../../submodules/playwright/packages/playwright-core/src/utils/isomorphic'),
+      '@injected': path.resolve(basedir, '../../../submodules/playwright/packages/injected/src'),
+      '@isomorphic': path.resolve(basedir, '../../../submodules/playwright/packages/isomorphic'),
+      '@protocol': path.resolve(basedir, '../../../submodules/playwright/packages/protocol/src'),
+      '@recorder': path.resolve(basedir, '../../../submodules/playwright/packages/recorder/src'),
       '@testIsomorphic': path.resolve(basedir, '../../../submodules/playwright/packages/playwright/src/isomorphic'),
+      '@utils': path.resolve(basedir, '../../../submodules/playwright/packages/utils'),
     },
+  },
+  define: {
+    '__dirname': JSON.stringify(basedir),
   },
   build: {
     emptyOutDir: false,
@@ -160,6 +175,7 @@ export default defineConfig({
         'node:domain',
         'node:events',
         'node:fs',
+        'node:fs/promises',
         'node:http',
         'node:http2',
         'node:https',
@@ -177,6 +193,7 @@ export default defineConfig({
         'node:tls',
         'node:url',
         'node:util',
+        'node:util/types',
         'node:vm',
         'node:zlib',
 

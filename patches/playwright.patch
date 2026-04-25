@@ -1,8 +1,8 @@
 diff --git a/packages/playwright-core/src/client/browser.ts b/packages/playwright-core/src/client/browser.ts
-index f4b803891..457006a6a 100644
+index 4a9736ebd..2b87b8325 100644
 --- a/packages/playwright-core/src/client/browser.ts
 +++ b/packages/playwright-core/src/client/browser.ts
-@@ -55,7 +55,13 @@ export class Browser extends ChannelOwner<channels.BrowserChannel> implements ap
+@@ -60,7 +60,13 @@ export class Browser extends ChannelOwner<channels.BrowserChannel> implements ap
      return this._browserType;
    }
  
@@ -12,91 +12,198 @@ index f4b803891..457006a6a 100644
 +  ): Promise<BrowserContext> {
 +    if (!options.userAgent) {
 +      options.userAgent =
-+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36";
++        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36';
 +    }
      return await this._innerNewContext(options, false);
    }
  
 diff --git a/packages/playwright-core/src/client/channelOwner.ts b/packages/playwright-core/src/client/channelOwner.ts
-index 7bd097b3f..33af318f8 100644
+index e8c139bbb..42e4a6ee8 100644
 --- a/packages/playwright-core/src/client/channelOwner.ts
 +++ b/packages/playwright-core/src/client/channelOwner.ts
-@@ -19,6 +19,7 @@ import { ValidationError, maybeFindValidator  } from '../protocol/validator';
- import { methodMetainfo } from '../utils/isomorphic/protocolMetainfo';
- import { captureLibraryStackTrace } from './clientStackTrace';
- import { stringifyStackFrames } from '../utils/isomorphic/stackTrace';
+@@ -20,6 +20,8 @@ import { isUnderTest } from '@utils/debug';
+ import { debugLogger } from '@utils/debugLogger';
+ import { currentZone } from '@utils/zones';
+ import { ValidationError, maybeFindValidator } from '@protocol/validator';
++// @ts-ignore - provided by the Cloudflare wrapper's Vite alias.
 +import { apiCallZone } from '@playwright-cloudflare/cloudflare/apiCallZone';
+ import { EventEmitter } from './eventEmitter';
+ import { captureLibraryStackTrace } from './clientStackTrace';
  
- import type { ClientInstrumentation } from './clientInstrumentation';
- import type { Connection } from './connection';
-@@ -179,8 +180,10 @@ export abstract class ChannelOwner<T extends channels.Channel = channels.Channel
+@@ -192,8 +194,9 @@ export abstract class ChannelOwner<T extends channels.Channel = channels.Channel
      if (existingApiZone)
        return await func(existingApiZone);
  
 +    const apiCall = apiCallZone.getStore();
-+
-     const stackTrace = captureLibraryStackTrace(this._platform);
--    const apiZone: ApiZone = { title: options?.title, apiName: stackTrace.apiName, frames: stackTrace.frames, internal: options?.internal ?? false, reported: false, userData: undefined, stepId: undefined };
-+    const apiZone: ApiZone = { title: options?.title, apiName: apiCall?.apiName ?? stackTrace.apiName, frames: stackTrace.frames, internal: options?.internal ?? false, reported: false, userData: undefined, stepId: undefined };
- 
-     try {
-       const result = await this._platform.zones.current().push(apiZone).run(async () => await func(apiZone));
+     const stackTrace = captureLibraryStackTrace();
+-    let apiName = stackTrace.apiName;
++    let apiName = apiCall?.apiName ?? stackTrace.apiName;
+     if (apiName.startsWith('_') || apiName.includes('._'))
+       apiName = options?.title ?? apiName;
+     const apiZone: ApiZone = { title: options?.title, apiName, frames: stackTrace.frames, internal: options?.internal ?? false, reported: false, userData: undefined, stepId: undefined };
 diff --git a/packages/playwright-core/src/client/clientHelper.ts b/packages/playwright-core/src/client/clientHelper.ts
-index 6c9b8aad1..9233f26ce 100644
+index 89037e342..657a3d4c6 100644
 --- a/packages/playwright-core/src/client/clientHelper.ts
 +++ b/packages/playwright-core/src/client/clientHelper.ts
-@@ -30,7 +30,9 @@ export function envObjectToArray(env: NodeJS.ProcessEnv): { name: string, value:
+@@ -32,7 +32,8 @@ export function envObjectToArray(env: NodeJS.ProcessEnv): { name: string, value:
  
- export async function evaluationScript(platform: Platform, fun: Function | string | { path?: string, content?: string }, arg?: any, addSourceUrl: boolean = true): Promise<string> {
+ export async function evaluationScript(fun: Function | string | { path?: string, content?: string }, arg?: any, addSourceUrl: boolean = true): Promise<string> {
    if (typeof fun === 'function') {
 -    const source = fun.toString();
-+    // function is most likely bundled with wrangler, which uses esbuild with keepNames enabled.
-+    // See: https://github.com/cloudflare/workers-sdk/issues/7107
++    // Wrangler's keepNames transform wraps named functions in an __name helper.
 +    const source = `((__name => (${fun.toString()}))(t => t))`;
      const argString = Object.is(arg, undefined) ? 'undefined' : JSON.stringify(arg);
      return `(${source})(${argString})`;
    }
+diff --git a/packages/playwright-core/src/inprocess.ts b/packages/playwright-core/src/inprocess.ts
+index 2c342566a..743840404 100644
+--- a/packages/playwright-core/src/inprocess.ts
++++ b/packages/playwright-core/src/inprocess.ts
+@@ -17,7 +17,9 @@
+ import { setCoreDir } from '@utils/stackTrace';
+ import { AndroidServerLauncherImpl } from './androidServerImpl';
+ import { BrowserServerLauncherImpl } from './browserServerImpl';
+-import { DispatcherConnection, PlaywrightDispatcher, RootDispatcher, createPlaywright } from './server';
++import { DispatcherConnection, RootDispatcher } from './server/dispatchers/dispatcher';
++import { PlaywrightDispatcher } from './server/dispatchers/playwrightDispatcher';
++import { createPlaywright } from './server/playwright';
+ import { Connection } from './client/connection';
+ import { packageRoot } from './package';
+ 
+diff --git a/packages/playwright-core/src/package.ts b/packages/playwright-core/src/package.ts
+index 180f16392..8b2a8b29d 100644
+--- a/packages/playwright-core/src/package.ts
++++ b/packages/playwright-core/src/package.ts
+@@ -16,10 +16,10 @@
+ 
+ import path from 'path';
+ 
+-// Use a dynamic path so esbuild does not statically resolve and inline
+-// package.json into coreBundle.js.
++import packageJSON from '../package.json';
++
+ export const packageRoot = path.join(__dirname, '..');
+-export const packageJSON = require(path.join(packageRoot, 'package.json'));
++export { packageJSON };
+ export const binPath = path.join(packageRoot, 'bin');
+ 
+ export function libPath(...parts: string[]): string {
+diff --git a/packages/playwright-core/src/remote/playwrightConnection.ts b/packages/playwright-core/src/remote/playwrightConnection.ts
+index f03f7a1d8..9de86f40c 100644
+--- a/packages/playwright-core/src/remote/playwrightConnection.ts
++++ b/packages/playwright-core/src/remote/playwrightConnection.ts
+@@ -18,13 +18,15 @@ import { startProfiling, stopProfiling } from '@utils/profiler';
+ import { debugLogger } from '@utils/debugLogger';
+ import { monotonicTime } from '@isomorphic/time';
+ import { Semaphore } from '@isomorphic/semaphore';
+-import { DispatcherConnection, PlaywrightDispatcher, RootDispatcher } from '../server';
+ import { AndroidDevice } from '../server/android/android';
+ import { Browser } from '../server/browser';
+ import { DebugControllerDispatcher } from '../server/dispatchers/debugControllerDispatcher';
++import { DispatcherConnection, RootDispatcher } from '../server/dispatchers/dispatcher';
+ import { PlaywrightDispatcherOptions } from '../server/dispatchers/playwrightDispatcher';
++import { PlaywrightDispatcher } from '../server/dispatchers/playwrightDispatcher';
+ 
+-import type { DispatcherScope, Playwright } from '../server';
++import type { DispatcherScope } from '../server/dispatchers/dispatcher';
++import type { Playwright } from '../server/playwright';
+ import type { ServerTransport } from './serverTransport';
+ 
+ export interface PlaywrightInitializeResult extends PlaywrightDispatcherOptions {
+diff --git a/packages/playwright-core/src/server/android/android.ts b/packages/playwright-core/src/server/android/android.ts
+index 7a6e96bb9..05d6df80c 100644
+--- a/packages/playwright-core/src/server/android/android.ts
++++ b/packages/playwright-core/src/server/android/android.ts
+@@ -20,6 +20,8 @@ import os from 'os';
+ import path from 'path';
+ 
+ import debug from 'debug';
++// @ts-ignore - ws exposes these runtime internals from its ESM wrapper.
++import { Receiver, Sender } from 'ws';
+ import { PipeTransport } from '@utils/pipeTransport';
+ import { createGuid } from '@utils/crypto';
+ import { isUnderTest } from '@utils/debug';
+@@ -27,7 +29,6 @@ import { getPackageManagerExecCommand } from '@utils/env';
+ import { RecentLogsCollector } from '@utils/debugLogger';
+ import { removeFolders } from '@utils/fileUtils';
+ import { gracefullyCloseSet } from '@utils/processLauncher';
+-import { wsReceiver, wsSender } from '../../utilsBundle';
+ import { validateBrowserContextOptions } from '../browserContext';
+ import { chromiumSwitches } from '../chromium/chromiumSwitches';
+ import { shouldProxyLoopback, CRBrowser } from '../chromium/crBrowser';
+@@ -493,7 +494,7 @@ class AndroidBrowser extends EventEmitter {
+           this.onclose();
+       });
+     });
+-    this._receiver = new wsReceiver() as stream.Writable;
++    this._receiver = new Receiver() as stream.Writable;
+     this._receiver.on('message', message => {
+       setImmediate(() => {
+         if (this.onmessage)
+@@ -527,7 +528,7 @@ Sec-WebSocket-Version: 13\r
+ }
+ 
+ function encodeWebFrame(data: string): Buffer {
+-  return wsSender.frame(Buffer.from(data), {
++  return Sender.frame(Buffer.from(data), {
+     opcode: 1,
+     mask: true,
+     fin: true,
 diff --git a/packages/playwright-core/src/server/chromium/chromium.ts b/packages/playwright-core/src/server/chromium/chromium.ts
-index bcc69d40f..ec9f63d44 100644
+index 222fb073f..6974dde2a 100644
 --- a/packages/playwright-core/src/server/chromium/chromium.ts
 +++ b/packages/playwright-core/src/server/chromium/chromium.ts
-@@ -108,7 +108,9 @@ export class Chromium extends BrowserType {
-       chromeTransport = await WebSocketTransport.connect(progress, wsEndpoint, { headers: headersMap });
+@@ -112,10 +112,13 @@ export class Chromium extends BrowserType {
+       throw e;
+     }
+     const closeAndWait = async () => await chromeTransport.closeAndWait();
+-    return this._connectOverCDPImpl(progress, chromeTransport, closeAndWait, options, onClose);
++    // Cloudflare's persistent endpoint controls whether Playwright exposes a default context.
++    const noDefaultViewport = globalThis.navigator?.userAgent !== 'Cloudflare-Workers';
++    const persistent = new URL(endpointURL).searchParams.has('persistent') ? { noDefaultViewport } : null;
++    return this._connectOverCDPImpl(progress, chromeTransport, closeAndWait, { ...options, persistent }, onClose);
+   }
  
+-  private async _connectOverCDPImpl(progress: Progress, transport: ConnectionTransport, closeAndWait: () => Promise<void>, options: types.LaunchOptions & { isLocal?: boolean, noDefaults?: boolean, isWebView?: boolean, artifactsDir?: string }, onClose?: () => Promise<void>) {
++  private async _connectOverCDPImpl(progress: Progress, transport: ConnectionTransport, closeAndWait: () => Promise<void>, options: types.LaunchOptions & { isLocal?: boolean, noDefaults?: boolean, isWebView?: boolean, artifactsDir?: string, persistent?: types.BrowserContextOptions | null }, onClose?: () => Promise<void>) {
+     let artifactsDir: string;
+     const tempDirectories: string[] = [];
+     if (options.artifactsDir) {
+@@ -138,7 +141,7 @@ export class Chromium extends BrowserType {
+ 
+     try {
        const browserProcess: BrowserProcess = { close: doClose, kill: doClose };
--      const persistent: types.BrowserContextOptions = { noDefaultViewport: true };
-+      // in cloudflare workers, noDefaultViewport will set height to 1px, which is not what we want
-+      const noDefaultViewport = globalThis.navigator?.userAgent !== 'Cloudflare-Workers';
-+      const persistent = new URL(endpointURL).searchParams.has('persistent') ? { noDefaultViewport } : undefined;
-       const browserOptions: BrowserOptions = {
-         slowMo: options.slowMo,
-         name: 'chromium',
-@@ -122,7 +124,8 @@ export class Chromium extends BrowserType {
-         tracesDir: options.tracesDir || artifactsDir,
-         originalLaunchOptions: {},
+-      const persistent: types.BrowserContextOptions = {
++      const persistent: types.BrowserContextOptions | undefined = options.persistent === null ? undefined : options.persistent ?? {
+         noDefaultViewport: true,
+         ...(options.noDefaults ? { acceptDownloads: 'internal-browser-default' as const } : {}),
+       };
+@@ -157,7 +160,8 @@ export class Chromium extends BrowserType {
+         noDefaults: options.noDefaults,
+         isWebView: options.isWebView,
        };
 -      validateBrowserContextOptions(persistent, browserOptions);
 +      if (persistent)
 +        validateBrowserContextOptions(persistent, browserOptions);
-       const browser = await progress.race(CRBrowser.connect(this.attribution.playwright, chromeTransport, browserOptions));
+       const browser = await progress.race(CRBrowser.connect(this.attribution.playwright, transport, browserOptions));
        if (!options.isLocal)
-         browser._isCollocatedWithServer = false;
+         browser._isBrowserCollocatedWithServer = false;
 diff --git a/packages/playwright-core/src/server/chromium/crBrowser.ts b/packages/playwright-core/src/server/chromium/crBrowser.ts
-index 83cb12d2e..1ba89f4aa 100644
+index db00e29a0..080cb1b1d 100644
 --- a/packages/playwright-core/src/server/chromium/crBrowser.ts
 +++ b/packages/playwright-core/src/server/chromium/crBrowser.ts
-@@ -557,6 +557,9 @@ export class CRBrowserContext extends BrowserContext<CREventsMap> {
-       return;
-     }
+@@ -563,6 +563,9 @@ export class CRBrowserContext extends BrowserContext<CREventsMap> {
+     // Ongoing downloads cause crashes in Edge, so cancel them first.
+     await Promise.all([...this._downloads].map(download => download.cancel().catch(() => {})));
  
-+    // PATCH ensure all pages are closed before closing the context
++    // Ensure all pages close before disposing the context.
 +    await Promise.all(this._crPages().map(page => page.closePage(true))).catch(() => {});
 +
      await this._browser._session.send('Target.disposeBrowserContext', { browserContextId: this._browserContextId });
      this._browser._contexts.delete(this._browserContextId);
      for (const [targetId, serviceWorker] of this._browser._serviceWorkers) {
 diff --git a/packages/playwright-core/src/server/chromium/crDragDrop.ts b/packages/playwright-core/src/server/chromium/crDragDrop.ts
-index 893968917..db81281b3 100644
+index e104741a9..453e60721 100644
 --- a/packages/playwright-core/src/server/chromium/crDragDrop.ts
 +++ b/packages/playwright-core/src/server/chromium/crDragDrop.ts
 @@ -93,7 +93,8 @@ export class DragManager {
@@ -107,52 +214,13 @@ index 893968917..db81281b3 100644
 +      const scriptSource = `((__name => (${setupDragListeners.toString()}))(t => t))`;
 +      await progress.race(this._crPage._page.safeNonStallingEvaluateInAllFrames(`(${scriptSource})()`, 'utility'));
        client.on('Input.dragIntercepted', onDragIntercepted!);
-       await client.send('Input.setInterceptDrags', { enabled: true });
+       await progress.race(client.send('Input.setInterceptDrags', { enabled: true }));
        try {
-diff --git a/packages/playwright-core/src/server/dispatchers/pageDispatcher.ts b/packages/playwright-core/src/server/dispatchers/pageDispatcher.ts
-index 22f65daf0..38976e072 100644
---- a/packages/playwright-core/src/server/dispatchers/pageDispatcher.ts
-+++ b/packages/playwright-core/src/server/dispatchers/pageDispatcher.ts
-@@ -27,7 +27,8 @@ import { RouteDispatcher, WebSocketDispatcher } from './networkDispatchers';
- import { WebSocketRouteDispatcher } from './webSocketRouteDispatcher';
- import { SdkObject } from '../instrumentation';
- import { urlMatches } from '../../utils/isomorphic/urlMatch';
--import { PageAgentDispatcher } from './pageAgentDispatcher';
-+// TODO enable in the future
-+// import { PageAgentDispatcher } from './pageAgentDispatcher';
- 
- import type { Artifact } from '../artifact';
- import type { BrowserContext } from '../browserContext';
-@@ -362,7 +363,8 @@ export class PageDispatcher extends Dispatcher<Page, channels.PageChannel, Brows
-   }
- 
-   async agent(params: channels.PageAgentParams, progress: Progress): Promise<channels.PageAgentResult> {
--    return { agent: new PageAgentDispatcher(this, params) };
-+    // return { agent: new PageAgentDispatcher(this, params) };
-+    throw new Error('Agent not implemented');
-   }
- 
-   _onFrameAttached(frame: Frame) {
-diff --git a/packages/playwright-core/src/server/har/harRecorder.ts b/packages/playwright-core/src/server/har/harRecorder.ts
-index 7d99a3779..fefdcd98e 100644
---- a/packages/playwright-core/src/server/har/harRecorder.ts
-+++ b/packages/playwright-core/src/server/har/harRecorder.ts
-@@ -86,7 +86,9 @@ export class HarRecorder implements HarTracerDelegate {
-       (this._zipFile as unknown as EventEmitter).on('error', error => result.reject(error));
-       this._zipFile.addBuffer(Buffer.from(harFileContent, 'utf-8'), 'har.har');
-       this._zipFile.end();
--      this._zipFile.outputStream.pipe(fs.createWriteStream(this._artifact.localPath())).on('close', () => {
-+      const chunks: Buffer[] = [];
-+      this._zipFile.outputStream.on('data', data => chunks.push(data)).on('close', () => {
-+        fs.writeFileSync(this._artifact.localPath(), Buffer.concat(chunks));
-         result.resolve();
-       });
-       await result;
 diff --git a/packages/playwright-core/src/server/javascript.ts b/packages/playwright-core/src/server/javascript.ts
-index bc9261b8d..af36b57bd 100644
+index 0f549a027..b33a2e343 100644
 --- a/packages/playwright-core/src/server/javascript.ts
 +++ b/packages/playwright-core/src/server/javascript.ts
-@@ -289,20 +289,26 @@ export function normalizeEvaluationExpression(expression: string, isFunction: bo
+@@ -307,20 +307,25 @@ export function normalizeEvaluationExpression(expression: string, isFunction: bo
    expression = expression.trim();
  
    if (isFunction) {
@@ -166,8 +234,7 @@ index bc9261b8d..af36b57bd 100644
 -      else
 -        expression = 'function ' + expression;
 +    if (globalThis.navigator?.userAgent === 'Cloudflare-Workers') {
-+      // function is most likely bundled with wrangler, which uses esbuild with keepNames enabled.
-+      // See: https://github.com/cloudflare/workers-sdk/issues/7107
++      // Wrangler's keepNames transform wraps named functions in an __name helper.
 +      expression = `((__name => (${expression}))(t => t))`;
 +    } else {
        try {
@@ -193,10 +260,10 @@ index bc9261b8d..af36b57bd 100644
      }
    }
 diff --git a/packages/playwright-core/src/server/localUtils.ts b/packages/playwright-core/src/server/localUtils.ts
-index 685a0f64f..cea0c1018 100644
+index b564feffc..46e093aff 100644
 --- a/packages/playwright-core/src/server/localUtils.ts
 +++ b/packages/playwright-core/src/server/localUtils.ts
-@@ -82,10 +82,15 @@ export async function zip(progress: Progress, stackSessions: Map<string, StackSe
+@@ -82,8 +82,13 @@ export async function zip(progress: Progress, stackSessions: Map<string, StackSe
      // New file, just compress the entries.
      await progress.race(fs.promises.mkdir(path.dirname(params.zipFile), { recursive: true }));
      zipFile.end(undefined, () => {
@@ -210,28 +277,62 @@ index 685a0f64f..cea0c1018 100644
 +            promise.resolve();
 +          })
            .on('error', error => promise.reject(error));
--    });
-+      });
+     });
      await progress.race(promise);
-     await deleteStackSession(progress, stackSessions, params.stacksId);
-     return;
-@@ -111,8 +116,10 @@ export async function zip(progress: Progress, stackSessions: Map<string, StackSe
-         zipFile.addReadStream(readStream!, entry.fileName);
-         if (--pendingEntries === 0) {
-           zipFile.end(undefined, () => {
--            zipFile.outputStream.pipe(fs.createWriteStream(params.zipFile)).on('close', () => {
-+            const chunks: Buffer[] = [];
-+            zipFile.outputStream.on('data', data => chunks.push(data)).on('close', () => {
+@@ -106,9 +111,12 @@ export async function zip(progress: Progress, stackSessions: Map<string, StackSe
+ 
+     const finalizeRepack = () => {
+       zipFile.end(undefined, () => {
+-        zipFile.outputStream.pipe(fs.createWriteStream(params.zipFile))
++        const chunks: Buffer[] = [];
++        zipFile.outputStream
++            .on('data', data => chunks.push(data))
+             .on('close', () => {
                fs.promises.unlink(tempFile).then(() => {
 +                fs.writeFileSync(params.zipFile, Buffer.concat(chunks));
                  promise.resolve();
                }).catch(error => promise.reject(error));
-             });
+             })
+diff --git a/packages/playwright-core/src/server/progress.ts b/packages/playwright-core/src/server/progress.ts
+index 43b0137e7..301dc9a9b 100644
+--- a/packages/playwright-core/src/server/progress.ts
++++ b/packages/playwright-core/src/server/progress.ts
+@@ -194,7 +194,9 @@ export const nullProgress: Progress = {
+     return Promise.race(promises);
+   },
+   wait: async (timeout: number) => await new Promise<void>(f => setTimeout(f, timeout)),
+-  signal: new AbortController().signal,
++  get signal() {
++    return new AbortController().signal;
++  },
+   metadata: {
+     id: '',
+     startTime: 0,
+diff --git a/packages/playwright-core/src/server/registry/index.ts b/packages/playwright-core/src/server/registry/index.ts
+index 077fd78eb..8c8ada573 100644
+--- a/packages/playwright-core/src/server/registry/index.ts
++++ b/packages/playwright-core/src/server/registry/index.ts
+@@ -20,6 +20,7 @@ import os from 'os';
+ import path from 'path';
+ import * as util from 'util';
+ 
++import browsersJSON from '../../../browsers.json';
+ import { wrapInASCIIBox } from '@utils/ascii';
+ import { debugLogger } from '@utils/debugLogger';
+ import { shortPlatform, hostPlatform, isOfficiallySupportedPlatform } from '@utils/hostPlatform';
+@@ -1393,6 +1394,6 @@ function lowercaseAllKeys(json: any): any {
+   return result;
+ }
+ 
+-export const registry = new Registry(require(path.join(packageRoot, 'browsers.json')));
++export const registry = new Registry(browsersJSON);
+ 
+ export { runOopDownloadBrowserMain } from './oopDownloadBrowserMain';
 diff --git a/packages/playwright-core/src/server/screenshotter.ts b/packages/playwright-core/src/server/screenshotter.ts
-index 93765cc33..f8e62d5c1 100644
+index 33db059bb..5ebe76b73 100644
 --- a/packages/playwright-core/src/server/screenshotter.ts
 +++ b/packages/playwright-core/src/server/screenshotter.ts
-@@ -254,7 +254,8 @@ export class Screenshotter {
+@@ -252,7 +252,8 @@ export class Screenshotter {
      if (disableAnimations)
        progress.log('  disabled all CSS animations');
      const syncAnimations = this._page.delegate.shouldToggleStyleSheetToSyncAnimations();
@@ -242,43 +343,71 @@ index 93765cc33..f8e62d5c1 100644
        if (!process.env.PW_TEST_SCREENSHOT_NO_FONTS_READY) {
          progress.log('waiting for fonts to load...');
 diff --git a/packages/playwright-core/src/server/trace/recorder/snapshotter.ts b/packages/playwright-core/src/server/trace/recorder/snapshotter.ts
-index 9b5543905..6aa2a56ef 100644
+index 70bb85bb9..0b70ab9c2 100644
 --- a/packages/playwright-core/src/server/trace/recorder/snapshotter.ts
 +++ b/packages/playwright-core/src/server/trace/recorder/snapshotter.ts
-@@ -91,7 +91,8 @@ export class Snapshotter {
+@@ -94,7 +94,8 @@ export class Snapshotter {
      ];
  
      const { javaScriptEnabled } = this._context._options;
 -    const initScriptSource = `(${frameSnapshotStreamer})("${this._snapshotStreamer}", ${javaScriptEnabled || javaScriptEnabled === undefined})`;
 +    const initScript = `((__name => (${frameSnapshotStreamer}))(t => t))`;
 +    const initScriptSource = `(${initScript})("${this._snapshotStreamer}", ${javaScriptEnabled || javaScriptEnabled === undefined})`;
-     this._initScript = await this._context.addInitScript(undefined, initScriptSource);
-     await this._context.safeNonStallingEvaluateInAllFrames(initScriptSource, 'main');
+     this._initScript = await this._context.addInitScript(progress, initScriptSource);
+     await progress.race(this._context.safeNonStallingEvaluateInAllFrames(initScriptSource, 'main'));
    }
-diff --git a/packages/playwright-core/src/server/utils/crypto.ts b/packages/playwright-core/src/server/utils/crypto.ts
-index ab51dbb25..2cf1fe999 100644
---- a/packages/playwright-core/src/server/utils/crypto.ts
-+++ b/packages/playwright-core/src/server/utils/crypto.ts
-@@ -19,7 +19,13 @@ import crypto from 'crypto';
- import { assert } from '../../utils/isomorphic/assert';
+diff --git a/packages/playwright/src/common/configLoader.ts b/packages/playwright/src/common/configLoader.ts
+index 5461d4014..d178443c0 100644
+--- a/packages/playwright/src/common/configLoader.ts
++++ b/packages/playwright/src/common/configLoader.ts
+@@ -117,7 +117,7 @@ export async function loadConfig(location: ConfigLocation, overrides?: ConfigCLI
+ 
+   // 3. Load transform options from the playwright config.
+   const external = userConfig.build?.external || [];
+-  const jsxImportSource = path.dirname(require.resolve('playwright'));
++  const jsxImportSource = globalThis.navigator?.userAgent === 'Cloudflare-Workers' ? '' : path.dirname(require.resolve('playwright'));
+   await setTransformConfig({ external, jsxImportSource });
+   if (!overrides?.tsconfig)
+     await setSingleTSConfig(fullConfig?.singleTSConfigPath);
+diff --git a/packages/playwright/src/package.ts b/packages/playwright/src/package.ts
+index fdd2c47f2..afa0b945a 100644
+--- a/packages/playwright/src/package.ts
++++ b/packages/playwright/src/package.ts
+@@ -16,10 +16,10 @@
+ 
+ import path from 'path';
+ 
+-// Use a dynamic path so esbuild does not statically resolve and inline
+-// package.json into coreBundle.js.
++import packageJSON from '../package.json';
++
+ export const packageRoot = path.join(__dirname, '..');
+-export const packageJSON = require(path.join(packageRoot, 'package.json'));
++export { packageJSON };
+ 
+ export function libPath(...parts: string[]): string {
+   return path.join(packageRoot, 'lib', ...parts);
+diff --git a/packages/utils/crypto.ts b/packages/utils/crypto.ts
+index c5ed49e8a..388299e77 100644
+--- a/packages/utils/crypto.ts
++++ b/packages/utils/crypto.ts
+@@ -19,7 +19,10 @@ import crypto from 'crypto';
+ import { assert } from '@isomorphic/assert';
  
  export function createGuid(): string {
 -  return crypto.randomBytes(16).toString('hex');
-+  // crypto.randomBytes fails in Cloudflare Workers:
-+  // Uncaught Error: Disallowed operation called within global scope. Asynchronous I/O
-+  // (ex: fetch() or connect()), setting a timeout, and generating random values are not allowed within
-+  // global scope. To fix this error, perform this operation within a handler.
++  // Cloudflare Workers disallows random generation during global initialization.
 +  return Array.from({ length: 16 }, () => Math.floor(Math.random() * 256))
 +      .map(byte => byte.toString(16).padStart(2, '0'))
 +      .join('');
  }
  
  export function calculateSha1(buffer: Buffer | string): string {
-diff --git a/packages/playwright-core/src/server/utils/fileUtils.ts b/packages/playwright-core/src/server/utils/fileUtils.ts
-index 3eab2c036..fab20db31 100644
---- a/packages/playwright-core/src/server/utils/fileUtils.ts
-+++ b/packages/playwright-core/src/server/utils/fileUtils.ts
-@@ -193,9 +193,13 @@ export class SerializedFS {
+diff --git a/packages/utils/serializedFS.ts b/packages/utils/serializedFS.ts
+index ed5f1099a..93f894b39 100644
+--- a/packages/utils/serializedFS.ts
++++ b/packages/utils/serializedFS.ts
+@@ -169,9 +169,13 @@ export class SerializedFS {
          for (const entry of op.entries)
            zipFile.addFile(entry.value, entry.name);
          zipFile.end();
@@ -294,54 +423,3 @@ index 3eab2c036..fab20db31 100644
              .on('error', error => result.reject(error));
          await result;
          return;
-diff --git a/packages/playwright-core/src/server/utils/nodePlatform.ts b/packages/playwright-core/src/server/utils/nodePlatform.ts
-index 9350b5797..634b126c2 100644
---- a/packages/playwright-core/src/server/utils/nodePlatform.ts
-+++ b/packages/playwright-core/src/server/utils/nodePlatform.ts
-@@ -25,7 +25,7 @@ import { colors } from '../../utilsBundle';
- import { debugLogger } from './debugLogger';
- import { currentZone, emptyZone } from './zones';
- import { debugMode, isUnderTest } from './debug';
--import { zodToJsonSchema as zodToJsonSchemaV3, z } from '../../mcpBundle';
-+// import { zodToJsonSchema as zodToJsonSchemaV3, z } from '../../mcpBundle';
- import type zod3 from 'zod/v3';
- import type zod4 from 'zod';
- 
-@@ -64,7 +64,7 @@ export function setBoxedStackPrefixes(prefixes: string[]) {
-   boxedStackPrefixes = prefixes;
- }
- 
--const coreDir = path.dirname(require.resolve('../../../package.json'));
-+const coreDir = path.dirname('.');
- 
- export const nodePlatform: Platform = {
-   name: 'node',
-@@ -128,9 +128,10 @@ export const nodePlatform: Platform = {
- 
-   zodToJsonSchema: (schema: zod3.Schema | zod4.Schema): any => {
-     // https://zod.dev/library-authors?id=how-to-support-zod-3-and-zod-4-simultaneously
--    if ('_zod' in schema)
--      return z.toJSONSchema(schema);
--    return zodToJsonSchemaV3(schema);
-+    // if ('_zod' in schema)
-+    //   return z.toJSONSchema(schema);
-+    // return zodToJsonSchemaV3(schema);
-+    throw new Error('Not implemented');
-   },
- 
-   zones: {
-diff --git a/packages/playwright/src/util.ts b/packages/playwright/src/util.ts
-index bb15fecee..47c2b9f08 100644
---- a/packages/playwright/src/util.ts
-+++ b/packages/playwright/src/util.ts
-@@ -28,8 +28,8 @@ import type { StackFrame } from '@protocol/channels';
- import type { RawStack } from 'playwright-core/lib/utils';
- import type { TestCase } from './common/test';
- 
--const PLAYWRIGHT_TEST_PATH = path.join(__dirname, '..');
--const PLAYWRIGHT_CORE_PATH = path.dirname(require.resolve('playwright-core/package.json'));
-+const PLAYWRIGHT_TEST_PATH = '.';
-+const PLAYWRIGHT_CORE_PATH = '.';
- 
- export function filterStackTrace(e: Error): { message: string, stack: string, cause?: ReturnType<typeof filterStackTrace> } {
-   const name = e.name ? e.name + ': ' : '';

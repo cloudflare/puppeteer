@@ -19,42 +19,31 @@
 // some types are commented out because they are not used in the extension
 // or they were not released in this version of Playwright
 
-import {
-  Browser,
-  BrowserContext,
-  BrowserType,
-  Clock,
-  ConsoleMessage,
-  Coverage,
-  Dialog,
-  Download,
-  // Electron,
-  // ElectronApplication,
-  Locator,
-  FrameLocator,
-  ElementHandle,
-  FileChooser,
-  TimeoutError,
-  Frame,
-  Keyboard,
-  Mouse,
-  Touchscreen,
-  JSHandle,
-  Route,
-  WebSocket,
-  WebSocketRoute,
-  APIRequest,
-  APIRequestContext,
-  APIResponse,
-  Page,
-  Selectors,
-  Tracing,
-  Video,
-  Worker,
-  CDPSession,
-  Playwright,
-  WebError,
-} from 'playwright-core/lib/client/api';
+import { Browser } from 'playwright-core/lib/client/browser';
+import { BrowserContext } from 'playwright-core/lib/client/browserContext';
+import { BrowserType } from 'playwright-core/lib/client/browserType';
+import { CDPSession } from 'playwright-core/lib/client/cdpSession';
+import { Clock } from 'playwright-core/lib/client/clock';
+import { ConsoleMessage } from 'playwright-core/lib/client/consoleMessage';
+import { Coverage } from 'playwright-core/lib/client/coverage';
+import { Dialog } from 'playwright-core/lib/client/dialog';
+import { Download } from 'playwright-core/lib/client/download';
+import { ElementHandle } from 'playwright-core/lib/client/elementHandle';
+import { TimeoutError } from 'playwright-core/lib/client/errors';
+import { APIRequest, APIRequestContext, APIResponse } from 'playwright-core/lib/client/fetch';
+import { FileChooser } from 'playwright-core/lib/client/fileChooser';
+import { Frame } from 'playwright-core/lib/client/frame';
+import { Keyboard, Mouse, Touchscreen } from 'playwright-core/lib/client/input';
+import { JSHandle } from 'playwright-core/lib/client/jsHandle';
+import { FrameLocator, Locator } from 'playwright-core/lib/client/locator';
+import { Route, WebSocket, WebSocketRoute } from 'playwright-core/lib/client/network';
+import { Page } from 'playwright-core/lib/client/page';
+import { Playwright } from 'playwright-core/lib/client/playwright';
+import { Selectors } from 'playwright-core/lib/client/selectors';
+import { Tracing } from 'playwright-core/lib/client/tracing';
+import { Video } from 'playwright-core/lib/client/video';
+import { WebError } from 'playwright-core/lib/client/webError';
+import { Worker } from 'playwright-core/lib/client/worker';
 
 import { apiCallZone } from './apiCallZone';
 

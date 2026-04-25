@@ -146,6 +146,7 @@ export type PageWorkerFixtures = {
   isElectron: boolean;
   isWebView2: boolean;
   electronMajorVersion: number;
+  isFrozenWebkit: boolean;
 };
 
 export type BrowserTestWorkerFixtures = PageWorkerFixtures & {
@@ -157,6 +158,7 @@ export type BrowserTestWorkerFixtures = PageWorkerFixtures & {
   isAndroid: boolean;
   isElectron: boolean;
   isHeadlessShell: boolean;
+  isFrozenWebkit: boolean;
   nodeVersion: { major: number, minor: number, patch: number };
   isBidi: boolean;
 };
@@ -252,6 +254,7 @@ export const test = platformTest.extend<PageTestFixtures & ServerFixtures & Test
   isWebView2: [false, { scope: 'worker' }],
   electronMajorVersion: [0, { scope: 'worker' }],
   isHeadlessShell: [false, { scope: 'worker' }],
+  isFrozenWebkit: [false, { scope: 'worker' }],
   nodeVersion: [{ major: 20, minor: 0, patch: 0 }, { scope: 'worker' }],
   isBidi: [false, { scope: 'worker' }],
 

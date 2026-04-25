@@ -1,4 +1,3 @@
-import { isUnderTest } from 'playwright-core/lib/utils';
 import { BrowserBindingName } from './tests/src/utils';
 
 export * from './tests';

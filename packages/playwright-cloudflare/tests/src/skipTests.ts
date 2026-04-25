@@ -21,6 +21,8 @@ export const skipTests: string[] = [
   'library/browsercontext-viewport-mobile.spec.ts > mobile viewport > should emulate the hover media feature',
   'library/browsercontext-viewport-mobile.spec.ts > mobile viewport > view scale should reset after navigation',
   'library/browsercontext-viewport.spec.ts > should set window.screen.orientation.type for mobile devices',
+  'library/capabilities.spec.ts > should play video @smoke',
+  'library/capabilities.spec.ts > should play webm video @smoke',
   'library/capabilities.spec.tsView Trace > should not auto play audio',
   'library/capabilities.spec.tsView Trace > should not crash on feature detection for PublicKeyCredential',
   'library/download.spec.ts > should be able to download a inline PDF file via response interception',

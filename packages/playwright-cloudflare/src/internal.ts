@@ -1,14 +1,20 @@
 import fs from 'fs';
 
-import { asLocatorDescription, currentZone, ManualPromise, renderTitleForCall, setTimeOrigin, timeOrigin } from 'playwright-core/lib/utils';
+import debug from 'debug';
+import jpegjs from 'jpeg-js';
+import { PNG } from 'pngjs';
+import { asLocatorDescription } from '@isomorphic/locatorGenerators';
+import { ManualPromise } from '@isomorphic/manualPromise';
+import { renderTitleForCall } from '@isomorphic/protocolFormatter';
+import { setTimeOrigin, timeOrigin } from '@isomorphic/time';
+import { currentZone } from '@utils/zones';
 import { loadConfig } from 'playwright/lib/common/configLoader';
-import { currentTestInfo, setCurrentlyLoadingFileSuite } from 'playwright/lib/common/globals';
+import { currentTestInfo, setCurrentlyLoadingFileSuite } from 'playwright/lib/globals';
 import { bindFileSuiteToProject } from 'playwright/lib/common/suiteUtils';
 import { Suite, TestCase } from 'playwright/lib/common/test';
 import { rootTestType } from 'playwright/lib/common/testType';
 import { WorkerMain } from 'playwright/lib/worker/workerMain';
 import { TestStepInternal } from 'playwright/lib/worker/testInfo';
-import { debug } from 'playwright-core/lib/utilsBundle';
 
 import { isUnsupportedOperationError } from './cloudflare/unsupportedOperations';
 
@@ -18,12 +24,10 @@ import type { Attachment, SuiteInfo, TestCaseInfo, TestContext, TestResult } fro
 import type { ClientInstrumentationListener } from 'playwright-core/lib/client/clientInstrumentation';
 import { Project } from '../types/test';
 
-export { isUnderTest, asLocator } from 'playwright-core/lib/utils';
-export { debug } from 'playwright-core/lib/utilsBundle';
+export { asLocator } from '@isomorphic/locatorGenerators';
+export { isUnderTest } from '@utils/debug';
+export { debug, jpegjs, PNG };
 export { mergeTests } from 'playwright/lib/common/testType';
-
-export * from 'playwright-core/lib/zipBundle';
-export * from 'playwright-core/lib/utilsBundle';
 
 // console.log must be called inside a function because it's undefined on startup
 debug.log = (...args: any[]) => console.log(...args);
@@ -190,7 +194,10 @@ export class TestRunner {
       const { retry } = this._testContext;
       const [result] = await Promise.all([
         testWorker.testResult(),
-        testWorker.runTestGroup({ file, entries: [{ testId, retry }] }),
+        testWorker.runTestGroup({
+          file,
+          entries: [{ testId, retry, planAnnotations: [] }],
+        }),
       ]);
       if (result.status === 'failed' && result.errors.some(isUnsupportedOperationError)) {
         return {
