@@ -1,0 +1,50 @@
+name: "Playwright for Cloudflare - Full Test Suite"
+
+on:
+  workflow_dispatch:
+    inputs:
+      grep:
+        description: 'Test filter grep'
+        required: false
+        type: string
+
+jobs:
+  full-tests:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      TESTS_SERVER_URL: https://playwright-test-workers.rendering.cfdata.org
+      CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+      CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+      - run: |
+          npm ci
+          git submodule update --init
+          cd packages/playwright-cloudflare
+          npm run build
+          npm run test:deploy
+
+      - name: Run tests
+        run: |
+          cd packages/playwright-cloudflare
+          npm run test:full -- --reporter=html ${{ github.event.inputs.grep && format('--grep="{0}"', github.event.inputs.grep) }}
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report--attempt-${{ github.run_attempt }}
+          path: packages/playwright-cloudflare/tests/playwright-report
+          retention-days: 14
+
+      - name: Deploy to Cloudflare Pages
+        if: ${{ !cancelled() && !github.event.inputs.grep }}
+        run: |
+          cd packages/playwright-cloudflare/tests
+          npx wrangler pages deploy ./playwright-report --project-name playwright-full-test-report
