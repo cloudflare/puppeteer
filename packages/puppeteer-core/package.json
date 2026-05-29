@@ -123,7 +123,7 @@
     "@puppeteer/browsers": "2.2.4",
     "debug": "^4.3.5",
     "devtools-protocol": "0.0.1299070",
-    "ws": "^8.18.0"
+    "ws": "^8.21.0"
   },
   "devDependencies": {
     "@types/debug": "4.1.12",
