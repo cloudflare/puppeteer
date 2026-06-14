@@ -124,7 +124,7 @@
     "@types/sinon": "17.0.3",
     "@typescript-eslint/eslint-plugin": "7.16.0",
     "@typescript-eslint/parser": "7.16.0",
-    "esbuild": "^0.25.6",
+    "esbuild": "^0.28.1",
     "eslint": "8.57.0",
     "eslint-config-prettier": "9.1.0",
     "eslint-import-resolver-typescript": "3.6.1",
@@ -147,9 +147,9 @@
     "source-map-support": "0.5.21",
     "spdx-satisfies": "5.0.1",
     "tsd": "0.31.1",
-    "tsx": "^4.20.3",
+    "tsx": "^4.22.4",
     "typescript": "5.4.5",
-    "vitest": "^3.2.4",
+    "vitest": "^4.1.8",
     "wireit": "0.14.5"
   },
   "overrides": {
