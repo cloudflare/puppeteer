@@ -27,8 +27,6 @@
  * @see https://jira.cfdata.org/browse/BRAPI-1218
  */
 
-import type {ProtocolMapping} from 'devtools-protocol/types/protocol-mapping.js';
-
 // ============================================================================
 // Shared Cloudflare.* CDP types (canonical — keep in sync across forks)
 // ============================================================================
