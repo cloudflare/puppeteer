@@ -233,7 +233,7 @@ export class PuppeteerWorkers extends Puppeteer {
     }
 
     const acquireUrl = `${FAKE_HOST}/v1/devtools/browser?${searchParams.toString()}`;
-    const res = await endpoint.fetch(acquireUrl, { method: 'POST' });
+    const res = await endpoint.fetch(acquireUrl, {method: 'POST'});
     const status = res.status;
     const text = await res.text();
     if (status !== 200) {
