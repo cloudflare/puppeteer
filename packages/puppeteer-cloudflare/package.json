@@ -27,7 +27,7 @@
     "test:merge": "cd tests && npx playwright merge-reports --reporter html ./all-blob-reports"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250723.0",
+    "@cloudflare/workers-types": "^5.20260704.1",
     "vite": "^6.3.5",
     "wrangler": "^4.59.2"
   }
