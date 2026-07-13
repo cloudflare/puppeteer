@@ -184,6 +184,10 @@ export interface GetLiveViewRequest {
    * Live view mode: devtools, tab, or full. Defaults to "devtools".
    */
   mode?: LiveViewMode;
+  /**
+   * Expiration time in milliseconds. Defaults to 5 minutes.
+   */
+  expiresInMs?: number;
 }
 
 /**

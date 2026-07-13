@@ -110,9 +110,10 @@
       ]
     },
     "test-types": {
-      "command": "tsd -t packages/puppeteer",
+      "command": "tsd -t packages/puppeteer && npm --prefix packages/puppeteer-cloudflare/tests run test-types",
       "dependencies": [
-        "./packages/puppeteer:build"
+        "./packages/puppeteer:build",
+        "./packages/puppeteer-core:build:types"
       ]
     }
   },
