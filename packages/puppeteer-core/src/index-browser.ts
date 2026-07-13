@@ -8,6 +8,7 @@ export type {Protocol} from 'devtools-protocol';
 
 export * from './api/api.js';
 export * from './cdp/cdp.js';
+export * from './cloudflare/protocol.js';
 export * from './common/common.js';
 export * from './revisions.js';
 export * from './util/util.js';

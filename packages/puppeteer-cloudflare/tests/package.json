@@ -5,6 +5,9 @@
   "author": "",
   "license": "ISC",
   "description": "",
+  "scripts": {
+    "test-types": "tsd"
+  },
   "dependencies": {
     "@cloudflare/playwright": "^0.0.10",
     "@cloudflare/puppeteer": "file:../../puppeteer-core"
@@ -12,6 +15,14 @@
   "devDependencies": {
     "@playwright/test": "^1.51.1",
     "@puppeteer-test/test": "file:../../../test",
+    "tsd": "^0.31.1",
     "wrangler": "^4.81.0"
+  },
+  "tsd": {
+    "directory": "src",
+    "compilerOptions": {
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext"
+    }
   }
 }
