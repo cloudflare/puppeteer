@@ -1,0 +1,19 @@
+packages/puppeteer-cloudflare/tests/test-d/cloudflare-protocol.test-d.ts
+  s_b7ef17dbf9d369::t_74076316a06544 1-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "4a8787ada9fb92612dbd59aba3bb46e2f410c418",
+  "prompts": {},
+  "sessions": {
+    "s_b7ef17dbf9d369": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_093d38c57ffeMSAY46iuxfARzb",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Sofia Cardita <scardita@cloudflare.com>"
+    }
+  }
+}
