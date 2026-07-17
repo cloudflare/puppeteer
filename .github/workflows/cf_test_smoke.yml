@@ -1,4 +1,4 @@
-name: "Puppeteer for Cloudflare - Smoke Tests"
+name: 'Puppeteer for Cloudflare - Smoke Tests'
 
 on:
   push:

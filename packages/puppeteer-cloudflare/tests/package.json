@@ -5,6 +5,10 @@
   "author": "",
   "license": "ISC",
   "description": "",
+  "types": "../../puppeteer-core/lib/types.d.ts",
+  "scripts": {
+    "test-types": "tsd"
+  },
   "dependencies": {
     "@cloudflare/playwright": "^0.0.10",
     "@cloudflare/puppeteer": "file:../../puppeteer-core"
@@ -12,6 +16,19 @@
   "devDependencies": {
     "@playwright/test": "^1.51.1",
     "@puppeteer-test/test": "file:../../../test",
+    "tsd": "^0.31.1",
     "wrangler": "^4.81.0"
+  },
+  "tsd": {
+    "directory": "test-d",
+    "compilerOptions": {
+      "module": "esnext",
+      "moduleResolution": "bundler",
+      "target": "esnext",
+      "lib": ["esnext", "DOM"],
+      "strict": true,
+      "skipLibCheck": true,
+      "types": []
+    }
   }
 }
