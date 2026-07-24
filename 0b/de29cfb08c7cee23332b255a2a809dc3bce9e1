@@ -1,0 +1,19 @@
+.github/workflows/publish.yml
+  s_f94171d3a37957::t_722b24da19f22f 12,18,20-23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "0bde29cfb08c7cee23332b255a2a809dc3bce9e1",
+  "prompts": {},
+  "sessions": {
+    "s_f94171d3a37957": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_06ce6bfddffeLPfiE1iq5R24uM",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Sofia Cardita <scardita@cloudflare.com>"
+    }
+  }
+}
