@@ -9,24 +9,24 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
+      id-token: write # Required for OIDC trusted publishing
       contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Set up Node.js
-        uses: actions/setup-node@v3.4.1
+        uses: actions/setup-node@v4
         with:
-          node-version: 18.18
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org/'
+      - name: Update npm (required for OIDC trusted publishing)
+        run: npm install -g npm@latest
       - name: Install dependencies
         run: npm install
       - name: Build puppeteer
         run: npm run build
       - name: Publish puppeteer
-        env:
-          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
         run: |
-          npm config set registry 'https://registry.npmjs.org/'
-          npm config set '//registry.npmjs.org/:_authToken' '${NPM_TOKEN}'
           echo "Publishing @cloudflare/puppeteer"
           cd ./packages/puppeteer-core/
           npm publish ${{ contains(github.ref, 'rc')  && '--tag next' || ''}}
