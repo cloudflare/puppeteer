@@ -1,4 +1,4 @@
 /**
  * @internal
  */
-export const packageVersion = '1.2.0';
+export const packageVersion = '1.3.0';

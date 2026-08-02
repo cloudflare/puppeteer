@@ -8,6 +8,7 @@ import {debugError} from '../common/util.js';
 import {packageVersion} from '../generated/version.js';
 
 import type {BrowserWorker} from './BrowserWorker.js';
+import type {Browsers} from './utils.js';
 
 const FAKE_HOST = 'https://fake.host';
 
@@ -15,13 +16,18 @@ export class WorkersWebSocketTransport implements ConnectionTransport {
   ws: WebSocket;
   onmessage?: (message: string) => void;
   onclose?: () => void;
-  sessionId: string;
+  sessionId: string | undefined;
 
   static async create(
     endpoint: BrowserWorker,
-    sessionId: string
+    sessionId: string | undefined,
+    browser?: Browsers
   ): Promise<WorkersWebSocketTransport> {
-    const path = `${FAKE_HOST}/v1/devtools/browser/${sessionId}`;
+    // Browsers other than the default one are acquired on connect, so there's
+    // no session to connect to yet.
+    const path = browser
+      ? `${FAKE_HOST}/v1/devtools/browser?browser=${browser}`
+      : `${FAKE_HOST}/v1/devtools/browser/${sessionId}`;
     const response = await endpoint.fetch(path, {
       headers: {
         Upgrade: 'websocket',
@@ -32,7 +38,7 @@ export class WorkersWebSocketTransport implements ConnectionTransport {
     return new WorkersWebSocketTransport(response.webSocket!, sessionId);
   }
 
-  constructor(ws: WebSocket, sessionId: string) {
+  constructor(ws: WebSocket, sessionId: string | undefined) {
     this.ws = ws;
     this.sessionId = sessionId;
     this.ws.addEventListener('message', async event => {
@@ -56,6 +62,6 @@ export class WorkersWebSocketTransport implements ConnectionTransport {
   }
 
   toString(): string {
-    return this.sessionId;
+    return this.sessionId ?? 'unknown';
   }
 }

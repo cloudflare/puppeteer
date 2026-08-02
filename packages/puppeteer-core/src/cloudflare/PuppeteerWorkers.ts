@@ -12,7 +12,7 @@ import type {ConnectOptions} from '../common/ConnectOptions.js';
 import {Puppeteer} from '../common/Puppeteer.js';
 
 import type {BrowserWorker} from './BrowserWorker.js';
-import {connectToCDPBrowser, type Locations} from './utils.js';
+import {connectToCDPBrowser, type Browsers, type Locations} from './utils.js';
 import {WorkersWebSocketTransport} from './WorkersWebSocketTransport.js';
 
 const FAKE_HOST = 'https://fake.host';
@@ -80,6 +80,7 @@ export interface WorkersLaunchOptions {
   location?: Locations;
   recording?: boolean;
   lab?: boolean;
+  browser?: Browsers;
 }
 /**
  * @public
@@ -105,6 +106,10 @@ export class PuppeteerWorkers extends Puppeteer {
     endpoint: BrowserWorker,
     options?: WorkersLaunchOptions
   ): Promise<Browser> {
+    if (options?.browser) {
+      // Sessions for these browsers are acquired by the connect call itself.
+      return await this.connect(endpoint, undefined, options);
+    }
     const response: AcquireResponse = await this.acquire(endpoint, options);
     return await this.connect(endpoint, response.sessionId);
   }
@@ -174,11 +179,13 @@ export class PuppeteerWorkers extends Puppeteer {
    *
    * @param endpoint - Cloudflare worker binding
    * @param sessionId - sessionId obtained from a .sessions() call
+   * @param options - launch options, only used when acquiring a non default browser
    * @returns a browser instance
    */
   public override async connect(
     endpoint: BrowserWorker | ConnectOptions,
-    sessionId?: string
+    sessionId?: string,
+    options?: WorkersLaunchOptions
   ): Promise<Browser>;
 
   /**
@@ -189,19 +196,27 @@ export class PuppeteerWorkers extends Puppeteer {
    */
   public override async connect(
     endpoint: BrowserWorker | ConnectOptions,
-    sessionId?: string
+    sessionId?: string,
+    options?: WorkersLaunchOptions
   ): Promise<Browser> {
+    // Without a sessionId the browser is acquired by this call itself, so
+    // there's no session to connect to yet.
+    const browser = sessionId ? undefined : options?.browser;
     try {
-      if (!sessionId) {
+      if (!sessionId && !browser) {
         return await super.connect(endpoint as ConnectOptions);
       }
       const connectionTransport: ConnectionTransport =
         await WorkersWebSocketTransport.create(
           endpoint as BrowserWorker,
-          sessionId
+          sessionId,
+          browser
         );
       return await connectToCDPBrowser(connectionTransport, {sessionId});
     } catch (e) {
+      if (browser) {
+        throw new Error(`Unable to connect to ${browser} session: ${e}`);
+      }
       throw new Error(
         `Unable to connect to existing session ${sessionId} (it may still be in use or not ready yet) - retry or launch a new browser: ${e}`
       );

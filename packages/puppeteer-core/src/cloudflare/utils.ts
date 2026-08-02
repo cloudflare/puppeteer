@@ -68,6 +68,11 @@ export async function connectToCDPBrowser(
 /**
  * @public
  */
+export type Browsers = 'kitesurf';
+
+/**
+ * @public
+ */
 export type Locations =
   | 'AF'
   | 'AL'
