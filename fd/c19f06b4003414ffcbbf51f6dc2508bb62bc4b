@@ -1,0 +1,29 @@
+packages/puppeteer-core/src/generated/version.ts
+  s_b7ef17dbf9d369::t_2acd392bdaa006 4
+packages/puppeteer-core/src/cloudflare/PuppeteerWorkers.ts
+  s_ef63be2bc82fdf::t_fe681a8f3d6b1a 15,83,109-112,182,187-188,199-200,202-204,206,212-213,217-219
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "fdc19f06b4003414ffcbbf51f6dc2508bb62bc4b",
+  "prompts": {},
+  "sessions": {
+    "s_b7ef17dbf9d369": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_093d38c57ffeMSAY46iuxfARzb",
+        "model": "claude-opus-4-7"
+      },
+      "human_author": "Sofia Cardita <scardita@cloudflare.com>"
+    },
+    "s_ef63be2bc82fdf": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_03e657a01ffevjGa6ZJdqYQAK9",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Sofia Cardita <scardita@cloudflare.com>"
+    }
+  }
+}
