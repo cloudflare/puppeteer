@@ -1,0 +1,42 @@
+packages/puppeteer-cloudflare/tests/test-d/guardrails.test-d.ts
+  s_704b6cf7846353::t_1c988815fccf76 1-59
+packages/puppeteer-core/src/cloudflare/PuppeteerWorkers.ts
+  s_ef63be2bc82fdf::t_fe681a8f3d6b1a 195
+  s_ef63be2bc82fdf::t_a832cefb687e77 196
+packages/puppeteer-core/src/cloudflare/WorkersWebSocketTransport.ts
+  s_3ee62aa8594764::t_cd2dc978a89b29 11-16,29-30,41-43
+packages/puppeteer-core/src/cloudflare/utils.ts
+  s_3ee62aa8594764::t_396b6a6dc6f9d9 73-134
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "4a184ff092d67eb6f25fe8346d318d5860b680c6",
+  "prompts": {},
+  "sessions": {
+    "s_3ee62aa8594764": {
+      "agent_id": {
+        "tool": "windsurf",
+        "id": "hulking-reptile",
+        "model": "unknown"
+      },
+      "human_author": "Sofia Cardita <scardita@cloudflare.com>"
+    },
+    "s_704b6cf7846353": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_feb019f4effecCBTAuicy73qFe",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Sofia Cardita <scardita@cloudflare.com>"
+    },
+    "s_ef63be2bc82fdf": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_03e657a01ffevjGa6ZJdqYQAK9",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Sofia Cardita <scardita@cloudflare.com>"
+    }
+  }
+}
