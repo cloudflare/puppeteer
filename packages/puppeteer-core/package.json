@@ -1,6 +1,6 @@
 {
   "name": "@cloudflare/puppeteer",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Puppeteer fork for Cloudflare Browser Run (formerly Browser Rendering)",
   "keywords": [
     "puppeteer",
