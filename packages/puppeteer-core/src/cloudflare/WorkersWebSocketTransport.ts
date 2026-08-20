@@ -8,9 +8,25 @@ import {debugError} from '../common/util.js';
 import {packageVersion} from '../generated/version.js';
 
 import type {BrowserWorker} from './BrowserWorker.js';
-import type {Browsers} from './utils.js';
+import {
+  encodeGuardrailsHeader,
+  GUARDRAILS_HEADER,
+  type Browsers,
+  type SessionGuardrails,
+} from './utils.js';
 
 const FAKE_HOST = 'https://fake.host';
+
+/**
+ * Whatever shapes the upgrade request beyond the endpoint and the session, kept
+ * in one bag so that adding another knob doesn't grow the `create` signature.
+ */
+export interface WorkersWebSocketTransportOptions {
+  // acquires this browser on connect instead of the default one
+  browser?: Browsers;
+  // restricts the outbound traffic of the session being acquired
+  guardrails?: SessionGuardrails;
+}
 
 export class WorkersWebSocketTransport implements ConnectionTransport {
   ws: WebSocket;
@@ -21,8 +37,9 @@ export class WorkersWebSocketTransport implements ConnectionTransport {
   static async create(
     endpoint: BrowserWorker,
     sessionId: string | undefined,
-    browser?: Browsers
+    options: WorkersWebSocketTransportOptions = {}
   ): Promise<WorkersWebSocketTransport> {
+    const {browser, guardrails} = options;
     // Browsers other than the default one are acquired on connect, so there's
     // no session to connect to yet.
     const path = browser
@@ -32,6 +49,9 @@ export class WorkersWebSocketTransport implements ConnectionTransport {
       headers: {
         Upgrade: 'websocket',
         'cf-brapi-client': `@cloudflare/puppeteer@${packageVersion}`,
+        ...(guardrails
+          ? {[GUARDRAILS_HEADER]: encodeGuardrailsHeader(guardrails)}
+          : {}),
       },
     });
     response.webSocket!.accept();

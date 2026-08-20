@@ -71,6 +71,68 @@ export async function connectToCDPBrowser(
 export type Browsers = 'kitesurf';
 
 /**
+ * Guardrails that restrict the outbound traffic of a browser session.
+ *
+ * @remarks
+ * Set when the session is acquired and latched for its lifetime: they cannot be
+ * changed or removed by later connections. An empty `allowedDomains` denies all
+ * outbound traffic, and an invalid policy fails closed rather than allowing
+ * unrestricted access.
+ *
+ * @public
+ */
+export interface SessionGuardrails {
+  /**
+   * Hostname patterns the browser may access, max 50.
+   *
+   * @remarks
+   * Each entry is a bare hostname (no scheme, port or path) and may contain a
+   * single `*` wildcard. Prefer `*.example.com` (subdomain wildcard) over
+   * `*example.com` (prefix wildcard), which also matches lookalikes such as
+   * `evilexample.com`.
+   */
+  allowedDomains?: string[];
+  /**
+   * Preset names or HTTPS URLs of newline-separated hostname lists, max 4.
+   *
+   * @remarks
+   * The available preset is `common-cdns`.
+   */
+  allowedDomainSets?: string[];
+}
+
+/**
+ * Guardrails header, base64url-encoded JSON. Carries the policy on the websocket
+ * upgrade, which has no body to put it in. Whether the endpoint accepts it is the
+ * endpoint's business.
+ *
+ * @internal
+ */
+export const GUARDRAILS_HEADER = 'cf-brapi-guardrails';
+
+/**
+ * base64url-encodes a guardrails policy for {@link GUARDRAILS_HEADER}.
+ *
+ * @remarks
+ * The bytes are accumulated one at a time rather than spread into
+ * `String.fromCharCode(...bytes)`, which passes one argument per byte and blows
+ * the engine's argument limit once a policy grows.
+ *
+ * @internal
+ */
+export function encodeGuardrailsHeader(policy: SessionGuardrails): string {
+  const bytes = new TextEncoder().encode(JSON.stringify(policy));
+  let binary = '';
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary)
+    .replaceAll('+', '-')
+    .replaceAll('/', '_')
+    .replace(/=+$/, '');
+}
+
+/**
  * @public
  */
 export type Locations =

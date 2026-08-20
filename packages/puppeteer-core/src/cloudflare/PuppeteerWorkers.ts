@@ -12,8 +12,15 @@ import type {ConnectOptions} from '../common/ConnectOptions.js';
 import {Puppeteer} from '../common/Puppeteer.js';
 
 import type {BrowserWorker} from './BrowserWorker.js';
-import {connectToCDPBrowser, type Browsers, type Locations} from './utils.js';
+import {
+  connectToCDPBrowser,
+  type Browsers,
+  type Locations,
+  type SessionGuardrails,
+} from './utils.js';
 import {WorkersWebSocketTransport} from './WorkersWebSocketTransport.js';
+
+export type {SessionGuardrails} from './utils.js';
 
 const FAKE_HOST = 'https://fake.host';
 
@@ -81,6 +88,10 @@ export interface WorkersLaunchOptions {
   recording?: boolean;
   lab?: boolean;
   browser?: Browsers;
+  // restricts the outbound traffic of the session being acquired, latched for
+  // its lifetime. Travels over a browser binding only, so it has no effect when
+  // connecting to an endpoint addressed by URL.
+  guardrails?: SessionGuardrails;
 }
 /**
  * @public
@@ -100,6 +111,8 @@ export class PuppeteerWorkers extends Puppeteer {
    * Launch a browser session.
    *
    * @param endpoint - Cloudflare worker binding
+   * @param options - launch options, including the `guardrails` restricting the
+   * outbound traffic of the new session
    * @returns a browser session or throws
    */
   public async launch(
@@ -179,7 +192,8 @@ export class PuppeteerWorkers extends Puppeteer {
    *
    * @param endpoint - Cloudflare worker binding
    * @param sessionId - sessionId obtained from a .sessions() call
-   * @param options - launch options, only used when acquiring a non default browser
+   * @param options - launch options, only used when acquiring and connecting to
+   * a browser in a single pass
    * @returns a browser instance
    */
   public override async connect(
@@ -191,7 +205,7 @@ export class PuppeteerWorkers extends Puppeteer {
   /**
    * Establish a devtools connection to an existing session
    *
-   * @param borwserWorker - BrowserWorker
+   * @param browserWorker - BrowserWorker
    * @returns a browser instance
    */
   public override async connect(
@@ -210,7 +224,7 @@ export class PuppeteerWorkers extends Puppeteer {
         await WorkersWebSocketTransport.create(
           endpoint as BrowserWorker,
           sessionId,
-          browser
+          {browser, guardrails: options?.guardrails}
         );
       return await connectToCDPBrowser(connectionTransport, {sessionId});
     } catch (e) {
@@ -227,6 +241,8 @@ export class PuppeteerWorkers extends Puppeteer {
    * Acquire a new browser session.
    *
    * @param borwserWorker - BrowserWorker
+   * @param options - launch options, including the `guardrails` restricting the
+   * outbound traffic of the new session
    * @returns a new browser session
    */
   public async acquire(
@@ -248,7 +264,17 @@ export class PuppeteerWorkers extends Puppeteer {
     }
 
     const acquireUrl = `${FAKE_HOST}/v1/devtools/browser?${searchParams.toString()}`;
-    const res = await endpoint.fetch(acquireUrl, {method: 'POST'});
+    const res = await endpoint.fetch(acquireUrl, {
+      method: 'POST',
+      // Guardrails travel in the body here, unlike the websocket upgrades that
+      // have to use a header.
+      ...(options?.guardrails
+        ? {
+            headers: {'content-type': 'application/json'},
+            body: JSON.stringify({guardrails: options.guardrails}),
+          }
+        : {}),
+    });
     const status = res.status;
     const text = await res.text();
     if (status !== 200) {
