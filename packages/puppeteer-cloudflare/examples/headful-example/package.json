@@ -1,0 +1,21 @@
+{
+	"name": "browser-rendering-headful-example",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "wrangler dev",
+		"dev:headful": "X_BROWSER_HEADFUL=true wrangler dev",
+		"dev:vite": "vite dev",
+		"dev:vite:headful": "X_BROWSER_HEADFUL=true vite dev"
+	},
+	"devDependencies": {
+		"@cloudflare/puppeteer": "^1.0.6",
+		"@cloudflare/vite-plugin": "https://pkg.pr.new/@cloudflare/vite-plugin@13011",
+		"@cloudflare/workers-types": "^4.20260331.1",
+		"@types/node": "^25.5.0",
+		"typescript": "^5.8.2",
+		"vite": "^8.0.3",
+		"wrangler": "https://pkg.pr.new/wrangler@13011"
+	}
+}
