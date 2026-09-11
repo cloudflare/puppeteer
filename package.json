@@ -19,10 +19,11 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260426.1",
+    "@tsconfig/node18": "^18.2.6",
     "@types/picomatch": "^4.0.3",
     "picomatch": "^4.0.4",
     "pkg-pr-new": "^0.0.67",
-    "vite": "^6.3.5",
+    "vite": "^8.0.10",
     "wrangler": "4.85.0"
   }
 }

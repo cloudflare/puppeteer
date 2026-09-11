@@ -24,7 +24,7 @@
     "test:generate:worker": "npm run patch && npm run build:puppeteer && node ./utils/generate_worker_tests.js",
     "test:generate:proxy": "node ./utils/generate_proxy_tests.js",
     "test:deploy": "npm run test:generate:worker && npm run ci:tests && cd tests && npx wrangler deploy",
-    "test:dev": "npm run test:generate:worker && cd tests && npx wrangler dev",
+    "test:dev": "npm run test:generate:worker && npm run ci:tests && cd tests && npx wrangler dev",
     "test:full": "npm run test:generate:proxy && cd tests && npx playwright test",
     "test:smoke": "npm run test:generate:proxy && cd tests && npx playwright test --grep \"@smoke\"",
     "test:merge": "cd tests && npx playwright merge-reports --reporter html ./all-blob-reports"
