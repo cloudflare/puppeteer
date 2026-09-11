@@ -1,4 +1,6 @@
-// @ts-expect-error internal types missing
+// Must run before Playwright reads PWTEST_UNDER_TEST during module initialization.
+import './underTest.js';
+
 import {testSuites} from '@cloudflare/playwright/internal';
 
 import type {TestsServer} from './testsServer.js';

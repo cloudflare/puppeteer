@@ -43,10 +43,13 @@ function remapOutputPath(facadeModuleId?: string): string {
     const match = id.match(regex);
     if (!match) continue;
 
-    const captured = match[2];
-    return `${target}/${captured}`
+    const [captured, query] = match[2].split('?');
+    const outputPath = `${target}/${captured}`
       .replace(/\.ts$/, '.js')
       .replace(/\.json$/, '.json.js');
+    if (!query)
+      return outputPath;
+    return outputPath.replace(/\.js$/, `-${query.replace(/[^a-zA-Z0-9_-]/g, '-')}.js`);
   }
 
   return '[name].js';

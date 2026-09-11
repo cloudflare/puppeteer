@@ -174,8 +174,7 @@ ${[...testFiles, ...cloudflareTestFiles]
         ),
 
         // eslint-disable-next-line prettier/prettier
-        'fs': '@cloudflare/playwright/fs',
-        'node:fs': '@cloudflare/playwright/fs',
+        'fs': 'node:fs',
 
         './mocha-utils.js': path.resolve(
           basedir,
@@ -219,6 +218,7 @@ ${[...testFiles, ...cloudflareTestFiles]
           'node:dns',
           'node:domain',
           'node:events',
+          'node:fs',
           'node:http',
           'node:http2',
           'node:https',
@@ -246,7 +246,6 @@ ${[...testFiles, ...cloudflareTestFiles]
           '@cloudflare/playwright',
           '@cloudflare/playwright/test',
           '@cloudflare/playwright/internal',
-          '@cloudflare/playwright/fs',
           'expect',
           'diff',
           'jpeg-js',

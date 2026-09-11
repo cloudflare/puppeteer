@@ -20,6 +20,9 @@ jobs:
         run: |
           npm ci
           git submodule update --init
+          npm run check:patches
           npm run build
+          npm run test:bundle --workspace @cloudflare/puppeteer
+          npm run check:submodules
           cd packages/puppeteer-cloudflare
           npx pkg-pr-new publish

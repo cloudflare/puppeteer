@@ -8,6 +8,8 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces",
+    "check:patches": "git -C submodules/playwright apply --check ../../patches/playwright.patch && git -C submodules/puppeteer apply --check ../../patches/puppeteer.patch",
+    "check:submodules": "git submodule foreach --quiet 'test -z \"$(git status --porcelain)\"'",
     "clean": "npm run clean --workspaces --if-present",
     "diff:playwright": "cd submodules/playwright && git diff HEAD > ../../patches/playwright.patch",
     "patch:playwright": "cd submodules/playwright && git apply --reverse --check ../../patches/playwright.patch 2>/dev/null && echo 'playwright patch already applied' || git apply ../../patches/playwright.patch",
@@ -19,7 +21,6 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260426.1",
-    "@tsconfig/node18": "^18.2.6",
     "@types/picomatch": "^4.0.3",
     "picomatch": "^4.0.4",
     "pkg-pr-new": "^0.0.67",

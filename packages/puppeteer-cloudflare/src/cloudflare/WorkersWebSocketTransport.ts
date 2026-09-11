@@ -5,7 +5,7 @@
  */
 import type {ConnectionTransport} from 'puppeteer-core/lib/common/ConnectionTransport.js';
 import {debugError} from 'puppeteer-core/lib/common/util.js';
-import {packageVersion} from 'puppeteer-core/lib/util/version.js';
+import {packageVersion} from 'puppeteer-core/lib/generated/version.js';
 
 import type {BrowserWorker} from './BrowserWorker.js';
 import {
