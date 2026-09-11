@@ -1,0 +1,50 @@
+packages/puppeteer-cloudflare/src/cloudflare/utils.ts
+  s_ce93d17af4559f::t_9213ecb65dc281 77-80,90-93
+  s_ce93d17af4559f::t_f00760c26266d4 84-88,97-101,104-109
+packages/puppeteer-cloudflare/.gitignore
+  s_ce93d17af4559f::t_9213ecb65dc281 2
+packages/puppeteer-cloudflare/src/cloudflare/WorkersWebSocketTransport.ts
+  s_ce93d17af4559f::t_f00760c26266d4 20,22,24,40
+packages/puppeteer-cloudflare/tsconfig.types.json
+  s_ce93d17af4559f::t_9213ecb65dc281 1-16
+packages/puppeteer-cloudflare/tests/package.json
+  s_ce93d17af4559f::t_3cd43f494d9aa7 8-11,24,26-37
+packages/puppeteer-cloudflare/tsconfig.json
+  s_ce93d17af4559f::t_066e56e554aeaf 15
+  s_ce93d17af4559f::t_458a64378354e6 17
+packages/puppeteer-cloudflare/src/cloudflare/PuppeteerWorkers.ts
+  s_ce93d17af4559f::t_f00760c26266d4 89-90,111,119,191,211,238,262
+packages/puppeteer-cloudflare/package.json
+  s_ce93d17af4559f::t_fd64af2e0f104e 43
+  s_ce93d17af4559f::t_3cd43f494d9aa7 7
+  s_ce93d17af4559f::t_1c199cb8d019f5 49-50
+  s_ce93d17af4559f::t_b021cf3f76a802 41-42,44,51-53
+  s_ce93d17af4559f::t_9213ecb65dc281 13,25-26
+  s_ce93d17af4559f::t_e1e10c25c68a71 45
+packages/puppeteer-cloudflare/src/cloudflare/protocol.ts
+  s_ce93d17af4559f::t_f00760c26266d4 1-168
+packages/puppeteer-cloudflare/utils/copy_types.js
+  s_ce93d17af4559f::t_9213ecb65dc281 1-11,16,18-21,23-24,33-44,46-54,77
+  s_ce93d17af4559f::t_ae62f492ac7fde 45,64-76
+  s_ce93d17af4559f::t_b021cf3f76a802 12-15,17,22,25-32,55-63
+packages/puppeteer-cloudflare/src/index.ts
+  s_ce93d17af4559f::t_f00760c26266d4 7-8,14
+packages/puppeteer-cloudflare/tests/package-lock.json
+  s_ce93d17af4559f::t_f431e6ac22e401 23,31-35,39-42,2315-2352,2412-2439,2464-2477,2487-2493,2515-2540,2556-2575,2593-2620,2694-2730,2757-2786,2795-2804,2854-2883,2900-2926,2939-2952,2965-3008,3015-3024,3034-3038,3040-3042,3044,3047-3052,3054,3057,3060-3064,3067,3070-3074,3077,3080-3217,3264-3280,3289-3401,3427-3436,3456-3561,3567-3576,3649-3664,3698-3728,3735-3889,3953-3988,4001-4041,4053-4092,4105-4136,4145-4157,4180-4190,4263-4279
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "12cefccb2f8c65e7514a95326461e095014b2974",
+  "prompts": {},
+  "sessions": {
+    "s_ce93d17af4559f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f6e22ebf5ffe10xisLj8KaVuQq",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Rui Figueira <rfigueira@cloudflare.com>"
+    }
+  }
+}
