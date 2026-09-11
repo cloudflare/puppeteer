@@ -1,0 +1,57 @@
+packages/puppeteer-cloudflare/tests/src/server/workerFixtures.ts
+  s_aac30f7f4dce26::t_776bac48efe5bf 9-15
+packages/puppeteer-cloudflare/tsconfig.json
+  s_aac30f7f4dce26::t_776bac48efe5bf 1-20
+packages/puppeteer-cloudflare/src/cloudflare/utils.ts
+  s_aac30f7f4dce26::t_776bac48efe5bf 1-266
+packages/puppeteer-cloudflare/.gitignore
+  s_aac30f7f4dce26::t_776bac48efe5bf 1
+packages/puppeteer-cloudflare/src/cloudflare/WorkersWebSocketTransport.ts
+  s_aac30f7f4dce26::t_776bac48efe5bf 1-61
+packages/puppeteer-cloudflare/utils/generate_worker_tests.js
+  s_aac30f7f4dce26::t_776bac48efe5bf 51,166,250-256,262
+packages/puppeteer-cloudflare/src/cloudflare/PuppeteerWorkers.ts
+  s_aac30f7f4dce26::t_776bac48efe5bf 1-246
+.gitmodules
+  s_aac30f7f4dce26::t_776bac48efe5bf 1-3
+packages/puppeteer-cloudflare/tests/wrangler.toml
+  s_aac30f7f4dce26::t_776bac48efe5bf 15,18
+packages/puppeteer-cloudflare/vite.config.ts
+  s_aac30f7f4dce26::t_776bac48efe5bf 1-149
+patches/puppeteer.patch
+  s_aac30f7f4dce26::t_776bac48efe5bf 1-851
+package.json
+  s_aac30f7f4dce26::t_ea59b18a13e626 37-39
+packages/puppeteer-cloudflare/package.json
+  s_aac30f7f4dce26::t_776bac48efe5bf 2,4-5,7-9,12,15,19-21,23,33-35
+  s_aac30f7f4dce26::t_ea59b18a13e626 37
+packages/puppeteer-cloudflare/src/cloudflare/BrowserWorker.ts
+  s_aac30f7f4dce26::t_776bac48efe5bf 1-8
+packages/puppeteer-cloudflare/tests/src/server/testsServer.ts
+  s_aac30f7f4dce26::t_776bac48efe5bf 109,148-170
+packages/puppeteer-cloudflare/tests/src/skipTests.ts
+  s_aac30f7f4dce26::t_776bac48efe5bf 147-155
+packages/puppeteer-cloudflare/tests/package.json
+  s_aac30f7f4dce26::t_7aa42bf2f59b88 22
+  s_aac30f7f4dce26::t_776bac48efe5bf 10-16
+packages/puppeteer-cloudflare/src/index.ts
+  s_aac30f7f4dce26::t_776bac48efe5bf 1-19
+packages/puppeteer-cloudflare/tests/src/server/mocha-utils.ts
+  s_aac30f7f4dce26::t_776bac48efe5bf 88-111
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "d621b3c75f3aff3e9ba77d79b4ef0ffff83c022f",
+  "prompts": {},
+  "sessions": {
+    "s_aac30f7f4dce26": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70ae42caffecMANPMSE2caI27",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Rui Figueira <rfigueira@cloudflare.com>"
+    }
+  }
+}
