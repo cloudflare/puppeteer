@@ -12,13 +12,14 @@
       "default": "./lib/index.js"
     },
     "./internal/*": {
-      "default": "./lib/submodules/puppeteer/packages/puppeteer-core/lib/esm/puppeteer/*"
+      "default": "./lib/puppeteer-core/*"
     }
   },
   "scripts": {
     "patch": "cd ../.. && npm run patch:puppeteer",
-    "build:puppeteer": "cd ../../submodules/puppeteer/packages/puppeteer-core && npx tsc -p src/tsconfig.esm.json",
-    "build": "npm run patch && npm run build:puppeteer && npx vite build",
+    "ci:puppeteer": "cd ../../submodules/puppeteer && npm ci --ignore-scripts",
+    "build:puppeteer": "cd ../../submodules/puppeteer/packages/puppeteer-core && npx hereby build",
+    "build": "npm run patch && npm run ci:puppeteer && npm run build:puppeteer && npx vite build",
     "ci:tests": "cd tests && npm ci",
     "test:generate:worker": "npm run patch && npm run build:puppeteer && node ./utils/generate_worker_tests.js",
     "test:generate:proxy": "node ./utils/generate_proxy_tests.js",
