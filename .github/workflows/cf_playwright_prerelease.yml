@@ -20,6 +20,8 @@ jobs:
         run: |
           npm ci
           git submodule update --init
+          npm run check:patches
+          npm run build --workspace @cloudflare/playwright
+          npm run check:submodules
           cd packages/playwright-cloudflare
-          npm run build
           npx pkg-pr-new publish

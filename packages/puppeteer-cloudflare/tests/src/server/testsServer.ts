@@ -1,8 +1,5 @@
 import {
   TestRunner,
-  setUnderTest,
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
 } from '@cloudflare/playwright/internal';
 import '@workerTests/index';
 import type { Browser} from '@cloudflare/puppeteer';
@@ -23,9 +20,6 @@ export interface TestRequestPayload {
 const log = console.log.bind(console);
 
 const skipTestsFullTitles = new Set(skipTests);
-
-// ensure we are in test mode
-setUnderTest(true);
 
 function parseTrace(trace: string) {
   return Object.fromEntries(trace.split('\n').filter(line => {return line;}).map(line => {

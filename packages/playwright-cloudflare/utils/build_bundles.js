@@ -86,6 +86,8 @@ const basedir = path.dirname(fileURLToPath(import.meta.url));
 
     await build({
       root,
+      // Jest is source input here, not a separately installed project.
+      esbuild: { tsconfigRaw: {} },
       resolve: {
         dedupe: nodeModulesLibs,
         alias: {
