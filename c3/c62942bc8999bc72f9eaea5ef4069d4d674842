@@ -1,0 +1,49 @@
+.github/workflows/cf_playwright_prerelease.yml
+  s_aac30f7f4dce26::t_6af31780df7342 23-25
+.github/workflows/cf_puppeteer_prerelease.yml
+  s_aac30f7f4dce26::t_a56bc41d09eea9 25
+  s_aac30f7f4dce26::t_6af31780df7342 23,26
+scripts/with-patch.mjs
+  s_aac30f7f4dce26::t_df8e2fc03b7127 1-71
+packages/puppeteer-cloudflare/tests/src/server/index.ts
+  s_aac30f7f4dce26::t_249e999495065d 1-3
+packages/puppeteer-cloudflare/tests/src/server/underTest.ts
+  s_aac30f7f4dce26::t_249e999495065d 1
+packages/puppeteer-cloudflare/utils/generate_worker_tests.js
+  s_aac30f7f4dce26::t_9f65b9a7536f6a 229
+  s_aac30f7f4dce26::t_89b14b0b41d2dc 180
+packages/playwright-cloudflare/package.json
+  s_aac30f7f4dce26::t_df8e2fc03b7127 33-36
+  s_aac30f7f4dce26::t_1f8ef35abd8640 39
+packages/puppeteer-cloudflare/tests/package.json
+  s_aac30f7f4dce26::t_89b14b0b41d2dc 9,22
+packages/puppeteer-cloudflare/package.json
+  s_aac30f7f4dce26::t_a56bc41d09eea9 29-31
+  s_aac30f7f4dce26::t_df8e2fc03b7127 22-24,26-27,32-33
+packages/playwright-cloudflare/vite.config.ts
+  s_aac30f7f4dce26::t_89b14b0b41d2dc 46-47,50-52
+packages/puppeteer-cloudflare/tests/src/server/fsPromises.ts
+  s_aac30f7f4dce26::t_89b14b0b41d2dc 1,3
+packages/playwright-cloudflare/utils/build_bundles.js
+  s_aac30f7f4dce26::t_89b14b0b41d2dc 89-90
+package.json
+  s_aac30f7f4dce26::t_df8e2fc03b7127 11-12
+packages/puppeteer-cloudflare/tests/package-lock.json
+  s_aac30f7f4dce26::t_adfeb2438b0e44 12,36,39-41,44-46,83-84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "c3c62942bc8999bc72f9eaea5ef4069d4d674842",
+  "prompts": {},
+  "sessions": {
+    "s_aac30f7f4dce26": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70ae42caffecMANPMSE2caI27",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Rui Figueira <rfigueira@cloudflare.com>"
+    }
+  }
+}
