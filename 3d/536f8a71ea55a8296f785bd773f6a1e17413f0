@@ -1,0 +1,36 @@
+packages/playwright-cloudflare/tests/vite.config.ts
+  s_0333a8755c5013::t_18a19edfcf3b72 113
+  s_0333a8755c5013::t_170925cf7ec809 128-130
+  s_0333a8755c5013::t_5e45032fa04ff2 111-112
+packages/playwright-cloudflare/utils/generate_worker_tests.js
+  s_0333a8755c5013::t_6d47223436af57 32
+packages/playwright-cloudflare/tests/src/server/coreBundleServer.ts
+  s_0333a8755c5013::t_070fb9fd40783a 17,19-23
+  s_0333a8755c5013::t_8a111ec9d28097 2-9,24-37
+  s_0333a8755c5013::t_fd87a593cff391 10-14,40
+  s_0333a8755c5013::t_c29af750b57812 1,15,18,38
+  s_0333a8755c5013::t_efa85e6f8d616a 16,39
+patches/playwright.patch
+  s_0333a8755c5013::t_49c420fb350202 153,163,168,177
+packages/playwright-cloudflare/tests/src/server/index.ts
+  s_0333a8755c5013::t_e81641a7b4c87a 22-23,25
+packages/playwright-cloudflare/tests/src/server/testsServer.ts
+  s_0333a8755c5013::t_e81641a7b4c87a 39
+  s_0333a8755c5013::t_fde2f0aaba5077 40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "3d536f8a71ea55a8296f785bd773f6a1e17413f0",
+  "prompts": {},
+  "sessions": {
+    "s_0333a8755c5013": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f6da7e83cffetR174RHo0bpXYe",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Rui Figueira <rfigueira@cloudflare.com>"
+    }
+  }
+}
