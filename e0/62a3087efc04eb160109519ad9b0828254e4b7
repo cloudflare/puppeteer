@@ -1,0 +1,19 @@
+packages/playwright-cloudflare/tests/package-lock.json
+  s_9f4edafa94f4b7::t_47a93d435722f6 13,15-16,29-36,44-68,184-190,1147-1159,1188-1225,1271-1277,1298-1418,1426-1516,1531-1567,1578-1617,1628-1637,1680-1683,1686-1695,1697-1700,1703-1706,1708,1710-1713,1717-1721,1724,1727-1730,1732-2327,2336-2355,2403-2639,2698-2784,2798-2882,2891-2903,2914-2920,2931-2941,3020-3036
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "e062a3087efc04eb160109519ad9b0828254e4b7",
+  "prompts": {},
+  "sessions": {
+    "s_9f4edafa94f4b7": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f68419192ffeILnqHgYJSvARNt",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Rui Figueira <rfigueira@cloudflare.com>"
+    }
+  }
+}
