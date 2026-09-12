@@ -1,0 +1,23 @@
+packages/playwright-cloudflare/package.json
+  s_81a60443d31820::t_ef8cc186f1b6ef 22,35
+packages/puppeteer-cloudflare/src/cloudflare/WorkersWebSocketTransport.ts
+  s_81a60443d31820::t_2d0e7a7bfa0c05 8
+packages/puppeteer-cloudflare/package.json
+  s_81a60443d31820::t_836fa97ca9f7f6 23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "eeea3e5b7996257925481584eca0c038e2ca82dd",
+  "prompts": {},
+  "sessions": {
+    "s_81a60443d31820": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f6c9e1cb0ffewljsbIGpuHNSxR",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Rui Figueira <rfigueira@cloudflare.com>"
+    }
+  }
+}
