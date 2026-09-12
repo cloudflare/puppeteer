@@ -1,0 +1,31 @@
+.github/workflows/cf_playwright_full.yml
+  s_b0e7202f20517c::t_643c785cf7e293 24
+.github/workflows/cf_playwright_smoke.yml
+  s_b0e7202f20517c::t_643c785cf7e293 19
+.github/workflows/cf_playwright_prerelease.yml
+  s_b0e7202f20517c::t_643c785cf7e293 16
+packages/playwright-cloudflare/vite.config.ts
+  s_b0e7202f20517c::t_643c785cf7e293 79
+  s_b0e7202f20517c::t_00a038dab6e7f1 76-78
+  s_b0e7202f20517c::t_80da2d8e0dcd95 80
+.github/workflows/cf_playwright_publish.yml
+  s_b0e7202f20517c::t_643c785cf7e293 15
+submodules/playwright
+  s_b0e7202f20517c::t_f1daeaf438c8cc 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "5a169211054a647c1d7335cf4916727df33ad6b2",
+  "prompts": {},
+  "sessions": {
+    "s_b0e7202f20517c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f6bb217f1ffeVNQS7ZtCi0slNk",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Rui Figueira <rfigueira@cloudflare.com>"
+    }
+  }
+}
