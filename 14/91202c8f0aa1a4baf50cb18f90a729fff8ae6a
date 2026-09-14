@@ -1,0 +1,65 @@
+.gitmodules
+  s_67a57ded7c568c::t_2eb38f08cc082c 1-3
+packages/cloudflare-puppeteer/README.md
+  s_a0596c38d42920::t_f8aca7119cd4e7 1-179
+packages/cloudflare-puppeteer/adapter/src/cloudflare/BrowserWorker.ts
+  s_a0596c38d42920::t_a20acdd8059280 1-8
+packages/cloudflare-puppeteer/adapter/src/cloudflare/PuppeteerWorkers.ts
+  s_a0596c38d42920::t_979b60856f56e5 1-289
+packages/cloudflare-puppeteer/adapter/src/cloudflare/WorkersWebSocketTransport.ts
+  s_a0596c38d42920::t_dd1c186d79fbdf 1-87
+packages/cloudflare-puppeteer/adapter/src/cloudflare/globalPatcher.ts
+  s_a0596c38d42920::t_31eb02237e2bc8 1-8
+packages/cloudflare-puppeteer/adapter/src/cloudflare/protocol.ts
+  s_a0596c38d42920::t_b093c89780e4d2 1-247
+packages/cloudflare-puppeteer/adapter/src/cloudflare/utils.ts
+  s_a0596c38d42920::t_0715b053e54f4a 1-333
+packages/cloudflare-puppeteer/adapter/src/common/fetch.ts
+  s_a0596c38d42920::t_2d10329e9d41db 1-24
+packages/cloudflare-puppeteer/adapter/src/puppeteer-cloudflare.ts
+  s_a0596c38d42920::t_2d59dc4f0d7ce7 1-23
+packages/cloudflare-puppeteer/cloudflare-protocol.d.ts
+  s_a0596c38d42920::t_f450ea4383c50e 1-54
+packages/cloudflare-puppeteer/package.json
+  s_a0596c38d42920::t_cccff3bf220a38 1-138
+patches/puppeteer/0001-cdp-only-remove-WebDriver-BiDi-code-paths.patch
+  s_a0596c38d42920::t_3e51134de6565e 1-335
+patches/puppeteer/0002-workers-remove-Node-filesystem-I-O-and-screencast-fr.patch
+  s_a0596c38d42920::t_55dd88d882389e 1-269
+patches/puppeteer/0003-workers-adapt-common-util.ts-for-the-Workers-runtime.patch
+  s_a0596c38d42920::t_60e4f1fa233acb 1-100
+patches/puppeteer/0004-workers-make-stringifyFunction-Workers-safe.patch
+  s_a0596c38d42920::t_24f69516d8c090 1-93
+patches/puppeteer/0005-feature-expose-Browser.sessionId-for-Browser-Renderi.patch
+  s_a0596c38d42920::t_d64bae37882100 1-95
+patches/puppeteer/0006-debug-honor-the-DEBUG-env-prefix-filter.patch
+  s_a0596c38d42920::t_918ce7931fc29d 1-35
+patches/puppeteer/0007-cosmetic-incidental-formatting-doc-drift.patch
+  s_a0596c38d42920::t_bef1e869c3dd0a 1-57
+submodules/puppeteer
+  s_67a57ded7c568c::t_d1c1fcb3f16a32 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "1491202c8f0aa1a4baf50cb18f90a729fff8ae6a",
+  "prompts": {},
+  "sessions": {
+    "s_67a57ded7c568c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f6f85f73cffeRzAqHUU53JjQob",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    },
+    "s_a0596c38d42920": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f60f3e690ffe7QTh7Z9GzV05LJ",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    }
+  }
+}
