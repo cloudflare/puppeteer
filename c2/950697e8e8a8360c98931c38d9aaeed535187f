@@ -1,0 +1,19 @@
+packages/cloudflare-puppeteer/build/tools/add-cloudflare-reference.mjs
+  s_a0596c38d42920::t_f9b5721ac506d2 1-25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "c2950697e8e8a8360c98931c38d9aaeed535187f",
+  "prompts": {},
+  "sessions": {
+    "s_a0596c38d42920": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f60f3e690ffe7QTh7Z9GzV05LJ",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    }
+  }
+}
