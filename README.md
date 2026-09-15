@@ -36,6 +36,25 @@ See [cloudflare/puppeteer#193](https://github.com/cloudflare/puppeteer/issues/19
 and [cloudflare/workerd#6442](https://github.com/cloudflare/workerd/issues/6442)
 for details.
 
+## Route selected browser requests through your Worker
+
+Browser Run RPC bindings accept an `outboundByHost` map. Each value is a Worker
+Fetcher created by the caller. Browser Run sends requests for that hostname to
+the Fetcher, so the request can use the caller's authentication or private
+network access.
+
+```ts
+const browser = await puppeteer.launch(env.MYBROWSER, {
+  outboundByHost: {
+    'app.example.com': ctx.exports.MyApp({ props: {} }),
+  },
+});
+```
+
+Create the Fetcher and launch the browser in the same Worker invocation. The
+map carries live Worker capabilities and is not supported by URL endpoints or
+legacy HTTP-only bindings.
+
 More information in the [developer docs](https://developers.cloudflare.com/browser-rendering/).
 
 Original README follows...
