@@ -14,24 +14,134 @@ const thirdPartyTypesDir = path.resolve(
   '../../submodules/puppeteer/packages/puppeteer-core/lib/esm/third_party'
 );
 
-function copyDeclarations(sourceDir, destinationDir, rewriteThirdParty = false) {
+function replaceExactlyOnce(contents, search, replacement, source) {
+  const first = contents.indexOf(search);
+  if (first === -1 || contents.indexOf(search, first + search.length) !== -1) {
+    throw new Error(`Expected exactly one declaration match in ${source}`);
+  }
+  return contents.replace(search, replacement);
+}
+
+function sanitizeConnectOptions(contents, source) {
+  const channelOption = `    /**
+     * If specified, puppeteer looks for an open WebSocket at the well-known
+     * default user data directory for the specified channel and attempts to
+     * connect to it using ws://localhost:$ActivePort/devtools/browser. Only works
+     * for Chrome and when run in Node.js.
+     *
+     * This option is experimental when used with puppeteer.connect().
+     *
+     * @experimental
+     */
+    channel?: ChromeReleaseChannel;
+`;
+  const capabilityTypes = `/**
+ * @public
+ */
+export type SupportedWebDriverCapability = Exclude<Session.CapabilityRequest, 'unhandledPromptBehavior' | 'acceptInsecureCerts'>;
+/**
+ * WebDriver BiDi capabilities that are not set by Puppeteer itself.
+ *
+ * @public
+ */
+export interface SupportedWebDriverCapabilities {
+    firstMatch?: SupportedWebDriverCapability[];
+    alwaysMatch?: SupportedWebDriverCapability;
+}
+`;
+  const capabilitiesOption = `    /**
+     * WebDriver BiDi capabilities passed to BiDi \`session.new\`.
+     *
+     * @remarks
+     * Only works for \`protocol="webDriverBiDi"\` and {@link Puppeteer.connect}.
+     */
+    capabilities?: SupportedWebDriverCapabilities;
+`;
+  const headersOption = `    /**
+     * Headers to use for the web socket connection.
+     * @remarks
+     * Only works in the Node.js environment.
+     */
+    headers?: Record<string, string>;
+`;
+
+  contents = replaceExactlyOnce(
+    contents,
+    "import type { Session } from 'webdriver-bidi-protocol';\n",
+    '',
+    source
+  );
+  contents = replaceExactlyOnce(
+    contents,
+    "export type ProtocolType = 'cdp' | 'webDriverBiDi';",
+    "export type ProtocolType = 'cdp';",
+    source
+  );
+  contents = replaceExactlyOnce(contents, channelOption, '', source);
+  contents = replaceExactlyOnce(contents, capabilityTypes, '', source);
+  contents = replaceExactlyOnce(
+    contents,
+    "     * - Launching Firefox - 'webDriverBiDi'.\n     *\n",
+    '',
+    source
+  );
+  contents = replaceExactlyOnce(
+    contents,
+    'Custom ID generator for CDP / BiDi messages.',
+    'Custom ID generator for CDP messages.',
+    source
+  );
+  contents = replaceExactlyOnce(contents, capabilitiesOption, '', source);
+  return replaceExactlyOnce(contents, headersOption, '', source);
+}
+
+function copyDeclarations(
+  sourceDir,
+  destinationDir,
+  rewriteThirdParty = false,
+  rootDir = sourceDir
+) {
   for (const entry of fs.readdirSync(sourceDir, {withFileTypes: true})) {
     const source = path.join(sourceDir, entry.name);
     const destination = path.join(destinationDir, entry.name);
+    const relative = path.relative(rootDir, source).replaceAll(path.sep, '/');
     if (entry.isDirectory()) {
-      copyDeclarations(source, destination, rewriteThirdParty);
+      if (relative === 'bidi') {
+        continue;
+      }
+      copyDeclarations(source, destination, rewriteThirdParty, rootDir);
     } else if (entry.name.endsWith('.d.ts')) {
       fs.mkdirSync(destinationDir, {recursive: true});
-      let contents = fs.readFileSync(source, 'utf8');
+      let contents = fs.readFileSync(source, 'utf8').replaceAll('\r\n', '\n');
       if (rewriteThirdParty) {
         contents = contents.replace(
           /((?:\.\.\/)+)third_party\//g,
           (_, prefix) => `${prefix.slice(3)}third_party/`
         );
       }
+      if (relative === 'common/ConnectOptions.d.ts') {
+        contents = sanitizeConnectOptions(contents, source);
+      } else if (relative === 'index-browser.d.ts') {
+        contents = replaceExactlyOnce(
+          contents,
+          "export type { Session } from 'webdriver-bidi-protocol';\n",
+          '',
+          source
+        );
+      }
       fs.writeFileSync(destination, contents);
     }
   }
+}
+
+function declarationFiles(directory) {
+  return fs.readdirSync(directory, {withFileTypes: true}).flatMap(entry => {
+    const file = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      return declarationFiles(file);
+    }
+    return entry.name.endsWith('.d.ts') ? [file] : [];
+  });
 }
 
 function copyCloudflareDeclarations(sourceDir, destinationDir, depth = 0) {
@@ -52,6 +162,10 @@ function copyCloudflareDeclarations(sourceDir, destinationDir, depth = 0) {
   }
 }
 
+fs.rmSync(path.join(outputDir, 'puppeteer-core/bidi'), {
+  recursive: true,
+  force: true,
+});
 copyDeclarations(
   puppeteerTypesDir,
   path.join(outputDir, 'puppeteer-core'),
@@ -74,4 +188,14 @@ copyCloudflareDeclarations(
   path.join(outputDir, 'puppeteer-cloudflare/cloudflare'),
   1
 );
+
+for (const declaration of declarationFiles(outputDir)) {
+  const contents = fs.readFileSync(declaration, 'utf8');
+  if (
+    contents.includes('webdriver-bidi-protocol') ||
+    contents.includes('webDriverBiDi')
+  ) {
+    throw new Error(`BiDi type leaked into ${declaration}`);
+  }
+}
 fs.rmSync(generatedDir, {recursive: true});

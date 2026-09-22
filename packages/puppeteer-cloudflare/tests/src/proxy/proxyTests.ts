@@ -49,9 +49,18 @@ export const test = baseTest.extend<object, WorkerOptions & WorkerFixture>({
           method: 'POST',
           headers: authHeaders,
         });
-        const session = (await response.json()) as AcquireResponse;
+        const body = await response.text();
+        if (!response.ok) {
+          throw new Error(
+            `Failed to acquire browser session (${response.status} ${response.statusText}): ${body}`,
+          );
+        }
+        const session = JSON.parse(body) as AcquireResponse;
+        if (!session.sessionId) {
+          throw new Error('Browser session response did not include a sessionId');
+        }
         fs.writeFileSync(sessionFile, JSON.stringify(session));
-        sessionId = session.sessionId!;
+        sessionId = session.sessionId;
       }
 
       await use(sessionId);
@@ -76,9 +85,7 @@ export async function proxyTests(file: string): Promise<ProxyTests> {
 
   return {
     beforeAll: async ({sessionId, binding}: WorkerFixture & WorkerOptions) => {
-      if (process.env.CI) {
-        url.searchParams.set('timeout', '30');
-      }
+      url.searchParams.set('timeout', '45');
       url.searchParams.set('sessionId', sessionId);
       url.searchParams.set('binding', binding);
     },
@@ -95,7 +102,10 @@ export async function proxyTests(file: string): Promise<ProxyTests> {
         headers: authHeaders,
       });
       if (!response.ok) {
-        throw new Error(`Failed to run test ${fullTitle} (${testId})`);
+        const body = await response.text();
+        throw new Error(
+          `Failed to run test ${fullTitle} (${testId}): ${response.status} ${response.statusText}: ${body}`,
+        );
       }
 
       const {status, expectedStatus, errors, annotations} =

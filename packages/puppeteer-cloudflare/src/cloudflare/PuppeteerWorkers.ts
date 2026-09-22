@@ -270,9 +270,13 @@ export class PuppeteerWorkers extends Puppeteer {
     // Without a sessionId the browser is acquired by this call itself, so
     // there's no session to connect to yet.
     const browser = sessionId ? undefined : options?.browser;
+    const connectOptions = endpoint as ConnectOptions;
+    if (!sessionId && !browser && connectOptions.protocol === 'webDriverBiDi') {
+      throw new Error('Cloudflare Browser Run supports the CDP protocol only');
+    }
     try {
       if (!sessionId && !browser) {
-        return await super.connect(endpoint as ConnectOptions);
+        return await super.connect(connectOptions);
       }
       let connectionEndpoint = endpoint as BrowserWorker;
       if (

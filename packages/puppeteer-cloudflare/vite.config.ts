@@ -140,6 +140,7 @@ export default defineConfig({
         'node:url',
         'node:util',
         'node:zlib',
+        'debug',
         'cloudflare:workers',
         /^chromium-bidi\/.*/,
         /^devtools-protocol\/.*/,

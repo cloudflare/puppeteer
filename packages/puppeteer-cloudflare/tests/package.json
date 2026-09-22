@@ -32,7 +32,7 @@
       "target": "esnext",
       "lib": ["esnext", "DOM"],
       "strict": true,
-      "skipLibCheck": true,
+      "skipLibCheck": false,
       "types": []
     }
   }

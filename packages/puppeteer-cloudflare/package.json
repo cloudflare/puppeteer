@@ -1,7 +1,7 @@
 {
   "name": "@cloudflare/puppeteer",
   "description": "Puppeteer for Cloudflare Workers",
-  "version": "1.0.0-next",
+  "version": "1.5.0-rc.0",
   "license": "Apache-2.0",
   "type": "module",
   "types": "./lib/index.d.ts",
@@ -46,11 +46,11 @@
   "dependencies": {
     "@types/debug": "^4.1.12",
     "@types/node": "^18.17.15",
-    "debug": "^4.3.5",
-    "devtools-protocol": "0.0.1666840",
-    "mitt": "^3.0.1",
-    "parsel-js": "^1.1.2",
-    "rxjs": "^7.8.1",
+    "debug": "^4.4.3",
+    "devtools-protocol": "0.0.1581282",
+    "mitt": "3.0.1",
+    "parsel-js": "1.2.2",
+    "rxjs": "7.8.2",
     "typed-query-selector": "^2.12.1",
     "urlpattern-polyfill": "10.1.0"
   },

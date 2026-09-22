@@ -8,10 +8,8 @@ export const DEFAULT_VIEWPORT = Object.freeze({width: 800, height: 600});
 import {CdpBrowser} from 'puppeteer-core/lib/cdp/Browser.js';
 import {Connection} from 'puppeteer-core/lib/cdp/Connection.js';
 import type {ConnectionTransport} from 'puppeteer-core/lib/common/ConnectionTransport.js';
-import type {
-  BrowserConnectOptions,
-  ConnectOptions,
-} from 'puppeteer-core/lib/common/ConnectOptions.js';
+import type {ConnectOptions} from 'puppeteer-core/lib/common/ConnectOptions.js';
+import {debugError} from 'puppeteer-core/lib/common/util.js';
 /**
  * Users should never call this directly; it's called when calling
  * `puppeteer.connect` with `protocol: 'cdp'`.
@@ -20,15 +18,18 @@ import type {
  */
 export async function connectToCDPBrowser(
   connectionTransport: ConnectionTransport,
-  options: BrowserConnectOptions & ConnectOptions & {sessionId?: string}
+  options: ConnectOptions & {sessionId?: string}
 ): Promise<CdpBrowser> {
   const {
-    ignoreHTTPSErrors = false,
+    acceptInsecureCerts = false,
+    networkEnabled = true,
     defaultViewport = DEFAULT_VIEWPORT,
+    downloadBehavior,
     targetFilter,
     _isPageTarget: isPageTarget,
     slowMo = 0,
     protocolTimeout,
+    handleDevToolsAsPage,
     sessionId = 'unknown',
   } = options;
 
@@ -39,27 +40,24 @@ export async function connectToCDPBrowser(
     protocolTimeout
   );
 
-  const version = await connection.send('Browser.getVersion');
-  const product = version.product.toLowerCase().includes('firefox')
-    ? 'firefox'
-    : 'chrome';
-
   const {browserContextIds} = await connection.send(
     'Target.getBrowserContexts'
   );
   const browser = await CdpBrowser._create(
-    product || 'chrome',
     connection,
     browserContextIds,
-    ignoreHTTPSErrors,
+    acceptInsecureCerts,
     defaultViewport,
+    downloadBehavior,
     undefined,
     () => {
-      return connection.send('Browser.close').catch(console.log);
+      return connection.send('Browser.close').catch(debugError);
     },
     targetFilter,
     isPageTarget,
-    true,
+    undefined,
+    networkEnabled,
+    handleDevToolsAsPage,
     sessionId
   );
   return browser;

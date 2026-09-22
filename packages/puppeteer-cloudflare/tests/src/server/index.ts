@@ -4,7 +4,12 @@ import './underTest.js';
 import {testSuites} from '@cloudflare/browser-test-runtime';
 
 import type {TestsServer} from './testsServer.js';
-import { getBinding } from './utils.js';
+import {
+  getBinding,
+  TEST_SERVER_FALLBACK_HEADER,
+  TEST_SERVER_ROUTE_HEADER,
+  TEST_SERVER_ROUTE_PREFIX,
+} from './utils.js';
 
 export {TestsServer} from './testsServer';
 
@@ -26,6 +31,20 @@ export default {
 
     const bindingName = url.searchParams.get('binding') ?? 'BROWSER';
 
+    if (url.pathname.startsWith(TEST_SERVER_ROUTE_PREFIX)) {
+      const route = url.pathname
+        .slice(TEST_SERVER_ROUTE_PREFIX.length)
+        .match(/^([^/]+)\/(?:http|https)(?:\/|$)/);
+      if (!route) {
+        return new Response('Invalid test server route', {status: 400});
+      }
+      const id = env.TESTS_SERVER.idFromString(decodeURIComponent(route[1]!));
+      const testsServer = env.TESTS_SERVER.get(
+        id,
+      ) as DurableObjectStub<TestsServer>;
+      return await testsServer.fetch(request);
+    }
+
     if (/\.(spec|test)\.ts$/.test(url.pathname)) {
       const sessionId = url.searchParams.get('sessionId');
       if (!sessionId) {
@@ -36,6 +55,20 @@ export default {
         id,
       ) as DurableObjectStub<TestsServer>;
       return await testsServer.fetch(request);
+    }
+
+    const testServerRoute = request.headers.get(TEST_SERVER_ROUTE_HEADER);
+    if (testServerRoute) {
+      const id = env.TESTS_SERVER.idFromString(testServerRoute);
+      const testsServer = env.TESTS_SERVER.get(
+        id,
+      ) as DurableObjectStub<TestsServer>;
+      const targetUrl = new URL(request.url);
+      targetUrl.pathname = `${TEST_SERVER_ROUTE_PREFIX}${encodeURIComponent(testServerRoute)}/http${url.pathname}`;
+      const response = await testsServer.fetch(new Request(targetUrl, request));
+      if (!response.headers.has(TEST_SERVER_FALLBACK_HEADER)) {
+        return response;
+      }
     }
 
     if (url.pathname === '/index.html') {

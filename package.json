@@ -7,8 +7,11 @@
     "examples/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces",
-    "check:patches": "git -C submodules/playwright apply --check ../../patches/playwright.patch && git -C submodules/puppeteer apply --check ../../patches/puppeteer.patch",
+    "build": "npm run build --workspace @cloudflare/playwright && npm run build --workspace @cloudflare/puppeteer",
+    "build:puppeteer": "npm run build --workspace @cloudflare/browser-test-runtime && npm run build --workspace @cloudflare/puppeteer",
+    "check:patch:playwright": "git -C submodules/playwright apply --check ../../patches/playwright.patch",
+    "check:patch:puppeteer": "git -C submodules/puppeteer apply --check ../../patches/puppeteer.patch",
+    "check:patches": "npm run check:patch:playwright && npm run check:patch:puppeteer",
     "check:submodules": "git submodule foreach --quiet 'test -z \"$(git status --porcelain)\"'",
     "clean": "npm run clean --workspaces --if-present",
     "diff:playwright": "cd submodules/playwright && git diff HEAD > ../../patches/playwright.patch",

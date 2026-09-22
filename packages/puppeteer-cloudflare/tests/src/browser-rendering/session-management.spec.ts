@@ -34,6 +34,42 @@ async function fetchSingleSession(endpoint: BrowserWorker, sessionId: string) {
   return session;
 }
 
+function sessionIds(activeSessions: ActiveSession[]): string[] {
+  return activeSessions.map(session => {
+    return session.sessionId;
+  }).sort();
+}
+
+async function waitForSessionToClose(
+  endpoint: BrowserWorker,
+  sessionId: string,
+  timeout = 10000,
+): Promise<void> {
+  const deadline = Date.now() + timeout;
+  while (Date.now() < deadline) {
+    if (!(await sessions(endpoint)).some(session => {
+      return session.sessionId === sessionId;
+    })) {
+      return;
+    }
+    await new Promise(resolve => {
+      return setTimeout(resolve, 250);
+    });
+  }
+}
+
+async function waitForBrowserToDisconnect(
+  browser: Browser,
+  timeout = 10000,
+): Promise<void> {
+  const deadline = Date.now() + timeout;
+  while (browser.isConnected() && Date.now() < deadline) {
+    await new Promise(resolve => {
+      return setTimeout(resolve, 250);
+    });
+  }
+}
+
 test(`should list sessions @smoke`, async () => {
   const before = await sessions(env.BROWSER);
   const [browser, sessionId] = await launchAndGetSession(env.BROWSER);
@@ -143,32 +179,17 @@ test(`should keep session open when closing browser created with connect`, async
   const after = await sessions(env.BROWSER);
 
   // no new session created
-  expect(
-    after.map(a => {
-      return a.sessionId;
-    }),
-  ).toEqual(
-    before.map(b => {
-      return b.sessionId;
-    }),
-  );
+  expect(sessionIds(after)).toEqual(sessionIds(before));
   await connectedBrowser.close();
 
   const afterClose = await sessions(env.BROWSER);
-  expect(
-    afterClose.map(b => {
-      return b.sessionId;
-    }),
-  ).toEqual(
-    after.map(a => {
-      return a.sessionId;
-    }),
-  );
+  expect(sessionIds(afterClose)).toEqual(sessionIds(after));
 });
 
 test(`should close session when launched browser is closed`, async () => {
   const [browser, sessionId] = await launchAndGetSession(env.BROWSER);
   await browser.close();
+  await waitForSessionToClose(env.BROWSER, sessionId);
   const afterClose = await sessions(env.BROWSER);
   expect(
     afterClose.map(a => {
@@ -178,29 +199,36 @@ test(`should close session when launched browser is closed`, async () => {
 });
 
 test(`should close session after keep_alive`, async () => {
+  const keepAlive = 15000;
   const [browser, sessionId] = await launchAndGetSession(env.BROWSER, {
-    keep_alive: 15000,
+    keep_alive: keepAlive,
   });
-  await new Promise(resolve => {
-    return setTimeout(resolve, 11000);
-  });
-  const beforeKeepAlive = await sessions(env.BROWSER);
-  expect(
-    beforeKeepAlive.map(a => {
-      return a.sessionId;
-    }),
-  ).toContain(sessionId);
-  expect(browser.isConnected()).toBe(true);
-  await new Promise(resolve => {
-    return setTimeout(resolve, 5000);
-  });
-  const afterKeepAlive = await sessions(env.BROWSER);
-  expect(
-    afterKeepAlive.map(a => {
-      return a.sessionId;
-    }),
-  ).toContain(sessionId);
-  expect(browser.isConnected()).toBe(true);
+
+  try {
+    await new Promise(resolve => {
+      return setTimeout(resolve, 11000);
+    });
+    expect(
+      (await sessions(env.BROWSER)).map(session => {
+        return session.sessionId;
+      }),
+    ).toContain(sessionId);
+    expect(browser.isConnected()).toBe(true);
+
+    await waitForSessionToClose(env.BROWSER, sessionId, 15000);
+    await waitForBrowserToDisconnect(browser);
+
+    expect(
+      (await sessions(env.BROWSER)).map(session => {
+        return session.sessionId;
+      }),
+    ).not.toContain(sessionId);
+    expect(browser.isConnected()).toBe(false);
+  } finally {
+    if (browser.isConnected()) {
+      await browser.close().catch(() => {});
+    }
+  }
 });
 
 test(`should add new session to history when launching browser`, async () => {

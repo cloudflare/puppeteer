@@ -107,6 +107,86 @@ const cloudflareTestFiles = listFiles(cloudflareSourceTestsDir, {
       .replace(/\.ts$/, '');
   });
 
+function tracingTempDirectoryPlugin() {
+  return {
+    name: 'tracing-temp-directory',
+    enforce: 'pre',
+    transform(code, id) {
+      if (!id.endsWith('/tracing.spec.ts')) {
+        return;
+      }
+      return code.replaceAll('import.meta.dirname', JSON.stringify('/tmp'));
+    },
+  };
+}
+
+function remoteTestServerPlugin() {
+  return {
+    name: 'remote-test-server',
+    enforce: 'pre',
+    transform(code, id) {
+      if (id.endsWith('/page.spec.ts')) {
+        return code.replace(
+          "    it('should work with options parameter', async () => {\n      const {page, server} = await getTestState();\n\n      expect(\n        await page.evaluate(() => {\n          return navigator.userAgent;\n        }),\n      ).toContain('Mozilla');\n      await page.setUserAgent({userAgent: 'foobar'});",
+          "    it('should work with options parameter', async () => {\n      const {page, server} = await getTestState();\n\n      await page.setUserAgent({userAgent: 'foobar'});",
+        );
+      }
+      if (id.endsWith('/console.spec.ts')) {
+        // Worker fixtures use HTTPS, so an HTTP URL tests mixed-content blocking
+        // instead of the network failure and console location asserted upstream.
+        // Browser Run's network proxy can surface the failed lookup as a reset.
+        return code
+          .replaceAll('http://wat', 'https://does-not-exist.invalid')
+          .replace(
+            'expect(message.text()).toContain(`ERR_NAME_NOT_RESOLVED`);',
+            "expect(message.text()).atLeastOneToContain(['ERR_NAME_NOT_RESOLVED', 'ERR_CONNECTION_RESET']);",
+          );
+      }
+      if (id.endsWith('/navigation.spec.ts')) {
+        return code
+          .replace(
+            "it('should work when subframe issues window.stop()', async function () {",
+            "it('should work when subframe issues window.stop()', async function ({}, testInfo) {",
+          )
+          .replace('timeout: this.timeout() - 1000,', 'timeout: testInfo.timeout - 1000,');
+      }
+      if (!id.endsWith('/cookies.spec.ts')) {
+        return;
+      }
+
+      return code
+        .replace(
+          "domain: 'localhost',\n        path: '/',\n        sameParty: false,\n        expires: -1,\n        httpOnly: false,\n        secure: false,\n        sourceScheme: 'Unset',",
+          "domain: new URL(server.EMPTY_PAGE).hostname,\n        path: '/',\n        sameParty: false,\n        expires: -1,\n        httpOnly: false,\n        secure: new URL(server.EMPTY_PAGE).protocol === 'https:',\n        sourceScheme: 'Unset',",
+        )
+        .replace(
+          "domain: 'localhost',\n            path: '/',\n            sameParty: false,\n            expires: -1,\n            size: 14,\n            httpOnly: false,\n            secure: false,\n            session: true,\n            sourceScheme: 'Unset',",
+          "domain: new URL(server.EMPTY_PAGE).hostname,\n            path: '/',\n            sameParty: false,\n            expires: -1,\n            size: 14,\n            httpOnly: false,\n            secure: new URL(server.EMPTY_PAGE).protocol === 'https:',\n            session: true,\n            sourceScheme: 'Unset',",
+        )
+        .replace(
+          '      await expectCookieEquals(await page.cookies(), [\n        {\n          name: \'partitionCookie\',',
+          '      const cookies = await page.cookies();\n      await expectCookieEquals(cookies, [\n        {\n          name: \'partitionCookie\',',
+        )
+        .replace(
+          "          partitionKey: isChrome\n            ? url.origin.replace(`:${url.port}`, '')\n            : url.origin,",
+          '',
+        )
+        .replace(
+          "      ]);\n    });\n    it('should not set a cookie on a blank page'",
+          "      ]);\n      const partitionSite = new URL(cookies[0]!.partitionKey!);\n      expect(partitionSite.protocol).toBe(url.protocol);\n      expect(\n        url.hostname === partitionSite.hostname ||\n          url.hostname.endsWith(`.${partitionSite.hostname}`),\n      ).toBe(true);\n    });\n    it('should not set a cookie on a blank page'",
+        )
+        .replace(
+          "      const origin = isChrome\n        ? url.origin.replace(`:${url.port}`, '')\n        : url.origin;",
+          "      const origin = url.origin;",
+        )
+        .replace(
+          "      expect(await page.cookies()).toHaveLength(1);\n      await page.deleteCookie({\n        url: url.toString(),\n        name: 'partitionCookie',\n        partitionKey: origin,\n      });",
+          "      const [cookie] = await page.cookies();\n      expect(cookie).toBeDefined();\n      await page.deleteCookie({\n        url: url.toString(),\n        name: 'partitionCookie',\n        partitionKey: cookie!.partitionKey,\n      });",
+        );
+    },
+  };
+}
+
 writeFile(
   path.join(workerTestsDir, 'index.ts'),
   `import '../src/server/workerFixtures';
@@ -121,8 +201,15 @@ ${[...testFiles, ...cloudflareTestFiles]
 
 (async () => {
   await build({
-    plugins: [setTestFilePlugin()],
+    plugins: [
+      setTestFilePlugin(),
+      tracingTempDirectoryPlugin(),
+      remoteTestServerPlugin(),
+    ],
     root: sourceTestsDir,
+    define: {
+      'import.meta.dirname': 'globalThis.__dirname',
+    },
     resolve: {
       alias: {
         // https://workers-nodejs-compat-matrix.pages.dev/
@@ -164,6 +251,7 @@ ${[...testFiles, ...cloudflareTestFiles]
 
         'puppeteer-core/internal': '@cloudflare/puppeteer/internal',
         'puppeteer-core': '@cloudflare/puppeteer',
+        'puppeteer/internal/puppeteer.js': '@cloudflare/puppeteer',
         'puppeteer/lib/cjs/puppeteer/puppeteer.js': '@cloudflare/puppeteer',
         puppeteer: '@cloudflare/puppeteer',
 
