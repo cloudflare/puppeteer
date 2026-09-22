@@ -56,14 +56,14 @@ test(`should launch a lab browser`, async () => {
 });
 
 test(`should reject lab combined with browser=kitesurf`, async () => {
-  const binding = {fetch: async () => new Response('ok')} as BrowserWorker;
+  const binding = {fetch: async () => {return new Response('ok');}} as BrowserWorker;
   await expect(launch(binding, {browser: 'kitesurf', lab: true}))
     .rejects.toThrow(/browser="kitesurf".*lab/);
 });
 
 test(`should reject outbound workers combined with browser=kitesurf`, async () => {
-  const binding = {fetch: async () => new Response('ok')} as BrowserWorker;
-  const outboundWorker = {fetch: async () => new Response('ok')} as BrowserWorker;
+  const binding = {fetch: async () => {return new Response('ok');}} as BrowserWorker;
+  const outboundWorker = {fetch: async () => {return new Response('ok');}} as BrowserWorker;
   await expect(launch(binding, {
     browser: 'kitesurf',
     outboundByHost: {'app.example.com': outboundWorker},
@@ -72,9 +72,9 @@ test(`should reject outbound workers combined with browser=kitesurf`, async () =
 
 test(`should pass lab and outbound workers to the RPC acquire method`, async () => {
   let received: unknown;
-  const outboundWorker = {fetch: async () => new Response('ok')} as BrowserWorker;
+  const outboundWorker = {fetch: async () => {return new Response('ok');}} as BrowserWorker;
   const rpcBinding = {
-    fetch: async () => new Response('ok'),
+    fetch: async () => {return new Response('ok');},
     acquire: async (options: unknown) => {
       received = options;
       return {sessionId: 'session'};
@@ -88,7 +88,7 @@ test(`should pass lab and outbound workers to the RPC acquire method`, async () 
 test(`should translate keep_alive for RPC acquire`, async () => {
   let received: unknown;
   const rpcBinding = {
-    fetch: async () => new Response('ok'),
+    fetch: async () => {return new Response('ok');},
     acquire: async (options: unknown) => {
       received = options;
       return {sessionId: 'session'};
@@ -103,14 +103,14 @@ test(`should pass translated options to RPC launch and reuse its pinned Fetcher`
   let received: unknown;
   let connectSessionCalls = 0;
   const pinnedWebSocket = {
-    fetch: async () => new Response('not a websocket'),
+    fetch: async () => {return new Response('not a websocket');},
     connectSession: async () => {
       connectSessionCalls++;
       throw new Error('pinned Fetcher was probed');
     },
   } as BrowserWorker;
   const rpcBinding = {
-    fetch: async () => new Response('ok'),
+    fetch: async () => {return new Response('ok');},
     launch: async (options: unknown) => {
       received = options;
       return {sessionId: 'session', webSocket: pinnedWebSocket};

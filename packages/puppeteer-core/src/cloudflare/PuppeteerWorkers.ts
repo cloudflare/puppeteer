@@ -60,7 +60,7 @@ declare global {
 /**
  * @public
  */
-export interface AcquireResponse extends BrowserRunAcquireResult {}
+export type AcquireResponse = BrowserRunAcquireResult;
 /**
  * @public
  */
