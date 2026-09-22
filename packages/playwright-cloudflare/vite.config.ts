@@ -4,10 +4,13 @@ import picomatch from 'picomatch';
 import { defineConfig } from 'vite';
 
 const baseDir = __dirname.replace(/\\/g, '/');
+const browserTestRuntime = path.resolve(__dirname, '../browser-test-runtime');
 
 // Path mappings: glob pattern → target (first match wins)
 // Use **/ prefix to match anywhere in absolute paths
 const pathMappings = [
+  { glob: '**/packages/browser-test-runtime/src/bundles/**', target: 'bundles' },
+  { glob: '**/packages/browser-test-runtime/src/mocks/**', target: 'playwright-cloudflare/mocks' },
   { glob: '**/packages/playwright-cloudflare/src/bundles/**', target: 'bundles' },
   { glob: '**/packages/playwright-cloudflare/src/**', target: 'playwright-cloudflare' },
   { glob: '**/packages/playwright-cloudflare/*.json', target: 'playwright-cloudflare' },
@@ -89,18 +92,18 @@ export default defineConfig({
       'zlib': 'node:zlib',
 
       // bundles
-      './utilsBundleImpl': path.resolve(__dirname, './src/bundles/utilsBundleImpl'),
-      './zipBundleImpl': path.resolve(__dirname, './src/bundles/zipBundleImpl'),
-      './mcpBundleImpl': path.resolve(__dirname, './src/bundles/mcpBundleImpl'),
-      './expectBundleImpl': path.resolve(__dirname, './src/bundles/expectBundleImpl'),
-      'pngjs': path.resolve(__dirname, './src/bundles/pngjs'),
+      './utilsBundleImpl': path.resolve(__dirname, '../browser-test-runtime/src/bundles/utilsBundleImpl'),
+      './zipBundleImpl': path.resolve(__dirname, '../browser-test-runtime/src/bundles/zipBundleImpl'),
+      './mcpBundleImpl': path.resolve(__dirname, '../browser-test-runtime/src/bundles/mcpBundleImpl'),
+      './expectBundleImpl': path.resolve(__dirname, '../browser-test-runtime/src/bundles/expectBundleImpl'),
+      'pngjs': path.resolve(__dirname, '../browser-test-runtime/src/bundles/pngjs'),
 
-      "child_process": path.resolve(__dirname, './src/mocks/childProcess'),
-      "node:child_process": path.resolve(__dirname, './src/mocks/childProcess'),
-      "readline": path.resolve(__dirname, './src/mocks/readline'),
-      "node:readline": path.resolve(__dirname, './src/mocks/readline'),
-      "inspector": path.resolve(__dirname, './src/mocks/inspector'),
-      "node:inspector": path.resolve(__dirname, './src/mocks/inspector'),
+      "child_process": path.resolve(browserTestRuntime, './src/mocks/childProcess'),
+      "node:child_process": path.resolve(browserTestRuntime, './src/mocks/childProcess'),
+      "readline": path.resolve(browserTestRuntime, './src/mocks/readline'),
+      "node:readline": path.resolve(browserTestRuntime, './src/mocks/readline'),
+      "inspector": path.resolve(browserTestRuntime, './src/mocks/inspector'),
+      "node:inspector": path.resolve(browserTestRuntime, './src/mocks/inspector'),
 
       // replace playwright transport with cloudflare workers transport
       './transport': path.resolve(__dirname, './src/cloudflare/webSocketTransport'),
@@ -113,16 +116,16 @@ export default defineConfig({
       './transform': path.resolve(__dirname, './src/mocks/transform'),
       '../transform/transform': path.resolve(__dirname, './src/mocks/transform'),
 
-      '../transform/compilationCache': path.resolve(__dirname, './src/mocks/compilationCache'),
+      '../transform/compilationCache': path.resolve(browserTestRuntime, './src/mocks/compilationCache'),
       '../common/testLoader': path.resolve(__dirname, './src/mocks/testLoader'),
-      '../common/esmLoaderHost': path.resolve(__dirname, './src/mocks/esmLoaderHost'),
-      './esmLoaderHost': path.resolve(__dirname, './src/mocks/esmLoaderHost'),
+      '../common/esmLoaderHost': path.resolve(browserTestRuntime, './src/mocks/esmLoaderHost'),
+      './esmLoaderHost': path.resolve(browserTestRuntime, './src/mocks/esmLoaderHost'),
 
       // IMPORTANT `require('../playwright')` in `recorderApp.ts` causes a circular dependency,
       // so we need to mock it (it's not needed, it's related with recorder).
-      '../playwright': path.resolve(__dirname, './src/mocks/empty'),
-      './bidiOverCdp': path.resolve(__dirname, './src/mocks/empty'),
-      'electron/index.js': path.resolve(__dirname, './src/mocks/empty'),
+      '../playwright': path.resolve(browserTestRuntime, './src/mocks/empty'),
+      './bidiOverCdp': path.resolve(browserTestRuntime, './src/mocks/empty'),
+      'electron/index.js': path.resolve(browserTestRuntime, './src/mocks/empty'),
     },
   },
   define: {

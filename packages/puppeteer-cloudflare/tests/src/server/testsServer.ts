@@ -1,6 +1,4 @@
-import {
-  TestRunner,
-} from '@cloudflare/playwright/internal';
+import {TestRunner} from '@cloudflare/browser-test-runtime';
 import '@workerTests/index';
 import type { Browser} from '@cloudflare/puppeteer';
 import puppeteer from '@cloudflare/puppeteer';

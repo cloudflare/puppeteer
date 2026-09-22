@@ -9,6 +9,9 @@
   "scripts": {
     "test-types": "tsd"
   },
+  "dependencies": {
+    "@cloudflare/browser-test-runtime": "file:../../browser-test-runtime"
+  },
   "devDependencies": {
     "@cloudflare/playwright": "file:..",
     "@cloudflare/workers-types": "^4.20260702.1",

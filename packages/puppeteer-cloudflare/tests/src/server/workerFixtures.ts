@@ -1,5 +1,5 @@
 // @ts-expect-error internal types missing
-import {_baseTest} from '@cloudflare/playwright/internal';
+import {_baseTest} from '@cloudflare/browser-test-runtime';
 
 export const test = _baseTest.extend({});
 

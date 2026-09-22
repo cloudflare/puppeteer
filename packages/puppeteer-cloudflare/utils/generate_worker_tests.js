@@ -66,7 +66,7 @@ function setTestFilePlugin() {
       if (/\.(spec|test)\.ts$/.test(id)) {
         return {
           code: [
-            `import { setCurrentTestFile } from '@cloudflare/playwright/internal';setCurrentTestFile(${JSON.stringify(testPath)});globalThis.__dirname = ${JSON.stringify(path.dirname(testPath))};`,
+            `import { setCurrentTestFile } from '@cloudflare/browser-test-runtime';setCurrentTestFile(${JSON.stringify(testPath)});globalThis.__dirname = ${JSON.stringify(path.dirname(testPath))};`,
             src,
             'setCurrentTestFile(undefined);',
           ].join('\n'),
@@ -240,12 +240,10 @@ ${[...testFiles, ...cloudflareTestFiles]
           'node:zlib',
 
           'cloudflare:workers',
+          '@cloudflare/browser-test-runtime',
           '@cloudflare/puppeteer/internal',
           '@cloudflare/puppeteer/internal/util/Deferred.js',
           '@cloudflare/puppeteer',
-          '@cloudflare/playwright',
-          '@cloudflare/playwright/test',
-          '@cloudflare/playwright/internal',
           'expect',
           'diff',
           'jpeg-js',

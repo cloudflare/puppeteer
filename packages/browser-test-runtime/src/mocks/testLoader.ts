@@ -1,10 +1,11 @@
-import { Suite } from 'playwright/lib/common/test';
+import {Suite} from 'playwright/lib/common/test';
 
-import {rootSuites} from './testState';
+import {rootSuites} from '../state';
 
 export async function loadTestFile(file: string): Promise<Suite> {
   const suite = rootSuites.find(s => s._requireFile === file);
-  if (!suite)
+  if (!suite) {
     throw new Error(`Test file not found: ${file}`);
+  }
   return suite;
 }

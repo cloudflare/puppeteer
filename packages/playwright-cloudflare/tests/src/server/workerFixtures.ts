@@ -1,15 +1,20 @@
 import fs from 'fs';
 
-import { _baseTest, currentTestContext, runWithExpectApiListener } from '@cloudflare/playwright/internal';
+import {
+  _baseTest,
+  currentTestContext,
+  expect as baseExpect,
+  mergeTests,
+  runWithExpectApiListener,
+} from '@cloudflare/browser-test-runtime';
 import playwright, { connect } from '@cloudflare/playwright';
 import { env } from 'cloudflare:workers';
-import { expect as baseExpect } from '@cloudflare/playwright/test';
 
 import type { BrowserBindingName } from '../utils';
 import type { TestInfo, ScreenshotMode, VideoMode } from '../../../types/test';
 import type { BrowserContextOptions, Browser, BrowserType, BrowserContext, Page, Frame, PageScreenshotOptions, Locator, ViewportSize, Playwright, APIRequestContext, BrowserWorker } from '@cloudflare/playwright/test';
 
-export { mergeTests } from '@cloudflare/playwright/internal';
+export {mergeTests};
 
 export type BoundingBox = NonNullable<Awaited<ReturnType<Locator['boundingBox']>>>;
 
@@ -384,7 +389,7 @@ export const test = platformTest.extend<PageTestFixtures & ServerFixtures & Test
   },
 
   _setupArtifacts: [async ({}, use) => {
-    await runWithExpectApiListener(use);
+    await runWithExpectApiListener(playwright._instrumentation, use);
   }, { auto: 'all-hooks-included', timeout: 0 } as any],
 
   toImplInWorkerScope: [async ({ playwright }, use) => {

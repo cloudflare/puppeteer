@@ -41,7 +41,7 @@ function setTestFilePlugin() {
       if (/\.(spec|test)\.ts$/.test(id)) {
         return {
           code: [
-            `import { setCurrentTestFile } from '@cloudflare/playwright/internal';setCurrentTestFile(${JSON.stringify(testPath)});`,
+            `import { setCurrentTestFile } from '@cloudflare/browser-test-runtime';setCurrentTestFile(${JSON.stringify(testPath)});`,
             src,
             'setCurrentTestFile(undefined);',
           ].join('\n'),
@@ -181,6 +181,7 @@ export default defineConfig({
         'node:zlib',
 
         'cloudflare:workers',
+        '@cloudflare/browser-test-runtime',
         /^@cloudflare\/playwright.*/,
         /^chromium-bidi\/.*/,
       ]

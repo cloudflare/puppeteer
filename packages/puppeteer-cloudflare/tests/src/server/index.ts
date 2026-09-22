@@ -1,7 +1,7 @@
 // Must run before Playwright reads PWTEST_UNDER_TEST during module initialization.
 import './underTest.js';
 
-import {testSuites} from '@cloudflare/playwright/internal';
+import {testSuites} from '@cloudflare/browser-test-runtime';
 
 import type {TestsServer} from './testsServer.js';
 import { getBinding } from './utils.js';

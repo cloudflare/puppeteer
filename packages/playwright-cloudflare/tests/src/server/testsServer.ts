@@ -1,4 +1,10 @@
-import { TestRunner, TestEndPayload, isUnderTest, TestInfoError, TestResult } from '@cloudflare/playwright/internal';
+import {
+  TestRunner,
+  type TestEndPayload,
+  type TestInfoError,
+  type TestResult,
+} from '@cloudflare/browser-test-runtime';
+import {isUnderTest} from '@cloudflare/playwright/internal';
 import { DurableObject } from 'cloudflare:workers';
 import '@workerTests/index';
 

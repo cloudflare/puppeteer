@@ -1,7 +1,7 @@
 // before everything else
 import './underTest';
 
-import { testSuites } from '@cloudflare/playwright/internal';
+import { testSuites } from '@cloudflare/browser-test-runtime';
 
 import { getBinding } from '../utils';
 

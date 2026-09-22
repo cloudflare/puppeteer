@@ -10,7 +10,7 @@
     "test-types": "tsd"
   },
   "dependencies": {
-    "@cloudflare/playwright": "file:../../playwright-cloudflare",
+    "@cloudflare/browser-test-runtime": "file:../../browser-test-runtime",
     "@cloudflare/puppeteer": "file:..",
     "diff": "^5.2.0",
     "expect": "^29.7.0",

@@ -6,7 +6,7 @@ import { test as baseTest } from '@playwright/test';
 import { BrowserBindingName } from '../utils';
 
 import type { AcquireResponse } from '@cloudflare/playwright';
-import type { TestResult } from '@cloudflare/playwright/internal';
+import type {TestResult} from '@cloudflare/browser-test-runtime';
 import type { TestInfo } from '@playwright/test';
 
 type TestPayload = Pick<TestResult, 'testId' | 'status' | 'expectedStatus' | 'errors' | 'annotations' | 'attachments'>;
