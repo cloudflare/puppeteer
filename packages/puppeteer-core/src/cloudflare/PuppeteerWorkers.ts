@@ -11,7 +11,11 @@ import type {ConnectionTransport} from '../common/ConnectionTransport.js';
 import type {ConnectOptions} from '../common/ConnectOptions.js';
 import {Puppeteer} from '../common/Puppeteer.js';
 
-import type {BrowserWorker} from './BrowserWorker.js';
+import type {
+  BrowserRunAcquireResult,
+  BrowserRunOptions,
+  BrowserWorker,
+} from './BrowserWorker.js';
 import {
   connectToCDPBrowser,
   type Browsers,
@@ -23,6 +27,26 @@ import {WorkersWebSocketTransport} from './WorkersWebSocketTransport.js';
 export type {SessionGuardrails} from './utils.js';
 
 const FAKE_HOST = 'https://fake.host';
+const rpcBindings = new WeakSet<object>();
+const sessionPinnedEndpoints = new WeakSet<object>();
+
+function validateKitesurfOptions(options?: WorkersLaunchOptions): void {
+  if (options?.browser !== 'kitesurf') {
+    return;
+  }
+  const incompatible: string[] = [];
+  if (options.lab) {
+    incompatible.push('lab');
+  }
+  if (options.outboundByHost) {
+    incompatible.push('outboundByHost');
+  }
+  if (incompatible.length) {
+    throw new Error(
+      `Options not supported with browser="kitesurf": ${incompatible.join(', ')}`
+    );
+  }
+}
 
 // We can't include both workers-types and dom because they conflict
 declare global {
@@ -36,9 +60,7 @@ declare global {
 /**
  * @public
  */
-export interface AcquireResponse {
-  sessionId: string;
-}
+export type AcquireResponse = BrowserRunAcquireResult;
 /**
  * @public
  */
@@ -88,6 +110,7 @@ export interface WorkersLaunchOptions {
   recording?: boolean;
   lab?: boolean;
   browser?: Browsers;
+  outboundByHost?: Record<string, BrowserWorker>;
   // restricts the outbound traffic of the session being acquired, latched for
   // its lifetime. Travels over a browser binding only, so it has no effect when
   // connecting to an endpoint addressed by URL.
@@ -119,6 +142,23 @@ export class PuppeteerWorkers extends Puppeteer {
     endpoint: BrowserWorker,
     options?: WorkersLaunchOptions
   ): Promise<Browser> {
+    validateKitesurfOptions(options);
+    const wantsRpcLaunch = options?.lab || options?.outboundByHost;
+    if (
+      options?.outboundByHost &&
+      (options.browser || typeof endpoint.launch !== 'function')
+    ) {
+      throw new Error('outboundByHost requires a Browser Run RPC binding');
+    }
+    if (
+      wantsRpcLaunch &&
+      !options?.browser &&
+      typeof endpoint.launch === 'function'
+    ) {
+      const response = await endpoint.launch(toBrowserRunOptions(options));
+      sessionPinnedEndpoints.add(response.webSocket);
+      return await this.connect(response.webSocket, response.sessionId);
+    }
     if (options?.browser) {
       // Sessions for these browsers are acquired by the connect call itself.
       return await this.connect(endpoint, undefined, options);
@@ -213,6 +253,22 @@ export class PuppeteerWorkers extends Puppeteer {
     sessionId?: string,
     options?: WorkersLaunchOptions
   ): Promise<Browser> {
+    validateKitesurfOptions(options);
+    if (options?.outboundByHost) {
+      const browserWorker = endpoint as BrowserWorker;
+      if (
+        sessionId ||
+        options.browser ||
+        typeof browserWorker.launch !== 'function'
+      ) {
+        throw new Error(
+          'outboundByHost must be passed to launch() or acquire() on a Browser Run RPC binding'
+        );
+      }
+      const response = await browserWorker.launch(toBrowserRunOptions(options));
+      sessionPinnedEndpoints.add(response.webSocket);
+      return await this.connect(response.webSocket, response.sessionId);
+    }
     // Without a sessionId the browser is acquired by this call itself, so
     // there's no session to connect to yet.
     const browser = sessionId ? undefined : options?.browser;
@@ -220,12 +276,21 @@ export class PuppeteerWorkers extends Puppeteer {
       if (!sessionId && !browser) {
         return await super.connect(endpoint as ConnectOptions);
       }
+      let connectionEndpoint = endpoint as BrowserWorker;
+      if (
+        sessionId &&
+        rpcBindings.has(connectionEndpoint) &&
+        !sessionPinnedEndpoints.has(connectionEndpoint)
+      ) {
+        const connection = await connectionEndpoint.connectSession!(sessionId);
+        connectionEndpoint = connection.webSocket;
+        sessionPinnedEndpoints.add(connectionEndpoint);
+      }
       const connectionTransport: ConnectionTransport =
-        await WorkersWebSocketTransport.create(
-          endpoint as BrowserWorker,
-          sessionId,
-          {browser, guardrails: options?.guardrails}
-        );
+        await WorkersWebSocketTransport.create(connectionEndpoint, sessionId, {
+          browser,
+          guardrails: options?.guardrails,
+        });
       return await connectToCDPBrowser(connectionTransport, {sessionId});
     } catch (e) {
       if (browser) {
@@ -249,6 +314,21 @@ export class PuppeteerWorkers extends Puppeteer {
     endpoint: BrowserWorker,
     options?: WorkersLaunchOptions
   ): Promise<AcquireResponse> {
+    validateKitesurfOptions(options);
+    if (
+      options?.outboundByHost &&
+      (options.browser || typeof endpoint.acquire !== 'function')
+    ) {
+      throw new Error('outboundByHost requires a Browser Run RPC binding');
+    }
+    const wantsRpcAcquire = options?.lab || options?.outboundByHost;
+    if (wantsRpcAcquire && typeof endpoint.acquire === 'function') {
+      const response: BrowserRunAcquireResult = await endpoint.acquire(
+        toBrowserRunOptions(options)
+      );
+      rpcBindings.add(endpoint);
+      return response;
+    }
     const searchParams = new URLSearchParams();
     if (options?.keep_alive) {
       searchParams.set('keep_alive', `${options.keep_alive}`);
@@ -286,4 +366,14 @@ export class PuppeteerWorkers extends Puppeteer {
     const response: AcquireResponse = JSON.parse(text);
     return response;
   }
+}
+
+function toBrowserRunOptions(
+  options?: WorkersLaunchOptions
+): BrowserRunOptions {
+  const {keep_alive, browser: _browser, ...rest} = options ?? {};
+  return {
+    ...rest,
+    ...(keep_alive === undefined ? {} : {keepAlive: keep_alive}),
+  };
 }

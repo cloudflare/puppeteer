@@ -17,6 +17,7 @@ import {connect, launch, acquire} from '@cloudflare/puppeteer';
 import {expectAssignable, expectNotAssignable, expectType} from 'tsd';
 
 declare const endpoint: BrowserWorker;
+declare const outboundWorker: BrowserWorker;
 
 const policy: SessionGuardrails = {
   allowedDomains: ['example.com', '*.example.com', 'api.*.example.com'],
@@ -36,6 +37,16 @@ expectAssignable<WorkersLaunchOptions>({
   guardrails: {allowedDomains: ['*.example.com']},
   keep_alive: 30000,
   location: 'US',
+});
+expectAssignable<WorkersLaunchOptions>({
+  outboundByHost: {'app.example.com': outboundWorker},
+});
+expectAssignable<WorkersLaunchOptions>({
+  lab: true,
+  outboundByHost: {'app.example.com': outboundWorker},
+});
+expectNotAssignable<WorkersLaunchOptions>({
+  outboundByHost: {'app.example.com': {}},
 });
 
 await launch(endpoint, {guardrails: {allowedDomains: ['*.example.com']}});

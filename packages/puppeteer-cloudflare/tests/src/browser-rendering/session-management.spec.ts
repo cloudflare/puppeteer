@@ -49,6 +49,92 @@ test(`should list sessions @smoke`, async () => {
   await browser.close();
 });
 
+test(`should launch a lab browser`, async () => {
+  const browser = await launch(env.BROWSER, {lab: true});
+  expect(browser.sessionId()).toBeTruthy();
+  await browser.close();
+});
+
+test(`should reject lab combined with browser=kitesurf`, async () => {
+  const binding = {fetch: async () => {return new Response('ok');}} as BrowserWorker;
+  await expect(launch(binding, {browser: 'kitesurf', lab: true}))
+    .rejects.toThrow(/browser="kitesurf".*lab/);
+});
+
+test(`should reject outbound workers combined with browser=kitesurf`, async () => {
+  const binding = {fetch: async () => {return new Response('ok');}} as BrowserWorker;
+  const outboundWorker = {fetch: async () => {return new Response('ok');}} as BrowserWorker;
+  await expect(launch(binding, {
+    browser: 'kitesurf',
+    outboundByHost: {'app.example.com': outboundWorker},
+  })).rejects.toThrow(/browser="kitesurf".*outboundByHost/);
+});
+
+test(`should pass lab and outbound workers to the RPC acquire method`, async () => {
+  let received: unknown;
+  const outboundWorker = {fetch: async () => {return new Response('ok');}} as BrowserWorker;
+  const rpcBinding = {
+    fetch: async () => {return new Response('ok');},
+    acquire: async (options: unknown) => {
+      received = options;
+      return {sessionId: 'session'};
+    },
+  } as BrowserWorker;
+
+  await acquire(rpcBinding, {lab: true, outboundByHost: {'app.example.com': outboundWorker}});
+  expect(received).toEqual({lab: true, outboundByHost: {'app.example.com': outboundWorker}});
+});
+
+test(`should translate keep_alive for RPC acquire`, async () => {
+  let received: unknown;
+  const rpcBinding = {
+    fetch: async () => {return new Response('ok');},
+    acquire: async (options: unknown) => {
+      received = options;
+      return {sessionId: 'session'};
+    },
+  } as BrowserWorker;
+
+  await acquire(rpcBinding, {lab: true, keep_alive: 30000});
+  expect(received).toEqual({lab: true, keepAlive: 30000});
+});
+
+test(`should pass translated options to RPC launch and reuse its pinned Fetcher`, async () => {
+  let received: unknown;
+  let connectSessionCalls = 0;
+  const pinnedWebSocket = {
+    fetch: async () => {return new Response('not a websocket');},
+    connectSession: async () => {
+      connectSessionCalls++;
+      throw new Error('pinned Fetcher was probed');
+    },
+  } as BrowserWorker;
+  const rpcBinding = {
+    fetch: async () => {return new Response('ok');},
+    launch: async (options: unknown) => {
+      received = options;
+      return {sessionId: 'session', webSocket: pinnedWebSocket};
+    },
+  } as BrowserWorker;
+
+  await expect(launch(rpcBinding, {lab: true, keep_alive: 30000})).rejects.toThrow();
+  expect(received).toEqual({lab: true, keepAlive: 30000});
+  expect(connectSessionCalls).toBe(0);
+});
+
+test(`should preserve lab for a legacy acquire binding`, async () => {
+  let request: Request | undefined;
+  const legacyBinding = {
+    fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
+      request = new Request(input, init);
+      return Response.json({sessionId: 'session'});
+    },
+  } as BrowserWorker;
+
+  await acquire(legacyBinding, {lab: true});
+  expect(new URL(request!.url).searchParams.get('lab')).toBe('true');
+});
+
 test(`should keep session open when closing browser created with connect`, async () => {
   const {sessionId} = await acquire(env.BROWSER);
   const before = await sessions(env.BROWSER);
