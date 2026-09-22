@@ -1,0 +1,47 @@
+packages/puppeteer-cloudflare/src/cloudflare/PuppeteerWorkers.ts
+  s_c7dfe7a0729f0f::t_68b9179411730e 217-220,223
+packages/puppeteer-cloudflare/src/cloudflare/utils.ts
+  s_c7dfe7a0729f0f::t_465c03eff6cdf0 11-12,21,24-25,27,32,49,51,54,58-60
+packages/puppeteer-cloudflare/tests/package-lock.json
+  s_6772a6fb91aacb::t_62563278ccbe2c 29,34-40,52-53,56,59-61,63-64,67,70-71,74-75,78,81,83-86,89-90,93-95,97-109,111-113,115,118-120,122-124,126-127,130-131,135-143,146-200,203-204,206,208-209,212-240,243-247,250-253,255,258-259,263-271,274-275,277-290,293-295,298,301-302,304-307,310-312,314-315,318-319,321-326,328,331-332,334-336,338-343,346-372,375-376,378,381,384-399,401,404-413,415-416,419-421,423,426-431,433,435,438-443,445-448,450-453,456-457,459,465,468,471-472,474,476,479,482-483,488,491,494-502,505,508,511,514,521-523,526-527,529,532,535
+packages/puppeteer-cloudflare/tests/src/skipTests.ts
+  s_6ddf00a9c466bc::t_bdf85441608186 2-28,78-80,108-133,136-165
+packages/puppeteer-cloudflare/tests/test-d/connect-options.test-d.ts
+  s_6772a6fb91aacb::t_814e4b997958c9 1-65
+packages/puppeteer-cloudflare/utils/copy_types.js
+  s_6772a6fb91aacb::t_46b4a9e041a3b0 17-103,107,109-112,115,122-131,137-146,165-168,191-200
+submodules/puppeteer
+  s_6772a6fb91aacb::t_e145acd7e57e3c 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "77fb677c5f849b5a430703a33286caf9065690b1",
+  "prompts": {},
+  "sessions": {
+    "s_6772a6fb91aacb": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f61075e29ffeVp2EdDTLHofj6b",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    },
+    "s_6ddf00a9c466bc": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f5ba4afd4ffeYxirnyahb3gQkX",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    },
+    "s_c7dfe7a0729f0f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f4c48e8e2ffe0zrPCYqZ5lj1Ml",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    }
+  }
+}
