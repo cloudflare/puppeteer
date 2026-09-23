@@ -1,0 +1,70 @@
+packages/playwright-cloudflare/utils/build_bundles.js
+  s_aac30f7f4dce26::t_3e746019b858b5 9
+packages/playwright-cloudflare/src/internal.ts
+  s_aac30f7f4dce26::t_54e0c4a88186d5 3
+  s_aac30f7f4dce26::t_cc01bc4c8efdf4 12
+  s_aac30f7f4dce26::t_ffa61cda1f2870 197-200
+  s_aac30f7f4dce26::t_f746d13565bd8a 6-10,27-28
+  s_aac30f7f4dce26::t_d15e9634f95951 4-5,29
+packages/playwright-cloudflare/src/mocks/transform.ts
+  s_aac30f7f4dce26::t_96adef3c6ce38f 1
+  s_aac30f7f4dce26::t_29035744fc1af0 21-28
+packages/playwright-cloudflare/tests/vite.config.ts
+  s_aac30f7f4dce26::t_e3adf34860b0b5 104
+  s_aac30f7f4dce26::t_d15e9634f95951 117-120,122,172,190
+  s_aac30f7f4dce26::t_6851804405708c 93
+packages/playwright-cloudflare/src/index.ts
+  s_aac30f7f4dce26::t_f746d13565bd8a 4
+  s_f65880fa48e906::t_c56851d4bc6162 1
+packages/playwright-cloudflare/src/mocks/inspector.ts
+  s_aac30f7f4dce26::t_29035744fc1af0 2-5
+patches/playwright.patch
+  s_aac30f7f4dce26::t_7bd7ad0d1655fa 73-79,81-90,296-330,372-389
+  s_aac30f7f4dce26::t_a9b579bd876b69 2,5,15,21,24-28,30-31,33,38-43,45,48,50,53,58-63,71,92,95-98,103,105,113-151,153,156-158,161-163,167-172,176-183,190,192,195-197,199,206,217,220,223,237,263,266,280,282-290,295,332,335,346,349,356-357,390-395,399,406-410
+  s_aac30f7f4dce26::t_69ed70989bc3a8 359-371
+  s_aac30f7f4dce26::t_a6df68598acf91 72
+packages/playwright-cloudflare/src/cloudflare/wrapClientApis.ts
+  s_aac30f7f4dce26::t_cd263786d41185 22-46
+packages/playwright-cloudflare/vite.config.ts
+  s_aac30f7f4dce26::t_191c82656fc166 16
+  s_aac30f7f4dce26::t_f644697eafe158 14-15
+  s_aac30f7f4dce26::t_29035744fc1af0 103
+  s_aac30f7f4dce26::t_94a7ae71e54586 177,192-193
+  s_aac30f7f4dce26::t_1e1227c0ab91de 129
+  s_aac30f7f4dce26::t_cd71a6f561b27f 79
+  s_aac30f7f4dce26::t_3e746019b858b5 19-22
+  s_aac30f7f4dce26::t_920ca87c16e443 205
+  s_aac30f7f4dce26::t_12246ce83f8a77 115
+  s_aac30f7f4dce26::t_f746d13565bd8a 74-78
+  s_aac30f7f4dce26::t_95bf581648fcf6 23
+packages/playwright-cloudflare/package.json
+  s_aac30f7f4dce26::t_3e746019b858b5 23,25
+packages/playwright-cloudflare/src/mocks/childProcess.ts
+  s_aac30f7f4dce26::t_e3a1b6aedd75da 5-8,22,27
+submodules/playwright
+  s_aac30f7f4dce26::t_673bfffc9fa843 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "487380f5a4684994f93f72d860da27883124370d",
+  "prompts": {},
+  "sessions": {
+    "s_aac30f7f4dce26": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70ae42caffecMANPMSE2caI27",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Rui Figueira <rfigueira@cloudflare.com>"
+    },
+    "s_f65880fa48e906": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f73e698ceffeOPJB8muBxKD4RT",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Rui Figueira <rfigueira@cloudflare.com>"
+    }
+  }
+}

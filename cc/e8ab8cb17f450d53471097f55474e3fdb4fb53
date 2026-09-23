@@ -1,0 +1,22 @@
+package.json
+  s_aac30f7f4dce26::t_0f5f446827f749 122-123,147-148,159,177
+  s_aac30f7f4dce26::t_1dbdb607cadd37 157
+  s_aac30f7f4dce26::t_a7a0955352ed37 160
+  s_aac30f7f4dce26::t_8f57887e5c590d 176
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "cce8ab8cb17f450d53471097f55474e3fdb4fb53",
+  "prompts": {},
+  "sessions": {
+    "s_aac30f7f4dce26": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70ae42caffecMANPMSE2caI27",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Rui Figueira <rfigueira@cloudflare.com>"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+packages/puppeteer-cloudflare/utils/generate_worker_tests.js
+  s_aac30f7f4dce26::t_349cdffccaf3dd 88-92,169
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "1f93a70225cdd1d10faec46ae5f7caafcf78aba9",
+  "prompts": {},
+  "sessions": {
+    "s_aac30f7f4dce26": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70ae42caffecMANPMSE2caI27",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Rui Figueira <rfigueira@cloudflare.com>"
+    }
+  }
+}

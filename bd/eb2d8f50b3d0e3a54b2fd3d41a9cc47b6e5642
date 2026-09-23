@@ -1,0 +1,170 @@
+packages/playwright-cloudflare/examples/stagehand/README.md
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-108
+packages/playwright-cloudflare/examples/todomvc/README.md
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-51
+packages/playwright-cloudflare/examples/stagehand/worker-configuration.d.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-7463
+packages/playwright-cloudflare/bundles/pngjs/package.json
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-9
+packages/playwright-cloudflare/index.d.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-159
+packages/playwright-cloudflare/src/cloudflare/apiCallZone.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-4
+packages/playwright-cloudflare/src/mocks/esmLoaderHost.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-11
+packages/playwright-cloudflare/test.d.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-3
+packages/playwright-cloudflare/examples/stagehand/package.json
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-32
+packages/playwright-cloudflare/examples/stagehand/.gitignore
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-4
+packages/playwright-cloudflare/README.md
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-5
+packages/playwright-cloudflare/src/cloudflare/wrapClientApis.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-411
+packages/playwright-cloudflare/examples/stagehand/src/ui/App.tsx
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-138
+packages/playwright-cloudflare/src/mocks/inspector.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1
+packages/playwright-cloudflare/src/mocks/testLoader.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-10
+packages/playwright-cloudflare/tests/src/server/underTest.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1
+packages/playwright-cloudflare/src/internal.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-272
+packages/playwright-cloudflare/utils/copy_types.js
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-21
+packages/playwright-cloudflare/examples/stagehand/src/worker/screencast.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-30
+packages/playwright-cloudflare/utils/build_bundles.js
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-141
+packages/playwright-cloudflare/tests/src/server/index.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-45
+packages/playwright-cloudflare/tests/src/server/testsServer.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-100
+packages/playwright-cloudflare/examples/stagehand/vite.config.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-12
+packages/playwright-cloudflare/src/mocks/compilationCache.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-15
+packages/playwright-cloudflare/tests/src/browser-rendering/session-management.spec.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-126
+packages/playwright-cloudflare/utils/generate_proxy_tests.js
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-53
+packages/playwright-cloudflare/tests/vite.config.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-198
+packages/playwright-cloudflare/src/cloudflare/webSocketTransport.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-56
+packages/playwright-cloudflare/tests/wrangler.toml
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-36
+patches/playwright.patch
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-347
+packages/playwright-cloudflare/examples/stagehand/src/ui/App.css
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-114
+packages/playwright-cloudflare/examples/stagehand/tsconfig.json
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-17
+packages/playwright-cloudflare/examples/todomvc/.gitignore
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-2
+packages/playwright-cloudflare/src/mocks/readline.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-5
+packages/playwright-cloudflare/package.json
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-46
+.gitmodules
+  s_aac30f7f4dce26::t_a6f9ca5139060b 4-9
+packages/playwright-cloudflare/.npmignore
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-15
+packages/playwright-cloudflare/tests/src/server/workerFixtures.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-469
+packages/playwright-cloudflare/utils/utils.js
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-25
+packages/playwright-cloudflare/.gitignore
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-5
+package.json
+  s_aac30f7f4dce26::t_a6f9ca5139060b 12-13
+  s_aac30f7f4dce26::t_eb5f101f9e0f62 16-17
+packages/playwright-cloudflare/examples/stagehand/index.html
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-12
+packages/playwright-cloudflare/src/mocks/childProcess.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-22
+packages/playwright-cloudflare/examples/stagehand/src/ui/main.tsx
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-10
+packages/playwright-cloudflare/src/mocks/empty.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1
+packages/playwright-cloudflare/src/test.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-2
+packages/playwright-cloudflare/tests/tsconfig.json
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-20
+packages/playwright-cloudflare/examples/stagehand/wrangler.jsonc
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-21
+packages/playwright-cloudflare/bundles/pngjs/src/pngjs.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-2
+packages/playwright-cloudflare/examples/todomvc/wrangler.toml
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-12
+packages/playwright-cloudflare/src/mocks/transform.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-45
+packages/playwright-cloudflare/tests/src/skipTests.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-127
+packages/playwright-cloudflare/src/index.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-232
+packages/playwright-cloudflare/tsconfig.json
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-22
+packages/playwright-cloudflare/tests/playwright.config.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-12
+packages/playwright-cloudflare/tests/package.json
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-13
+packages/playwright-cloudflare/tests/src/browser-rendering/user-agent.spec.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-22
+packages/playwright-cloudflare/examples/todomvc/tsconfig.json
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-16
+packages/playwright-cloudflare/.eslintrc.js
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-7
+packages/playwright-cloudflare/tests/.gitignore
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-4
+packages/playwright-cloudflare/tests/README.md
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-27
+packages/playwright-cloudflare/examples/todomvc/worker-configuration.d.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-5753
+packages/playwright-cloudflare/src/mocks/commander.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-2
+packages/playwright-cloudflare/examples/stagehand/src/worker/index.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-79
+packages/playwright-cloudflare/internal.d.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-91
+packages/playwright-cloudflare/tests/src/proxy/proxyTests.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-113
+packages/playwright-cloudflare/tests/src/utils.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-19
+packages/playwright-cloudflare/src/cloudflare/unsupportedOperations.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-20
+packages/playwright-cloudflare/examples/stagehand/src/worker/workersAIClient.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-48
+packages/playwright-cloudflare/examples/todomvc/src/index.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-78
+packages/playwright-cloudflare/utils/generate_worker_tests.js
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-46
+packages/playwright-cloudflare/src/mocks/socksProxyAgent.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-5
+packages/playwright-cloudflare/tests/worker-configuration.d.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-5757
+packages/playwright-cloudflare/src/mocks/open.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-3
+packages/playwright-cloudflare/examples/todomvc/package.json
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-20
+packages/playwright-cloudflare/vite.config.ts
+  s_aac30f7f4dce26::t_a6f9ca5139060b 1-192
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "bdeb2d8f50b3d0e3a54b2fd3d41a9cc47b6e5642",
+  "prompts": {},
+  "sessions": {
+    "s_aac30f7f4dce26": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70ae42caffecMANPMSE2caI27",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Rui Figueira <rfigueira@cloudflare.com>"
+    }
+  }
+}

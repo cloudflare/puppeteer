@@ -1,0 +1,25 @@
+.github/workflows/cf_puppeteer_smoke.yml
+  s_b0e7202f20517c::t_643c785cf7e293 21
+.github/workflows/cf_puppeteer_full.yml
+  s_b0e7202f20517c::t_643c785cf7e293 19
+.github/workflows/cf_puppeteer_publish.yml
+  s_b0e7202f20517c::t_643c785cf7e293 17
+.github/workflows/cf_puppeteer_prerelease.yml
+  s_b0e7202f20517c::t_643c785cf7e293 16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "35a5eaa0b6dc2f00fc671ab4dd3fb0d55d780366",
+  "prompts": {},
+  "sessions": {
+    "s_b0e7202f20517c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f6bb217f1ffeVNQS7ZtCi0slNk",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Rui Figueira <rfigueira@cloudflare.com>"
+    }
+  }
+}

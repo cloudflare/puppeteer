@@ -1,0 +1,31 @@
+packages/puppeteer-cloudflare/src/cloudflare/utils.ts
+  s_aac30f7f4dce26::t_f862a6e509c373 12,34,42-45,67-69
+packages/puppeteer-cloudflare/src/cloudflare/WorkersWebSocketTransport.ts
+  s_aac30f7f4dce26::t_f862a6e509c373 7-10,67-69
+patches/puppeteer.patch
+  s_aac30f7f4dce26::t_5abd9a338fadbe 8-9,27,30,36,45,48,56,67,70-73,78-81,84-89,94-97,100,105,111-112,120,125,133,136,138,149,161-176,185,193,197,201,206,208,210,212-214,232-237,240,243-248,269,290-291,309,321,349,353-354,372,387,396,412,415,418,420,429,432-434,441-442,448-459,461,464,469,472,474,477,485
+  s_aac30f7f4dce26::t_d16e23e6917c08 2,13-25
+  s_aac30f7f4dce26::t_9ce4547cf4e29c 491,493-494,502-512
+  s_aac30f7f4dce26::t_b3be7913c08d99 492,495-501
+packages/puppeteer-cloudflare/vite.config.ts
+  s_aac30f7f4dce26::t_f862a6e509c373 12-13,92,96,100
+  s_aac30f7f4dce26::t_31475b31be4c89 91
+submodules/puppeteer
+  s_aac30f7f4dce26::t_3c3ab6805a8061 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "a770c070587831298856a1e12b70888c8d15179a",
+  "prompts": {},
+  "sessions": {
+    "s_aac30f7f4dce26": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f70ae42caffecMANPMSE2caI27",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Rui Figueira <rfigueira@cloudflare.com>"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+packages/puppeteer-cloudflare/src/cloudflare/PuppeteerWorkers.ts
+  s_ce93d17af4559f::t_c94c973cee631d 89-91,112-113,121,193-194,206,214-215,242-243,267-268
+packages/puppeteer-cloudflare/src/cloudflare/WorkersWebSocketTransport.ts
+  s_ce93d17af4559f::t_c94c973cee631d 20-23,25,27,43-44
+packages/puppeteer-cloudflare/src/cloudflare/protocol.ts
+  s_ce93d17af4559f::t_c94c973cee631d 29-30,35-37,39-41,43-45,53-55,57-59,63-64,69-71,73-75,77-79,87-89,91-93,95-97,99-101,103-105,109-110,115-117,125-127,129-131,133-135,137-139,141-143,147-148,161-162,167-169,171-173,175-177,185-187,189-191,193-195,197-199,203-206,208-209
+packages/puppeteer-cloudflare/src/index.ts
+  s_ce93d17af4559f::t_c94c973cee631d 7-8
+packages/puppeteer-cloudflare/src/cloudflare/utils.ts
+  s_ce93d17af4559f::t_c94c973cee631d 78-81,89-93,98-99,106-108,115-120
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "83d125137c8aa29a70963520e1ba976cac94abdf",
+  "prompts": {},
+  "sessions": {
+    "s_ce93d17af4559f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f6e22ebf5ffe10xisLj8KaVuQq",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Rui Figueira <rfigueira@cloudflare.com>"
+    }
+  }
+}

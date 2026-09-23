@@ -1,0 +1,19 @@
+packages/puppeteer-cloudflare/src/cloudflare/WorkersWebSocketTransport.ts
+  s_b0e7202f20517c::t_ba61cc1a608653 11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "340482e7d31e2a4bf6f83ab974b6b70887554d8b",
+  "prompts": {},
+  "sessions": {
+    "s_b0e7202f20517c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f6bb217f1ffeVNQS7ZtCi0slNk",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Rui Figueira <rfigueira@cloudflare.com>"
+    }
+  }
+}
