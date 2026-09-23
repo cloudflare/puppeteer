@@ -4,10 +4,11 @@ This monorepo contains Cloudflare's browser automation libraries for [Browser Ru
 
 ## Packages
 
-| Package | Description |
-| --- | --- |
-| [`@cloudflare/puppeteer`](./packages/puppeteer-cloudflare) | Puppeteer port for Cloudflare Workers and Browser Run |
-| [`@cloudflare/playwright`](./packages/playwright-cloudflare) | Playwright port for Cloudflare Workers and Browser Run |
+| Package                                                              | Description                                                  |
+| -------------------------------------------------------------------- | ------------------------------------------------------------ |
+| [`@cloudflare/puppeteer`](./packages/puppeteer-cloudflare)           | Puppeteer port for Cloudflare Workers and Browser Run        |
+| [`@cloudflare/playwright`](./packages/playwright-cloudflare)         | Playwright port for Cloudflare Workers and Browser Run       |
+| [`@cloudflare/playwright-mcp`](./packages/playwright-mcp-cloudflare) | Playwright MCP server for Cloudflare Workers and Browser Run |
 
 ## Setup
 

@@ -7,3 +7,6 @@
 [submodule "submodules/jest"]
 	path = submodules/jest
 	url = https://github.com/jestjs/jest.git
+[submodule "submodules/playwright-mcp"]
+	path = submodules/playwright-mcp
+	url = https://github.com/microsoft/playwright-mcp.git

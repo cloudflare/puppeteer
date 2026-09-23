@@ -7,19 +7,22 @@
     "examples/*"
   ],
   "scripts": {
-    "build": "npm run build --workspace @cloudflare/playwright && npm run build --workspace @cloudflare/puppeteer",
+    "build": "npm run build --workspace @cloudflare/playwright && npm run build --workspace @cloudflare/puppeteer && npm run build --workspace @cloudflare/playwright-mcp",
     "build:puppeteer": "npm run build --workspace @cloudflare/browser-test-runtime && npm run build --workspace @cloudflare/puppeteer",
     "check:patch:playwright": "git -C submodules/playwright apply --check ../../patches/playwright.patch",
+    "check:patch:playwright-mcp": "git -C submodules/playwright-mcp apply --check ../../patches/playwright-mcp.patch",
     "check:patch:puppeteer": "git -C submodules/puppeteer apply --check ../../patches/puppeteer.patch",
-    "check:patches": "npm run check:patch:playwright && npm run check:patch:puppeteer",
+    "check:patches": "npm run check:patch:playwright && npm run check:patch:puppeteer && npm run check:patch:playwright-mcp",
     "check:submodules": "git submodule foreach --quiet 'test -z \"$(git status --porcelain)\"'",
     "clean": "npm run clean --workspaces --if-present",
     "diff:playwright": "cd submodules/playwright && git diff HEAD > ../../patches/playwright.patch",
+    "diff:playwright-mcp": "cd submodules/playwright-mcp && git diff HEAD > ../../patches/playwright-mcp.patch",
     "patch:playwright": "cd submodules/playwright && git apply --reverse --check ../../patches/playwright.patch 2>/dev/null && echo 'playwright patch already applied' || git apply ../../patches/playwright.patch",
+    "patch:playwright-mcp": "cd submodules/playwright-mcp && git apply --reverse --check ../../patches/playwright-mcp.patch 2>/dev/null && echo 'playwright-mcp patch already applied' || git apply ../../patches/playwright-mcp.patch",
     "diff:puppeteer": "cd submodules/puppeteer && git diff HEAD > ../../patches/puppeteer.patch",
     "patch:puppeteer": "cd submodules/puppeteer && git apply --reverse --check ../../patches/puppeteer.patch 2>/dev/null && echo 'puppeteer patch already applied' || git apply ../../patches/puppeteer.patch",
-    "diff": "npm run diff:playwright && npm run diff:puppeteer",
-    "patch": "npm run patch:playwright && npm run patch:puppeteer"
+    "diff": "npm run diff:playwright && npm run diff:puppeteer && npm run diff:playwright-mcp",
+    "patch": "npm run patch:playwright && npm run patch:puppeteer && npm run patch:playwright-mcp"
   },
   "license": "Apache-2.0",
   "devDependencies": {

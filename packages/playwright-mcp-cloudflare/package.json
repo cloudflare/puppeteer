@@ -1,0 +1,45 @@
+{
+  "name": "@cloudflare/playwright-mcp",
+  "version": "0.0.1-next",
+  "description": "Cloudflare Playwright Tools for MCP",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cloudflare/puppeteer.git",
+    "directory": "packages/playwright-mcp-cloudflare"
+  },
+  "homepage": "https://github.com/cloudflare/puppeteer/tree/main/packages/playwright-mcp-cloudflare",
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "node ../../scripts/with-patch.mjs playwright-mcp npm run build:patched",
+    "build:patched": "npm run ci:mcp && npx vite build",
+    "ci:mcp": "npm ci --prefix ../../submodules/playwright-mcp --ignore-scripts",
+    "test:bundle": "npm run build && wrangler deploy --dry-run --config tests/wrangler.jsonc",
+    "test:types": "tsc -p tests/tsconfig.json --noEmit"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./lib/esm/index.js",
+      "require": "./lib/cjs/index.js",
+      "default": "./lib/esm/index.js"
+    }
+  },
+  "dependencies": {
+    "@cloudflare/playwright": "^0.0.11",
+    "@modelcontextprotocol/sdk": "^1.17.0",
+    "agents": "^0.0.109",
+    "yaml": "^2.8.0",
+    "zod-to-json-schema": "^3.24.6"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250725.0",
+    "typescript": "^5.8.2",
+    "vite": "^7.0.6",
+    "wrangler": "4.85.0"
+  }
+}
