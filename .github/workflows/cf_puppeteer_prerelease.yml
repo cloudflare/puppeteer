@@ -1,28 +1,45 @@
-name: "Puppeteer for Cloudflare - Pre-Release"
+name: "Puppeteer for Cloudflare - PR Package Preview"
 permissions:
   contents: read
 
 on:
-  push:
   pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/cf_puppeteer_*.yml'
+      - '.npmrc'
+      - 'package.json'
+      - 'packages/browser-test-runtime/**'
+      - 'packages/puppeteer-cloudflare/**'
+      - 'patches/playwright.patch'
+      - 'patches/puppeteer.patch'
+      - 'scripts/**'
+      - 'submodules/playwright'
+      - 'submodules/jest'
+      - 'submodules/puppeteer'
+  workflow_dispatch:
+
+concurrency:
+  group: cf-puppeteer-preview-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  prerelease:
+  preview:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '22.x'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Generate Pre-Release
+      - name: Validate and Publish Package Preview
         run: |
           npm ci
           git submodule update --init
           npm run check:patches
-          npm run build
-          npm run test:bundle --workspace @cloudflare/puppeteer
+          npm run build:puppeteer
+          npm run test:bundle:prebuilt --workspace @cloudflare/puppeteer
+          npm --prefix packages/puppeteer-cloudflare/tests run test-types
           npm run check:submodules
-          cd packages/puppeteer-cloudflare
-          npx pkg-pr-new publish
+          npm exec -- pkg-pr-new publish packages/puppeteer-cloudflare

@@ -1,0 +1,56 @@
+name: "Playwright MCP for Cloudflare - CI"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cf_playwright_mcp_*.yml'
+      - '.npmrc'
+      - 'package.json'
+      - 'examples/playwright-mcp-cloudflare/**'
+      - 'packages/browser-test-runtime/**'
+      - 'packages/playwright-cloudflare/**'
+      - 'packages/playwright-mcp-cloudflare/**'
+      - 'patches/playwright.patch'
+      - 'patches/playwright-mcp.patch'
+      - 'scripts/**'
+      - 'submodules/playwright'
+      - 'submodules/playwright-mcp'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/cf_playwright_mcp_*.yml'
+      - '.npmrc'
+      - 'package.json'
+      - 'examples/playwright-mcp-cloudflare/**'
+      - 'packages/browser-test-runtime/**'
+      - 'packages/playwright-cloudflare/**'
+      - 'packages/playwright-mcp-cloudflare/**'
+      - 'patches/playwright.patch'
+      - 'patches/playwright-mcp.patch'
+      - 'scripts/**'
+      - 'submodules/playwright'
+      - 'submodules/playwright-mcp'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Validate package
+        run: |
+          npm ci
+          git submodule update --init
+          npm run check:patch:playwright-mcp
+          npm run build --workspace @cloudflare/playwright-mcp
+          npm run test:types --workspace @cloudflare/playwright-mcp
+          npm run test:bundle --workspace @cloudflare/playwright-mcp
+          npm run build --workspace @cloudflare/playwright-mcp-template
+          npm exec -- wrangler deploy --dry-run --config examples/playwright-mcp-cloudflare/wrangler.toml
+          npm pack --workspace @cloudflare/playwright-mcp --dry-run
+          npm run check:submodules

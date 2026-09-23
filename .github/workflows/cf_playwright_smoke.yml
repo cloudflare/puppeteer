@@ -1,30 +1,36 @@
 name: "Playwright for Cloudflare - Smoke Tests"
 
 on:
-  push:
+  workflow_dispatch:
+
+concurrency:
+  group: cf-playwright-worker-deployment
+  cancel-in-progress: false
 
 jobs:
   test_smoke:
     runs-on: ubuntu-latest
-    env:
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      TESTS_SERVER_URL: https://playwright-test-workers.rendering.cfdata.org
-      CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
-      CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '22.x'
           registry-url: 'https://registry.npmjs.org'
 
-      - run: |
+      - name: Prepare package
+        run: |
           npm ci
           git submodule update --init
           cd packages/playwright-cloudflare
           npm run build
-          npm run test:deploy
+          npm run test:prepare:built
+
+      - name: Deploy test Worker
+        working-directory: packages/playwright-cloudflare/tests
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler deploy
 
       - name: Type-check Cloudflare CDP types
         run: |
@@ -33,8 +39,12 @@ jobs:
           npm run test-types
 
       - name: Run Smoke Tests
+        working-directory: packages/playwright-cloudflare
+        env:
+          TESTS_SERVER_URL: https://playwright-test-workers.rendering.cfdata.org
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
         run: |
-          cd packages/playwright-cloudflare
           npm run test:smoke -- --reporter=html
 
       - uses: actions/upload-artifact@v4

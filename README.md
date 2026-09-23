@@ -10,6 +10,8 @@ This monorepo contains Cloudflare's browser automation libraries for [Browser Ru
 | [`@cloudflare/playwright`](./packages/playwright-cloudflare)         | Playwright port for Cloudflare Workers and Browser Run       |
 | [`@cloudflare/playwright-mcp`](./packages/playwright-mcp-cloudflare) | Playwright MCP server for Cloudflare Workers and Browser Run |
 
+See [RELEASING.md](./RELEASING.md) for the package release process.
+
 ## Setup
 
 ```shell
