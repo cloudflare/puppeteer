@@ -1,0 +1,73 @@
+.gitmodules
+  s_81e900cc250613::t_daa32a6d6cae72 10-12
+examples/playwright-mcp-cloudflare/src/index.ts
+  s_15e1012bd98740::t_94b84d451b54c0 1-21
+examples/playwright-mcp-cloudflare/tsconfig.json
+  s_15e1012bd98740::t_659e13e1698dcc 1-11
+examples/playwright-mcp-cloudflare/worker-configuration.d.ts
+  s_15e1012bd98740::t_8544f69067916b 1-13526
+examples/playwright-mcp-cloudflare/wrangler.toml
+  s_15e1012bd98740::t_8367fe7f3d99bc 1-15
+package-lock.json
+  s_15e1012bd98740::t_d99aa0853aec02 30-33,3897,4991-7915
+package.json
+  s_1120be2cb7f2bd::t_f2d840bf7c0982 10,13,15,19,21,24-25
+packages/playwright-mcp-cloudflare/.npmignore
+  s_e830272393c721::t_92971eecd63bb6 1-9
+packages/playwright-mcp-cloudflare/index.d.ts
+  s_e830272393c721::t_f02b2b9c4b5a08 1-41
+packages/playwright-mcp-cloudflare/src/index.ts
+  s_e830272393c721::t_1488be66b2332f 1-39
+packages/playwright-mcp-cloudflare/tests/src/index.ts
+  s_1120be2cb7f2bd::t_70aa4315cb1857 1-16
+packages/playwright-mcp-cloudflare/tests/tsconfig.json
+  s_1120be2cb7f2bd::t_3e709e6f5d907b 1-16
+packages/playwright-mcp-cloudflare/tests/types.ts
+  s_e830272393c721::t_7dfcc2e5ae8248 1-8
+packages/playwright-mcp-cloudflare/tests/wrangler.jsonc
+  s_1120be2cb7f2bd::t_2759178b635294 1-24
+patches/playwright-mcp.patch
+  s_1120be2cb7f2bd::t_f31e1f79651357 1-143
+submodules/playwright-mcp
+  s_15e1012bd98740::t_e08327aee096d3 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "03006a8a80c4071d6f6a1b6c13bd4002f6bab1bd",
+  "prompts": {},
+  "sessions": {
+    "s_1120be2cb7f2bd": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f329cc53affeghxkSA97Y2L3Po",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    },
+    "s_15e1012bd98740": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f329ed44fffertwJS62H8y5UoP",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    },
+    "s_81e900cc250613": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f329c7c29ffel5iVPYuWseO6JD",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    },
+    "s_e830272393c721": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f32a71398ffeGmkrKX1o0mp2HA",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    }
+  }
+}
