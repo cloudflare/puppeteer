@@ -109,6 +109,41 @@ index 893968917..db81281b3 100644
        client.on('Input.dragIntercepted', onDragIntercepted!);
        await client.send('Input.setInterceptDrags', { enabled: true });
        try {
+diff --git a/packages/playwright-core/src/server/chromium/crNetworkManager.ts b/packages/playwright-core/src/server/chromium/crNetworkManager.ts
+index f6d338470..d3a1f0346 100644
+--- a/packages/playwright-core/src/server/chromium/crNetworkManager.ts
++++ b/packages/playwright-core/src/server/chromium/crNetworkManager.ts
+@@ -531,6 +531,15 @@ export class CRNetworkManager {
+       return;
+     this._maybeUpdateRequestSession(sessionInfo, request);
+     const response = request.request._existingResponse();
++    if (response && event.errorText === 'net::ERR_HTTP_RESPONSE_CODE_FAILURE') {
++      // Preserve the received HTTP response instead of aborting its navigation.
++      response.setTransferSize(null);
++      response.setEncodedBodySize(null);
++      response._requestFinished(helper.secondsToRoundishMillis(event.timestamp - request._timestamp));
++      this._deleteRequest(request);
++      (this._page?.frameManager || this._serviceWorker)!.reportRequestFinished(request.request, response);
++      return;
++    }
+     if (response) {
+       response.setTransferSize(null);
+       response.setEncodedBodySize(null);
+diff --git a/packages/playwright-core/src/server/chromium/crPage.ts b/packages/playwright-core/src/server/chromium/crPage.ts
+index 2cb3df967..ab3207f8a 100644
+--- a/packages/playwright-core/src/server/chromium/crPage.ts
++++ b/packages/playwright-core/src/server/chromium/crPage.ts
+@@ -552,6 +552,10 @@ class FrameSession {
+     const response = await this._client.send('Page.navigate', { url, referrer, frameId: frame._id, referrerPolicy: 'unsafeUrl' });
+     if (response.isDownload)
+       throw new frames.NavigationAbortedError(response.loaderId, 'Download is starting');
++    // Browser Rendering reports valid HTTP error responses as navigation errors.
++    // Let the normal navigation lifecycle wait for commit and waitUntil.
++    if (response.errorText === 'net::ERR_HTTP_RESPONSE_CODE_FAILURE')
++      return { newDocumentId: response.loaderId };
+     if (response.errorText)
+       throw new frames.NavigationAbortedError(response.loaderId, `${response.errorText} at ${url}`);
+     return { newDocumentId: response.loaderId };
 diff --git a/packages/playwright-core/src/server/dispatchers/pageDispatcher.ts b/packages/playwright-core/src/server/dispatchers/pageDispatcher.ts
 index 22f65daf0..38976e072 100644
 --- a/packages/playwright-core/src/server/dispatchers/pageDispatcher.ts
@@ -149,10 +184,10 @@ index 7d99a3779..fefdcd98e 100644
        });
        await result;
 diff --git a/packages/playwright-core/src/server/javascript.ts b/packages/playwright-core/src/server/javascript.ts
-index bc9261b8d..af36b57bd 100644
+index bc9261b8d..a054ebc30 100644
 --- a/packages/playwright-core/src/server/javascript.ts
 +++ b/packages/playwright-core/src/server/javascript.ts
-@@ -289,20 +289,26 @@ export function normalizeEvaluationExpression(expression: string, isFunction: bo
+@@ -289,20 +289,33 @@ export function normalizeEvaluationExpression(expression: string, isFunction: bo
    expression = expression.trim();
  
    if (isFunction) {
@@ -166,8 +201,15 @@ index bc9261b8d..af36b57bd 100644
 -      else
 -        expression = 'function ' + expression;
 +    if (globalThis.navigator?.userAgent === 'Cloudflare-Workers') {
-+      // function is most likely bundled with wrangler, which uses esbuild with keepNames enabled.
-+      // See: https://github.com/cloudflare/workers-sdk/issues/7107
++      // Workers cannot use new Function, so detect and normalize method shorthand directly.
++      // All other Function#toString forms (functions, classes, and arrows) are already expressions.
++      const isMethodShorthand = /^(?:async\s+)?(?:\*\s*)?(?:[A-Za-z_$][\w$]*|\[[^\]]+\])\s*\(/.test(expression);
++      if (isMethodShorthand) {
++        if (expression.startsWith('async '))
++          expression = 'async function ' + expression.substring('async '.length);
++        else
++          expression = 'function ' + expression;
++      }
 +      expression = `((__name => (${expression}))(t => t))`;
 +    } else {
        try {
