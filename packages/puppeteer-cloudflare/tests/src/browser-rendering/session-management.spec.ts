@@ -207,7 +207,7 @@ test(`should preserve lab for a legacy acquire binding`, async () => {
 });
 
 test(`should keep session open when closing browser created with connect`, async () => {
-  const {sessionId} = await acquire(env.BROWSER);
+  const {sessionId} = await acquire(env.BROWSER, {keep_alive: 10000});
   const before = await sessions(env.BROWSER);
 
   const connectedBrowser = await connect(env.BROWSER, sessionId);
@@ -219,6 +219,9 @@ test(`should keep session open when closing browser created with connect`, async
 
   const afterClose = await sessions(env.BROWSER);
   expect(sessionIds(afterClose)).toEqual(sessionIds(after));
+
+  await waitForSessionToClose(env.BROWSER, sessionId);
+  expect(sessionIds(await sessions(env.BROWSER))).not.toContain(sessionId);
 });
 
 test(`should close session when launched browser is closed`, async () => {

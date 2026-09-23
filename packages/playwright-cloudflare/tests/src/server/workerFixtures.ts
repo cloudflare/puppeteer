@@ -15,6 +15,7 @@ import type { TestInfo, ScreenshotMode, VideoMode } from '../../../types/test';
 import type { BrowserContextOptions, Browser, BrowserType, BrowserContext, Page, Frame, PageScreenshotOptions, Locator, ViewportSize, Playwright, APIRequestContext, BrowserWorker } from '@cloudflare/playwright/test';
 
 export {mergeTests};
+export const selectors = playwright.selectors;
 
 export type BoundingBox = NonNullable<Awaited<ReturnType<Locator['boundingBox']>>>;
 
@@ -65,6 +66,7 @@ class TestServer {
   readonly PREFIX: string;
   readonly CROSS_PROCESS_PREFIX: string;
   readonly EMPTY_PAGE: string;
+  readonly HELLO_WORLD: string;
   readonly HOSTNAME: string;
 
   constructor(testInfo: TestInfo, assetsUrl: string) {
@@ -72,6 +74,7 @@ class TestServer {
     this.PREFIX = assetsUrl;
     this.CROSS_PROCESS_PREFIX = this.PREFIX.replace(/\:\/\/([^.]+)\./, '://$1-cross-origin.');
     this.EMPTY_PAGE = `${this.PREFIX}/empty.html`;
+    this.HELLO_WORLD = `${this.PREFIX}/hello-world`;
     this.HOSTNAME = new URL(this.PREFIX).hostname;
   }
 
@@ -389,7 +392,11 @@ export const test = platformTest.extend<PageTestFixtures & ServerFixtures & Test
   },
 
   _setupArtifacts: [async ({}, use) => {
-    await runWithExpectApiListener(playwright._instrumentation, use);
+    try {
+      await runWithExpectApiListener(playwright._instrumentation, use);
+    } finally {
+      playwright.selectors.setTestIdAttribute('data-testid');
+    }
   }, { auto: 'all-hooks-included', timeout: 0 } as any],
 
   toImplInWorkerScope: [async ({ playwright }, use) => {

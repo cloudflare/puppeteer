@@ -26,6 +26,8 @@ const authHeaders = {
 export const test = baseTest.extend<{}, WorkerFixture & WorkerOptions>({
   binding: ['BROWSER', { option: true, scope: 'worker' }],
   sessionId: [async ({ binding }, use, workerInfo) => {
+    // Retries get a new workerIndex, but retain their parallelIndex. Reuse the
+    // same remote session instead of allocating and leaking one per retry.
     const sessionFile = path.join(workerInfo.project.outputDir, `session_${binding}_${workerInfo.parallelIndex}.json`);
     let sessionId: string | undefined;
     if (fs.existsSync(sessionFile)) {
@@ -70,8 +72,7 @@ export async function proxyTests(file: string): Promise<ProxyTests> {
 
   return {
     beforeAll: async ({ sessionId, binding }: WorkerFixture & WorkerOptions) => {
-      if (process.env.CI)
-        url.searchParams.set('timeout', '60');
+      url.searchParams.set('timeout', '45');
       url.searchParams.set('sessionId', sessionId);
       url.searchParams.set('binding', binding);
     },

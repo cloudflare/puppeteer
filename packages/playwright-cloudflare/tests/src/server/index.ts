@@ -22,6 +22,11 @@ export default {
     if (url.pathname === '/')
       return Response.json(await testSuites());
 
+    if (url.pathname === '/hello-world')
+      return new Response('<title>Hello</title>Hello world', {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      });
+
     const bindingName = url.searchParams.get('binding') ?? 'BROWSER';
 
     if (/\.(spec|test)\.ts$/.test(url.pathname)) {
@@ -40,6 +45,16 @@ export default {
       // assets serve html files without .html extension
       request = new Request(request.url.substring(0, request.url.length - '.html'.length));
 
-    return await env.ASSETS?.fetch(request) ?? new Response('Not found', { status: 404 });
+    let response = await env.ASSETS?.fetch(request);
+    if (!response)
+      return new Response('Not found', { status: 404 });
+
+    const headers = new Headers(response.headers);
+    headers.set('Cache-Control', 'no-cache, no-store');
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
   }
 };
