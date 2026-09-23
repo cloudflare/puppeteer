@@ -67,6 +67,9 @@ export interface SessionGuardrails {
  */
 export interface BrowserWorker {
   fetch: typeof fetch;
+  launch?: (options?: BrowserRunOptions) => Promise<BrowserRunConnection>;
+  acquire?: (options?: BrowserRunOptions) => Promise<AcquireResponse>;
+  connectSession?: (sessionId: string, options?: BrowserRunConnectOptions) => Promise<BrowserRunConnection>;
 }
 
 export type BrowserEndpoint = BrowserWorker | string | URL;
@@ -76,6 +79,21 @@ export type BrowserEndpoint = BrowserWorker | string | URL;
  */
 export interface AcquireResponse {
   sessionId: string;
+  webSocketDebuggerUrl?: string;
+  targets?: BrowserRunTarget[];
+}
+
+/**
+ * @public
+ */
+export interface BrowserRunTarget {
+  id: string;
+  type: string;
+  url: string;
+  title?: string;
+  description?: string;
+  webSocketDebuggerUrl?: string;
+  devtoolsFrontendUrl?: string;
 }
 
 /**
@@ -97,10 +115,6 @@ export interface ClosedSession extends ActiveSession {
   endTime: number; // timestamp
   closeReason: number; // close reason code
   closeReasonText: string; // close reason description
-}
-
-export interface AcquireResponse {
-  sessionId: string;
 }
 
 /**
@@ -135,9 +149,28 @@ export interface WorkersLaunchOptions {
   recording?: boolean;
   lab?: boolean;
   browser?: 'kitesurf'; // when set to 'kitesurf', no session is acquired and the connection is made directly to /v1/devtools/browser
+  outboundByHost?: Record<string, BrowserWorker>;
   // restricts the outbound traffic of the session being acquired, latched for
   // its lifetime
   guardrails?: SessionGuardrails;
+}
+
+/**
+ * Options accepted by Browser Run's RPC binding methods. The RPC surface uses
+ * camelCase and does not accept URL-only options such as `browser` or
+ * `persistent`.
+ *
+ * @public
+ */
+export interface BrowserRunOptions {
+  keepAlive?: number;
+  recording?: boolean;
+  lab?: boolean;
+  location?: string;
+  guardrails?: SessionGuardrails;
+  outboundByHost?: Record<string, BrowserWorker>;
+  targets?: boolean;
+  liveViewUrlExpiresInMs?: number;
 }
 
 /**
@@ -147,6 +180,23 @@ export interface WorkersConnectOptions {
   sessionId: string; // session ID to connect to
 }
 
+/**
+ * @public
+ */
+export interface BrowserRunConnectOptions {
+  targetId?: string;
+}
+
+/**
+ * @public
+ */
+export interface BrowserRunConnection {
+  sessionId: string;
+  webSocket: BrowserWorker;
+  webSocketDebuggerUrl?: string;
+  targets?: BrowserRunTarget[];
+}
+
 // Extracts the keys whose values match a specified type `ValueType`
 type KeysByValueType<T, ValueType> = {
   [K in keyof T]: T[K] extends ValueType ? K : never;
@@ -154,9 +204,10 @@ type KeysByValueType<T, ValueType> = {
 
 export type BrowserBindingKey = KeysByValueType<typeof env, BrowserWorker>;
 
-// `guardrails` is excluded: they are sent in the acquire request body, so an endpoint
-// URL has no way to carry them and accepting one here would silently drop it.
-export function endpointURLString(binding: BrowserWorker | BrowserBindingKey, options?: Omit<WorkersLaunchOptions, 'guardrails'> | WorkersConnectOptions): string;
+// `guardrails` and `outboundByHost` are excluded: they are sent through the RPC
+// acquire call, so an endpoint URL cannot carry them and accepting them here
+// would silently drop them.
+export function endpointURLString(binding: BrowserWorker | BrowserBindingKey, options?: Omit<WorkersLaunchOptions, 'guardrails' | 'outboundByHost'> | WorkersConnectOptions): string;
 
 export function connect(endpoint: string | URL): Promise<Browser>;
 export function connect(endpoint: BrowserWorker, sessionIdOrOptions: string | WorkersConnectOptions): Promise<Browser>;

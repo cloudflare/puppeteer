@@ -15,6 +15,7 @@ import { expectAssignable, expectNotAssignable, expectType } from 'tsd';
 import type { BrowserWorker, SessionGuardrails, WorkersLaunchOptions } from '@cloudflare/playwright';
 
 declare const binding: BrowserWorker;
+declare const outboundWorker: BrowserWorker;
 
 const sessionPolicy: SessionGuardrails = {
   allowedDomains: ['example.com', '*.example.com', 'api.*.example.com'],
@@ -31,6 +32,9 @@ expectAssignable<SessionGuardrails>({ allowedDomains: [] });
 // launch and acquire take the session scope.
 expectAssignable<WorkersLaunchOptions>({ guardrails: sessionPolicy });
 expectAssignable<WorkersLaunchOptions>({ guardrails: { allowedDomains: ['*.example.com'] }, keep_alive: 30000 });
+expectAssignable<WorkersLaunchOptions>({ outboundByHost: { 'app.example.com': outboundWorker } });
+expectAssignable<WorkersLaunchOptions>({ lab: true, outboundByHost: { 'app.example.com': outboundWorker } });
+expectNotAssignable<WorkersLaunchOptions>({ outboundByHost: { 'app.example.com': {} } });
 await launch(binding, { guardrails: { allowedDomains: ['*.example.com'] } });
 await acquire(binding, { guardrails: { allowedDomainSets: ['common-cdns'] } });
 
@@ -44,6 +48,10 @@ expectNotAssignable<WorkersLaunchOptions>({ guardrails: { allowedHosts: [] } });
 // A policy is sent in the acquire request body, so an endpoint URL cannot carry one.
 // @ts-expect-error
 endpointURLString(binding, { guardrails: sessionPolicy });
+
+// Worker Fetchers are live capabilities, so an endpoint URL cannot carry them.
+// @ts-expect-error
+endpointURLString(binding, { outboundByHost: { 'app.example.com': outboundWorker } });
 
 // Guardrails stay optional: existing calls keep compiling.
 await launch(binding);

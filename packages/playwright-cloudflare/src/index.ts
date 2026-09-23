@@ -11,7 +11,7 @@ import * as packageJson from '../package.json';
 
 import type { ProtocolRequest } from 'playwright-core/lib/server/transport';
 import type { CRBrowser } from 'playwright-core/lib/server/chromium/crBrowser';
-import type { AcquireResponse, ActiveSession, Browser, BrowserBindingKey, BrowserEndpoint, BrowserWorker, ClosedSession, ConnectOverCDPOptions, HistoryResponse, LimitsResponse, SessionGuardrails, SessionsResponse, WorkersLaunchOptions } from '..';
+import type { AcquireResponse, ActiveSession, Browser, BrowserBindingKey, BrowserEndpoint, BrowserRunOptions, BrowserWorker, ClosedSession, ConnectOverCDPOptions, HistoryResponse, LimitsResponse, SessionGuardrails, SessionsResponse, WorkersLaunchOptions } from '..';
 import type { ChannelOwner } from 'playwright-core/lib/client/channelOwner';
 
 function resetMonotonicTime() {
@@ -28,6 +28,7 @@ wrapClientApis();
 
 const HTTP_FAKE_HOST = 'http://fake.host';
 const WS_FAKE_HOST = 'ws://fake.host';
+const rpcBindings = new WeakSet<object>();
 
 const originalConnectOverCDP = playwright.chromium.connectOverCDP;
 // HACK this is a major hack, but we need it to make playwright-mcp and stagehand work without modifying their code extensively.
@@ -88,6 +89,18 @@ function extractOptions(endpoint: BrowserEndpoint): { sessionId?: string, keep_a
   return {};
 }
 
+function validateKitesurfOptions(options?: WorkersLaunchOptions): void {
+  if (options?.browser !== 'kitesurf')
+    return;
+  const incompatible: string[] = [];
+  if (options.lab)
+    incompatible.push('lab');
+  if (options.outboundByHost)
+    incompatible.push('outboundByHost');
+  if (incompatible.length)
+    throw new Error(`Options not supported with browser="kitesurf": ${incompatible.join(', ')}`);
+}
+
 export function endpointURLString(binding: BrowserWorker | BrowserBindingKey, options?: { sessionId?: string, persistent?: boolean, keepAlive?: number, browser?: 'kitesurf' }): string {
   const bindingKey = typeof binding === 'string' ? binding : Object.keys(env).find(key => (env as any)[key] === binding);
   if (!bindingKey || !(bindingKey in env))
@@ -137,7 +150,13 @@ export async function connect(endpoint: BrowserEndpoint, sessionIdOrOptions?: st
   if (!options.sessionId)
     throw new Error(`Session ID is required for connect()`);
 
-  const webSocket = await connectDevtools(getBrowserBinding(endpoint), options as { sessionId: string });
+  const binding = getBrowserBinding(endpoint);
+  let connectionEndpoint = binding;
+  if (rpcBindings.has(binding)) {
+    const connection = await binding.connectSession!(options.sessionId);
+    connectionEndpoint = connection.webSocket;
+  }
+  const webSocket = await connectDevtools(connectionEndpoint, options as { sessionId: string });
   const transport = new WebSocketTransport(webSocket, options.sessionId);
   // keeps the endpoint and options for client -> server async communication
   return await createBrowser(transport, options);
@@ -145,6 +164,30 @@ export async function connect(endpoint: BrowserEndpoint, sessionIdOrOptions?: st
 
 export async function launch(endpoint: BrowserEndpoint, launchOptions?: WorkersLaunchOptions & { persistent?: boolean }): Promise<Browser> {
   const options = { ...extractOptions(endpoint), ...launchOptions };
+  validateKitesurfOptions(options);
+  const binding = getBrowserBinding(endpoint);
+
+  const wantsRpcLaunch = options.lab || options.outboundByHost;
+  if (options.outboundByHost && (options.browser || typeof binding.launch !== 'function'))
+    throw new Error('outboundByHost requires a Browser Run RPC binding');
+
+  if (wantsRpcLaunch && !options.browser && typeof binding.launch === 'function') {
+    const connection = await binding.launch(toBrowserRunOptions(options));
+    const webSocket = await connectDevtools(connection.webSocket, {
+      sessionId: connection.sessionId,
+      persistent: options.persistent,
+    });
+    const transport = new WebSocketTransport(webSocket, connection.sessionId);
+    const browser = await createBrowser(transport, options) as Browser & ChannelOwner;
+    const browserImpl = browser._connection.toImpl!(browser) as CRBrowser;
+    const doClose = async () => {
+      const message: ProtocolRequest = { method: 'Browser.close', id: kBrowserCloseMessageId, params: {} };
+      transport.send(message);
+    };
+    browserImpl.options.browserProcess = { close: doClose, kill: doClose };
+    return browser;
+  }
+
   // kitesurf browsers acquire and connect in one go, skip acquire
   // and connect straight to the devtools endpoint without a session id
   const sessionId = options.browser === 'kitesurf' ? undefined : (await acquire(endpoint, launchOptions)).sessionId;
@@ -165,6 +208,16 @@ export async function launch(endpoint: BrowserEndpoint, launchOptions?: WorkersL
 
 export async function acquire(endpoint: BrowserEndpoint, options?: WorkersLaunchOptions): Promise<AcquireResponse> {
   options = { ...extractOptions(endpoint), ...options };
+  validateKitesurfOptions(options);
+  const binding = getBrowserBinding(endpoint);
+  const wantsRpcAcquire = options.lab || options.outboundByHost;
+  if (options.outboundByHost && (options.browser || typeof binding.acquire !== 'function'))
+    throw new Error('outboundByHost requires a Browser Run RPC binding');
+  if (wantsRpcAcquire && !options.browser && typeof binding.acquire === 'function') {
+    const response = await binding.acquire(toBrowserRunOptions(options));
+    rpcBindings.add(binding);
+    return response;
+  }
 
   // add options to acquire endpoint as query parameters
   const searchParams = new URLSearchParams();
@@ -178,7 +231,7 @@ export async function acquire(endpoint: BrowserEndpoint, options?: WorkersLaunch
   // POST /v1/devtools/browser rather than GET /v1/acquire: it takes the same query
   // parameters and is the only acquire endpoint that accepts a guardrails policy.
   const acquireUrl = `${HTTP_FAKE_HOST}/v1/devtools/browser?${searchParams.toString()}`;
-  const res = await getBrowserBinding(endpoint).fetch(acquireUrl, {
+  const res = await binding.fetch(acquireUrl, {
     method: 'POST',
     // Guardrails travel in the body here, unlike the websocket upgrades that have to
     // use a header.
@@ -199,6 +252,18 @@ export async function acquire(endpoint: BrowserEndpoint, options?: WorkersLaunch
   // Got a 200, so response text is actually an AcquireResponse
   const response: AcquireResponse = JSON.parse(text);
   return response;
+}
+
+function toBrowserRunOptions(options?: WorkersLaunchOptions & { persistent?: boolean }): BrowserRunOptions {
+  const rpcOptions = { ...options };
+  const keepAlive = rpcOptions.keep_alive;
+  delete rpcOptions.keep_alive;
+  delete rpcOptions.browser;
+  delete rpcOptions.persistent;
+  return {
+    ...rpcOptions,
+    ...(keepAlive === undefined ? {} : { keepAlive }),
+  } as BrowserRunOptions;
 }
 
 export async function sessions(endpoint: BrowserEndpoint): Promise<ActiveSession[]> {

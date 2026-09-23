@@ -67,3 +67,16 @@ test(`should reject guardrails combined with browser=kitesurf`, async ({ binding
   await expect(launch(binding, { browser: 'kitesurf', guardrails: { allowedDomains: ['*.example.com'] } }))
       .rejects.toThrow(/code: 400.*browser=kitesurf/);
 });
+
+test(`should reject lab combined with browser=kitesurf`, async ({ binding }) => {
+  await expect(launch(binding, { browser: 'kitesurf', lab: true }))
+      .rejects.toThrow(/browser="kitesurf".*lab/);
+});
+
+test(`should reject outbound workers combined with browser=kitesurf`, async ({ binding }) => {
+  await expect(launch(binding, {
+    browser: 'kitesurf',
+    outboundByHost: { 'app.example.com': {} as never },
+  }))
+      .rejects.toThrow(/browser="kitesurf".*outboundByHost/);
+});

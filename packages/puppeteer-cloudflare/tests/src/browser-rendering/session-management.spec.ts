@@ -92,39 +92,68 @@ test(`should launch a lab browser`, async () => {
 });
 
 test(`should reject lab combined with browser=kitesurf`, async () => {
-  const binding = {fetch: async () => {return new Response('ok');}} as BrowserWorker;
-  await expect(launch(binding, {browser: 'kitesurf', lab: true}))
-    .rejects.toThrow(/browser="kitesurf".*lab/);
+  const binding = {
+    fetch: async () => {
+      return new Response('ok');
+    },
+  } as BrowserWorker;
+  await expect(
+    launch(binding, {browser: 'kitesurf', lab: true}),
+  ).rejects.toThrow(/browser="kitesurf".*lab/);
 });
 
 test(`should reject outbound workers combined with browser=kitesurf`, async () => {
-  const binding = {fetch: async () => {return new Response('ok');}} as BrowserWorker;
-  const outboundWorker = {fetch: async () => {return new Response('ok');}} as BrowserWorker;
-  await expect(launch(binding, {
-    browser: 'kitesurf',
-    outboundByHost: {'app.example.com': outboundWorker},
-  })).rejects.toThrow(/browser="kitesurf".*outboundByHost/);
+  const binding = {
+    fetch: async () => {
+      return new Response('ok');
+    },
+  } as BrowserWorker;
+  const outboundWorker = {
+    fetch: async () => {
+      return new Response('ok');
+    },
+  } as BrowserWorker;
+  await expect(
+    launch(binding, {
+      browser: 'kitesurf',
+      outboundByHost: {'app.example.com': outboundWorker},
+    }),
+  ).rejects.toThrow(/browser="kitesurf".*outboundByHost/);
 });
 
 test(`should pass lab and outbound workers to the RPC acquire method`, async () => {
   let received: unknown;
-  const outboundWorker = {fetch: async () => {return new Response('ok');}} as BrowserWorker;
+  const outboundWorker = {
+    fetch: async () => {
+      return new Response('ok');
+    },
+  } as BrowserWorker;
   const rpcBinding = {
-    fetch: async () => {return new Response('ok');},
+    fetch: async () => {
+      return new Response('ok');
+    },
     acquire: async (options: unknown) => {
       received = options;
       return {sessionId: 'session'};
     },
   } as BrowserWorker;
 
-  await acquire(rpcBinding, {lab: true, outboundByHost: {'app.example.com': outboundWorker}});
-  expect(received).toEqual({lab: true, outboundByHost: {'app.example.com': outboundWorker}});
+  await acquire(rpcBinding, {
+    lab: true,
+    outboundByHost: {'app.example.com': outboundWorker},
+  });
+  expect(received).toEqual({
+    lab: true,
+    outboundByHost: {'app.example.com': outboundWorker},
+  });
 });
 
 test(`should translate keep_alive for RPC acquire`, async () => {
   let received: unknown;
   const rpcBinding = {
-    fetch: async () => {return new Response('ok');},
+    fetch: async () => {
+      return new Response('ok');
+    },
     acquire: async (options: unknown) => {
       received = options;
       return {sessionId: 'session'};
@@ -139,21 +168,27 @@ test(`should pass translated options to RPC launch and reuse its pinned Fetcher`
   let received: unknown;
   let connectSessionCalls = 0;
   const pinnedWebSocket = {
-    fetch: async () => {return new Response('not a websocket');},
+    fetch: async () => {
+      return new Response('not a websocket');
+    },
     connectSession: async () => {
       connectSessionCalls++;
       throw new Error('pinned Fetcher was probed');
     },
   } as BrowserWorker;
   const rpcBinding = {
-    fetch: async () => {return new Response('ok');},
+    fetch: async () => {
+      return new Response('ok');
+    },
     launch: async (options: unknown) => {
       received = options;
       return {sessionId: 'session', webSocket: pinnedWebSocket};
     },
   } as BrowserWorker;
 
-  await expect(launch(rpcBinding, {lab: true, keep_alive: 30000})).rejects.toThrow();
+  await expect(
+    launch(rpcBinding, {lab: true, keep_alive: 30000}),
+  ).rejects.toThrow();
   expect(received).toEqual({lab: true, keepAlive: 30000});
   expect(connectSessionCalls).toBe(0);
 });

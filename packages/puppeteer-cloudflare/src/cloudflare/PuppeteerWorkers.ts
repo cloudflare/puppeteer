@@ -289,10 +289,11 @@ export class PuppeteerWorkers extends Puppeteer {
         sessionPinnedEndpoints.add(connectionEndpoint);
       }
       const connectionTransport: ConnectionTransport =
-        await WorkersWebSocketTransport.create(connectionEndpoint, sessionId, {
-          browser,
-          guardrails: options?.guardrails,
-        });
+        await WorkersWebSocketTransport.create(
+          connectionEndpoint,
+          sessionId,
+          {browser, guardrails: options?.guardrails}
+        );
       return await connectToCDPBrowser(connectionTransport, {sessionId});
     } catch (e) {
       if (browser) {

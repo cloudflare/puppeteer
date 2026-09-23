@@ -19,7 +19,71 @@ test(`should list sessions @smoke`, async ({ binding }) => {
   // fails if session doesn't exist
   await fetchSingleSession(binding, browser.sessionId());
 
-  browser.close();
+});
+
+test(`should launch a lab browser`, async ({ binding }) => {
+  const browser = await launch(binding, { lab: true });
+  expect(browser.sessionId()).toBeTruthy();
+  await browser.close();
+});
+
+test(`should pass lab and outbound workers to the RPC acquire method`, async () => {
+  let received: unknown;
+  const outboundWorker = { fetch: async () => new Response('ok') } as BrowserWorker;
+  const rpcBinding = {
+    fetch: async () => new Response('ok'),
+    acquire: async (options: unknown) => {
+      received = options;
+      return { sessionId: 'session' };
+    },
+  } as BrowserWorker;
+
+  await acquire(rpcBinding, { lab: true, outboundByHost: { 'app.example.com': outboundWorker } });
+  expect(received).toEqual({ lab: true, outboundByHost: { 'app.example.com': outboundWorker } });
+});
+
+test(`should translate keep_alive for RPC acquire`, async () => {
+  let received: unknown;
+  const rpcBinding = {
+    fetch: async () => new Response('ok'),
+    acquire: async (options: unknown) => {
+      received = options;
+      return { sessionId: 'session' };
+    },
+  } as BrowserWorker;
+
+  await acquire(rpcBinding, { lab: true, keep_alive: 30000 });
+  expect(received).toEqual({ lab: true, keepAlive: 30000 });
+});
+
+test(`should pass translated options to RPC launch`, async () => {
+  let received: unknown;
+  const rpcBinding = {
+    fetch: async () => new Response('ok'),
+    launch: async (options: unknown) => {
+      received = options;
+      return {
+        sessionId: 'session',
+        webSocket: { fetch: async () => new Response('not a websocket') } as BrowserWorker,
+      };
+    },
+  } as BrowserWorker;
+
+  await expect(launch(rpcBinding, { lab: true, keep_alive: 30000 })).rejects.toThrow();
+  expect(received).toEqual({ lab: true, keepAlive: 30000 });
+});
+
+test(`should preserve lab for a fetch-only acquire binding`, async () => {
+  let request: Request | undefined;
+  const legacyBinding = {
+    fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
+      request = new Request(input, init);
+      return Response.json({ sessionId: 'session' });
+    },
+  } as BrowserWorker;
+
+  await acquire(legacyBinding, { lab: true });
+  expect(new URL(request!.url).searchParams.get('lab')).toBe('true');
 });
 
 test(`should keep session open when closing browser created with connect`, async ({ binding }) => {
