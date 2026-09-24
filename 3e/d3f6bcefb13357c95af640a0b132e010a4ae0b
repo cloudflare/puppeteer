@@ -1,0 +1,31 @@
+.github/workflows/cf_playwright_full.yml
+  s_15e1012bd98740::t_36d24782270fea 39-40,42-43,48-52
+.github/workflows/cf_playwright_mcp_full.yml
+  s_15e1012bd98740::t_8635b229ebc148 38-39,41-42,47-51
+.github/workflows/cf_puppeteer_full.yml
+  s_15e1012bd98740::t_ed7d4924be20bd 38-39,41-42,47-51
+packages/playwright-cloudflare/tests/src/browser-rendering/session-management.spec.ts
+  s_15e1012bd98740::t_1266440d80fb4f 130-152
+packages/puppeteer-cloudflare/tests/src/browser-rendering/session-management.spec.ts
+  s_15e1012bd98740::t_2244746c3d24e5 234-266
+packages/playwright-cloudflare/src/index.ts
+  s_15e1012bd98740::t_7efaa14c65719c 213-214,216-219
+packages/puppeteer-cloudflare/src/cloudflare/PuppeteerWorkers.ts
+  s_15e1012bd98740::t_1926e3f92d89c1 320,322-323,327-331
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "3ed3f6bcefb13357c95af640a0b132e010a4ae0b",
+  "prompts": {},
+  "sessions": {
+    "s_15e1012bd98740": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f329ed44fffertwJS62H8y5UoP",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    }
+  }
+}
