@@ -42,6 +42,11 @@ concurrency:
 jobs:
   test_full:
     runs-on: ubuntu-latest
+    env:
+      # Credentialed deploy + remote tests run for pushes, manual dispatches, and
+      # PRs from branches in this repository (only writers can push those).
+      # Fork and Dependabot PRs have no access to these secrets and only validate.
+      RUN_REMOTE_TESTS: ${{ github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]') }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -62,7 +67,7 @@ jobs:
           npm run check:submodules
 
       - name: Deploy test Worker
-        if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ env.RUN_REMOTE_TESTS == 'true' }}
         working-directory: packages/puppeteer-cloudflare/tests
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -70,7 +75,7 @@ jobs:
         run: npx wrangler deploy
 
       - name: Run Full Tests
-        if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ env.RUN_REMOTE_TESTS == 'true' }}
         working-directory: packages/puppeteer-cloudflare
         env:
           TESTS_SERVER_URL: https://puppeteer-test-workers.rendering.cfdata.org
@@ -80,7 +85,7 @@ jobs:
 
       - name: Upload HTML report
         uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() && github.event_name != 'pull_request' }}
+        if: ${{ !cancelled() && env.RUN_REMOTE_TESTS == 'true' }}
         with:
           # puppeteer tests run with playwright, that's why it's playwright-report
           name: puppeteer-playwright-report--attempt-${{ github.run_attempt }}

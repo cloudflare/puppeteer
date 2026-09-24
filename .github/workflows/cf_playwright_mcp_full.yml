@@ -42,6 +42,11 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    env:
+      # Credentialed deploy + remote tests run for pushes, manual dispatches, and
+      # PRs from branches in this repository (only writers can push those).
+      # Fork and Dependabot PRs have no access to these secrets and only validate.
+      RUN_REMOTE_TESTS: ${{ github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]') }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -66,7 +71,7 @@ jobs:
           npm run check:submodules
 
       - name: Deploy MCP test Worker
-        if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ env.RUN_REMOTE_TESTS == 'true' }}
         working-directory: packages/playwright-mcp-cloudflare/tests
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -74,7 +79,7 @@ jobs:
         run: npx wrangler deploy
 
       - name: Run deployed MCP Browser Run smoke test
-        if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ env.RUN_REMOTE_TESTS == 'true' }}
         env:
           MCP_SERVER_URL: https://playwright-mcp-test-workers.rendering.cfdata.org/mcp
           CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
