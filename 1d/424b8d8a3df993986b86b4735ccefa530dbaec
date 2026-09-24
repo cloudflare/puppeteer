@@ -1,0 +1,25 @@
+.github/workflows/cf_lockfile.yml
+  s_b84233da4e54c5::t_85c39bb8d8ec0e 1-32
+.github/workflows/cf_playwright_mcp_publish.yml
+  s_b84233da4e54c5::t_1085fbeb73ae74 17,29-30,59-71,75
+.github/workflows/cf_puppeteer_publish.yml
+  s_b84233da4e54c5::t_116a3cee26c327 17,77-91,94,98
+scripts/verify-npm-release.mjs
+  s_b84233da4e54c5::t_d534bb78c5ca58 1-66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "1d424b8d8a3df993986b86b4735ccefa530dbaec",
+  "prompts": {},
+  "sessions": {
+    "s_b84233da4e54c5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f2d1f68f4ffeb28KxSMtpt5yug",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    }
+  }
+}
