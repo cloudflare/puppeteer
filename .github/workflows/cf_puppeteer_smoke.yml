@@ -48,6 +48,6 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           # puppeteer tests run with playwright, that's why it's playwright-report
-          name: playwright-report
+          name: puppeteer-smoke-playwright-report--attempt-${{ github.run_attempt }}
           path: packages/puppeteer-cloudflare/tests/playwright-report/
           retention-days: 30

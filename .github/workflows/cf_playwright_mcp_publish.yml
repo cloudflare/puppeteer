@@ -14,6 +14,7 @@ jobs:
     name: "Publish @cloudflare/playwright-mcp to NPM"
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: read
     steps:
       - uses: actions/checkout@v4
@@ -25,6 +26,8 @@ jobs:
         run: |
           npm ci
           git submodule update --init
+          npm run ci:mcp --workspace @cloudflare/playwright-mcp
+          npm exec --prefix submodules/playwright-mcp -- playwright install --with-deps chromium firefox
       - name: Verify release version
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
@@ -53,9 +56,23 @@ jobs:
             printf 'Error: Stable GitHub release requires a stable SemVer package version; found %s.\n' "${package_version}" >&2
             exit 1
           fi
+          node scripts/verify-npm-release.mjs "${package_json}"
+      - name: Verify full suite passed for release commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          successful_runs="$(gh api --method GET \
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/cf_playwright_mcp_full.yml/runs" \
+            -f head_sha="${GITHUB_SHA}" -f status=completed \
+            --jq '[.workflow_runs[] | select(.conclusion == "success" and (.event == "push" or .event == "workflow_dispatch"))] | length')"
+          if [[ "${successful_runs}" -lt 1 ]]; then
+            printf 'Error: Playwright MCP full tests have not passed for release commit %s.\n' "${GITHUB_SHA}" >&2
+            exit 1
+          fi
       - name: Validate package
         run: |
           npm run check:patch:playwright-mcp
+          npm run test:upstream --workspace @cloudflare/playwright-mcp
           npm run test:types --workspace @cloudflare/playwright-mcp
           npm run test:bundle --workspace @cloudflare/playwright-mcp
           npm run check:submodules

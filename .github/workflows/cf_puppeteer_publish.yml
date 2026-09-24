@@ -14,6 +14,7 @@ jobs:
     name: "Publish @cloudflare/puppeteer to NPM"
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: read
     steps:
       - uses: actions/checkout@v4
@@ -73,12 +74,28 @@ jobs:
               ;;
           esac
 
+          node scripts/verify-npm-release.mjs "${package_json}"
+
+      - name: Verify full suite passed for release commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          successful_runs="$(gh api --method GET \
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/cf_puppeteer_full.yml/runs" \
+            -f head_sha="${GITHUB_SHA}" -f status=completed \
+            --jq '[.workflow_runs[] | select(.conclusion == "success" and (.event == "push" or .event == "workflow_dispatch"))] | length')"
+          if [[ "${successful_runs}" -lt 1 ]]; then
+            printf 'Error: Puppeteer full tests have not passed for release commit %s.\n' "${GITHUB_SHA}" >&2
+            exit 1
+          fi
+
       - name: Validate package
         run: |
-          npm run check:patches
+          npm run check:patches:puppeteer
           npm run build:puppeteer
           npm run test:bundle:prebuilt --workspace @cloudflare/puppeteer
           npm --prefix packages/puppeteer-cloudflare/tests run test-types
+          npm --prefix packages/puppeteer-cloudflare/tests run typecheck:server
           npm run check:submodules
 
       - name: Publish to npm

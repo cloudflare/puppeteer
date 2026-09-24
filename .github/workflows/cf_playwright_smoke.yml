@@ -50,6 +50,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report
+          name: playwright-smoke-report--attempt-${{ github.run_attempt }}
           path: packages/playwright-cloudflare/tests/playwright-report/
           retention-days: 30

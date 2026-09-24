@@ -28,6 +28,7 @@
     "test:generate:worker:patched": "node ./utils/generate_worker_tests.js && cd tests && npx vite build",
     "test:prepare:built": "npm run test:generate:worker && npm run ci:tests",
     "test:bundle": "npm run test:prepare:built && cd tests && npx wrangler deploy --dry-run",
+    "test:pack": "node ../../scripts/verify-packed-playwright.mjs",
     "test:generate:proxy": "node ./utils/generate_proxy_tests.js",
     "test:deploy": "npm run test:prepare:built && cd tests && npx wrangler deploy",
     "test:dev": "npm run test:generate:worker && npm run ci:tests && cd tests && npx wrangler dev",

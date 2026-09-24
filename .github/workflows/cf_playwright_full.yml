@@ -51,6 +51,7 @@ jobs:
         run: |
           npm ci
           git submodule update --init
+          npm run test:release-validation
           npm run check:patch:playwright
           npm run build --workspace @cloudflare/playwright
           npm run test:bundle --workspace @cloudflare/playwright

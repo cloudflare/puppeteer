@@ -12,6 +12,7 @@
     "check:patch:playwright": "git -C submodules/playwright apply --check ../../patches/playwright.patch",
     "check:patch:playwright-mcp": "git -C submodules/playwright-mcp apply --check ../../patches/playwright-mcp.patch",
     "check:patch:puppeteer": "git -C submodules/puppeteer apply --check ../../patches/puppeteer.patch",
+    "check:patches:puppeteer": "npm run check:patch:playwright && npm run check:patch:puppeteer",
     "check:patches": "npm run check:patch:playwright && npm run check:patch:puppeteer && npm run check:patch:playwright-mcp",
     "check:submodules": "git submodule foreach --quiet 'test -z \"$(git status --porcelain)\"'",
     "clean": "npm run clean --workspaces --if-present",
@@ -21,6 +22,7 @@
     "patch:playwright-mcp": "cd submodules/playwright-mcp && git apply --reverse --check ../../patches/playwright-mcp.patch 2>/dev/null && echo 'playwright-mcp patch already applied' || git apply ../../patches/playwright-mcp.patch",
     "diff:puppeteer": "cd submodules/puppeteer && git diff HEAD > ../../patches/puppeteer.patch",
     "patch:puppeteer": "cd submodules/puppeteer && git apply --reverse --check ../../patches/puppeteer.patch 2>/dev/null && echo 'puppeteer patch already applied' || git apply ../../patches/puppeteer.patch",
+    "test:release-validation": "node --test scripts/verify-npm-release.test.mjs",
     "diff": "npm run diff:playwright && npm run diff:puppeteer && npm run diff:playwright-mcp",
     "patch": "npm run patch:playwright && npm run patch:puppeteer && npm run patch:playwright-mcp"
   },
