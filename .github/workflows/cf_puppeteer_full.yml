@@ -1,4 +1,6 @@
 name: "Puppeteer for Cloudflare - Full Tests"
+permissions:
+  contents: read
 
 on:
   push:

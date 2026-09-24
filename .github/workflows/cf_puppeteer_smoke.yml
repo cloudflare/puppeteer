@@ -1,4 +1,6 @@
 name: "Puppeteer for Cloudflare - Smoke Tests"
+permissions:
+  contents: read
 
 on:
   workflow_dispatch:

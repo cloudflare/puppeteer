@@ -13,6 +13,17 @@ interface ExtractedData {
   duration: number; // minutes
 }
 
+const SCREENSHOT_MIME_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp']);
+const BASE64_PATTERN = /^[A-Za-z0-9+/]*={0,2}$/;
+
+function toScreenshotDataUrl(mimetype: unknown, base64: unknown): string | null {
+  if (typeof mimetype !== 'string' || !SCREENSHOT_MIME_TYPES.has(mimetype))
+    return null;
+  if (typeof base64 !== 'string' || !BASE64_PATTERN.test(base64))
+    return null;
+  return `data:${mimetype};base64,${base64}`;
+}
+
 interface WSMessage<T = any> {
   type: 'log' | 'screenshot' | 'extracted' | 'error';
   data: T;
@@ -51,8 +62,12 @@ export default function App() {
               break;
             }
             case 'screenshot': {
-              const { mimetype, base64 } = data as { mimetype: string; base64: string };
-              setScreenshot(`data:${mimetype};base64,${base64}`);
+              const { mimetype, base64 } = data as { mimetype: unknown; base64: unknown };
+              const screenshotUrl = toScreenshotDataUrl(mimetype, base64);
+              if (screenshotUrl)
+                setScreenshot(screenshotUrl);
+              else
+                setError({ message: 'Received an invalid screenshot payload' });
               break;
             }
             case 'extracted': {

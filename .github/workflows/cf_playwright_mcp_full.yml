@@ -1,4 +1,6 @@
 name: "Playwright MCP for Cloudflare - CI"
+permissions:
+  contents: read
 
 on:
   push:

@@ -16,8 +16,9 @@ const authHeaders = {
 deleteDir(proxyTestsDir);
 
 function generateDescribeOrTest(entry, indent = '') {
-  const title = entry.title.replace('\'', '\\\'');
-  const fullTitle = entry.fullTitle.replace('\'', '\\\'');
+  // JSON.stringify produces valid, fully escaped JS string literals, so titles
+  // are passed through unchanged and still match skip-list full titles.
+  const { title, fullTitle } = entry;
   if (entry.type === 'describe') {
     return `${indent}test.describe(${JSON.stringify(title)}, async () => {
 ${entry.entries.map(entry => generateDescribeOrTest(entry, `${indent}  `)).join('\n\n')}
