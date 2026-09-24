@@ -74,12 +74,13 @@ For example, version `1.0.0-rc.0` requires tag `cloudflare-playwright-v1.0.0-rc.
 
 ## Prepare Playwright MCP
 
-1. Set the release version. Use the same version in the public example.
+1. Set the release version. The public example uses `*` so external installs
+   resolve the latest published stable package while monorepo tests use the
+   workspace package.
 
    ```shell
-   VERSION=0.0.1-rc.0
+   VERSION=0.0.6-rc.0
    npm version "$VERSION" --workspace @cloudflare/playwright-mcp --no-git-tag-version
-   npm pkg set "dependencies.@cloudflare/playwright-mcp=$VERSION" --workspace @cloudflare/playwright-mcp-template
    npm install --package-lock-only --ignore-scripts
    ```
 
@@ -87,6 +88,7 @@ For example, version `1.0.0-rc.0` requires tag `cloudflare-playwright-v1.0.0-rc.
 
    ```shell
    npm run check:patch:playwright-mcp
+   npm run test:upstream --workspace @cloudflare/playwright-mcp
    npm run test:types --workspace @cloudflare/playwright-mcp
    npm run test:bundle --workspace @cloudflare/playwright-mcp
    ```
@@ -94,12 +96,14 @@ For example, version `1.0.0-rc.0` requires tag `cloudflare-playwright-v1.0.0-rc.
 3. Examine these files for the new version:
 
    - `packages/playwright-mcp-cloudflare/package.json`
-   - `examples/playwright-mcp-cloudflare/package.json`
    - `package-lock.json`
 
 4. Open a pull request with the version changes.
 5. Merge the pull request after all required tests pass.
-6. Wait for the full MCP test suite on `main` to pass.
+6. Wait for the full MCP test suite on `main` to pass. Pull requests run only
+   uncredentialed build, type, upstream, and Wrangler dry-run checks. The
+   trusted `main` run also deploys the MCP test Worker and invokes
+   `browser_navigate` through `/mcp` against Browser Run.
 
 ## Publish Playwright MCP
 

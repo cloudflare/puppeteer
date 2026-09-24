@@ -20,6 +20,7 @@
     "test:upstream": "node ../../scripts/with-patch.mjs playwright-mcp npm run test:upstream:patched --workspace @cloudflare/playwright-mcp",
     "test:upstream:patched": "npm run build --prefix ../../submodules/playwright-mcp && npm test --prefix ../../submodules/playwright-mcp -- --project=chromium",
     "test:bundle": "npm run build && wrangler deploy --dry-run --config tests/wrangler.jsonc",
+    "test:remote": "node tests/remote-smoke.mjs",
     "test:types": "tsc -p tests/tsconfig.json --noEmit"
   },
   "exports": {
