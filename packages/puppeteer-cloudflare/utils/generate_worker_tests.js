@@ -15,16 +15,22 @@ const excludedFiles = [
   'browser.spec.ts',
   'browsercontext-cookies.spec.ts',
   'browsercontext.spec.ts',
+  'cdp/a11yLoaderId.spec.ts',
   'cdp/backendNodeId.spec.ts',
   'cdp/bfcache.spec.ts',
   'cdp/CDPSession.spec.ts',
   'cdp/devtools.spec.ts',
   'cdp/extensions.spec.ts',
+  'cdp/heapSnapshot.spec.ts',
+  'cdp/interventionHeaders.spec.ts',
+  'cdp/network.spec.ts',
+  'cdp/pdf.spec.ts',
   'cdp/pipe.spec.ts',
   'cdp/prerender.spec.ts',
   'cdp/queryObjects.spec.ts',
   'cdp/screencast.spec.ts',
   'cdp/TargetManager.spec.ts',
+  'cdp/userDataDir.spec.ts',
   'chromiumonly.spec.ts',
   'connect.spec.ts',
   'debugInfo.spec.ts',
@@ -80,7 +86,7 @@ function setTestFilePlugin() {
 deleteDir(workerTestsDir);
 
 // generate workerTests/index.ts file
-const testFiles = listFiles(sourceTestsDir)
+const testFiles = listFiles(sourceTestsDir, {recursive: true})
   .filter(file => {
     return /\.(test|spec)\.ts$/.test(file);
   })
@@ -246,9 +252,13 @@ ${[...testFiles, ...cloudflareTestFiles]
 
         '@pptr/testserver': path.resolve(
           basedir,
-          '../tests/src/server/workerFixtures',
+          '../tests/src/server/mocha-utils',
         ),
 
+        'puppeteer-core/internal/node/util/fs.js': path.resolve(
+          basedir,
+          '../../../submodules/puppeteer/packages/puppeteer-core/src/node/util/fs.ts',
+        ),
         'puppeteer-core/internal': '@cloudflare/puppeteer/internal',
         'puppeteer-core': '@cloudflare/puppeteer',
         'puppeteer/internal/puppeteer.js': '@cloudflare/puppeteer',
@@ -329,9 +339,8 @@ ${[...testFiles, ...cloudflareTestFiles]
 
           'cloudflare:workers',
           '@cloudflare/browser-test-runtime',
-          '@cloudflare/puppeteer/internal',
-          '@cloudflare/puppeteer/internal/util/Deferred.js',
           '@cloudflare/puppeteer',
+          /^@cloudflare\/puppeteer\/internal\/.+/,
           'expect',
           'diff',
           'jpeg-js',

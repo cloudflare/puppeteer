@@ -12,11 +12,11 @@ export function deleteDir(dirPath) {
 
 export function listFiles(dir, options) {
   const files = [];
-  for (const file of fs.readdirSync(dir)) {
+  for (const file of fs.readdirSync(dir).sort()) {
     const fullPath = path.join(dir, file);
     const stat = fs.statSync(fullPath);
     if (stat.isDirectory() && options?.recursive) {
-      files.push(...listFiles(fullPath));
+      files.push(...listFiles(fullPath, options));
     } else if (stat.isFile()) {
       files.push(fullPath);
     }

@@ -240,7 +240,12 @@ export class TestsServer extends DurableObject<Env> {
     const assetsUrl = url.origin;
     const routeId = this.ctx.id.toString();
     const {env} = this;
-    const testRunner = new TestRunner({env, sessionId, assetsUrl}, {timeout});
+    const retry = parseInt(url.searchParams.get('retry') ?? '0', 10);
+    const binding = url.searchParams.get('binding') ?? 'BROWSER';
+    const testRunner = new TestRunner(
+      {env, sessionId, assetsUrl, retry, binding},
+      {timeout},
+    );
     if (skipTestsFullTitles.has(fullTitle)) {
       log(`🚫 Skipping ${fullTitle}`);
       return Response.json({
@@ -265,8 +270,8 @@ export class TestsServer extends DurableObject<Env> {
     // TODO __dirname is used to access local files, mabe we can polyfill that too?
     (globalThis as any).__dirname = '';
 
-    const binding = getBinding(url);
-    const browser = await puppeteer.connect(binding, sessionId);
+    const browserBinding = getBinding(url);
+    const browser = await puppeteer.connect(browserBinding, sessionId);
     try {
       const { worker, browser: container } = await this.getCdnTraces(browser, sessionId);
       const browserVersion = await browser.version();
@@ -456,7 +461,12 @@ export class TestsServer extends DurableObject<Env> {
       assetUrl.pathname = assetUrl.pathname.slice(0, -'.html'.length);
     }
     const assetResponse =
-      (await this.env.ASSETS?.fetch(new Request(assetUrl, assetRequest))) ??
+      (await this.env.ASSETS?.fetch(new Request(assetUrl, {
+        method: assetRequest.method,
+        headers: assetRequest.headers,
+        body: assetRequest.method === 'GET' || assetRequest.method === 'HEAD' ? undefined : assetRequest.body,
+        redirect: assetRequest.redirect,
+      }))) ??
       new Response('Not found', {status: 404});
     const headers = new Headers(assetResponse.headers);
     if (path.startsWith('/cached/')) {

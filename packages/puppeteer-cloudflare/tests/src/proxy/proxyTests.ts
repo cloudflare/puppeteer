@@ -96,7 +96,9 @@ export async function proxyTests(file: string): Promise<ProxyTests> {
       {testId, fullTitle}: {testId: string; fullTitle: string},
       testInfo: TestInfo,
     ) => {
-      const response = await fetch(url, {
+      const requestUrl = new URL(url);
+      requestUrl.searchParams.set('retry', String(testInfo.retry));
+      const response = await fetch(requestUrl, {
         body: JSON.stringify({testId, fullTitle}),
         method: 'POST',
         headers: authHeaders,
