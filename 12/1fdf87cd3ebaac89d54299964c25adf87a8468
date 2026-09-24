@@ -1,0 +1,19 @@
+packages/puppeteer-cloudflare/tests/src/server/testsServer.ts
+  s_15e1012bd98740::t_b173dda1582389 231-232
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "121fdf87cd3ebaac89d54299964c25adf87a8468",
+  "prompts": {},
+  "sessions": {
+    "s_15e1012bd98740": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f329ed44fffertwJS62H8y5UoP",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    }
+  }
+}
