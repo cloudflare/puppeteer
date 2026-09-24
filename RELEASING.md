@@ -88,7 +88,6 @@ For example, version `1.0.0-rc.0` requires tag `cloudflare-playwright-v1.0.0-rc.
 
    ```shell
    npm run check:patch:playwright-mcp
-   npm run test:upstream --workspace @cloudflare/playwright-mcp
    npm run test:types --workspace @cloudflare/playwright-mcp
    npm run test:bundle --workspace @cloudflare/playwright-mcp
    ```

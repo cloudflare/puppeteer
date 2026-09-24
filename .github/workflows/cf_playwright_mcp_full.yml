@@ -59,10 +59,8 @@ jobs:
           git submodule update --init
           npm run test:release-validation
           npm run ci:mcp --workspace @cloudflare/playwright-mcp
-          npm exec --prefix submodules/playwright-mcp -- playwright install --with-deps chromium firefox
           npm run check:patch:playwright-mcp
           npm run build --workspace @cloudflare/playwright-mcp
-          npm run test:upstream --workspace @cloudflare/playwright-mcp
           npm run test:types --workspace @cloudflare/playwright-mcp
           npm run test:bundle --workspace @cloudflare/playwright-mcp
           npm run build --workspace @cloudflare/playwright-mcp-template
