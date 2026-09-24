@@ -32,6 +32,10 @@ const log = console.log.bind(console);
 
 const skipTestsFullTitles = new Set(skipTests);
 
+// The zone serving the test Worker sets its Bot Management cookie on every
+// response. Upstream cookie specs expect only the cookies they create.
+const ZONE_BOT_MANAGEMENT_COOKIE = '__cf_bm';
+
 function parseTrace(trace: string) {
   return Object.fromEntries(trace.split('\n').filter(line => {return line;}).map(line => {
     const [key, value] = line.split('=');
@@ -291,6 +295,12 @@ export class TestsServer extends DurableObject<Env> {
         await newTestPage.setExtraHTTPHeaders({
           [TEST_SERVER_ROUTE_HEADER]: routeId,
         });
+        const cookies = newTestPage.cookies.bind(newTestPage);
+        newTestPage.cookies = async (...urls) => {
+          return (await cookies(...urls)).filter(cookie => {
+            return cookie.name !== ZONE_BOT_MANAGEMENT_COOKIE;
+          });
+        };
         return newTestPage;
       };
       const page = await context.newPage();

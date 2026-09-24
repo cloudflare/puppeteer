@@ -21,6 +21,15 @@ export type BoundingBox = NonNullable<Awaited<ReturnType<Locator['boundingBox']>
 
 type CdnTrace = { loc: string; colo: string; };
 
+// The zone serving the test Worker sets its Bot Management cookie on every
+// response. Upstream cookie specs expect only the cookies they create.
+const ZONE_BOT_MANAGEMENT_COOKIE = '__cf_bm';
+
+function ignoreZoneBotManagementCookie(context: BrowserContext) {
+  const cookies = context.cookies.bind(context);
+  context.cookies = async urls => (await cookies(urls)).filter(cookie => cookie.name !== ZONE_BOT_MANAGEMENT_COOKIE);
+}
+
 export type WorkersWorkerFixtures = {
   env: Env;
   sessionId: string;
@@ -364,6 +373,7 @@ export const test = platformTest.extend<PageTestFixtures & ServerFixtures & Test
     const contexts: BrowserContext[] = [];
     await run(async options => {
       const context = await browser.newContext(options);
+      ignoreZoneBotManagementCookie(context);
       contexts.push(context);
       return context;
     });

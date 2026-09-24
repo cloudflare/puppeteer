@@ -22,7 +22,15 @@ describe('Worker TestServer', () => {
     expect(request.method).toBe('GET');
     expect(response!.headers()['x-test-server']).toBe('route');
     expect(await response!.text()).toBe('dynamic body');
-    expect(response!.headers()['set-cookie']).toContain('test-server=route');
+    // The zone also sets its Bot Management cookie (__cf_bm) on this response.
+    const setCookies = (response!.headers()['set-cookie'] ?? '')
+      .split('\n')
+      .filter(cookie => {
+        return !cookie.startsWith('__cf_bm=');
+      });
+    expect(setCookies).toEqual([
+      expect.stringContaining('test-server=route'),
+    ]);
     expect(await page.cookies()).toMatchObject([
       {name: 'test-server', value: 'route', httpOnly: true, secure: true},
     ]);
