@@ -1,0 +1,19 @@
+packages/puppeteer-cloudflare/package-lock.json
+  s_15e1012bd98740::t_ac433ce1c5b314 2-3,8-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "74e003cfb9990e5208d659d20faf0c830f312902",
+  "prompts": {},
+  "sessions": {
+    "s_15e1012bd98740": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f329ed44fffertwJS62H8y5UoP",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    }
+  }
+}
