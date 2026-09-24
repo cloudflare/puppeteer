@@ -31,7 +31,7 @@ jobs:
           node-version: '22.x'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Validate and Publish Package Preview
+      - name: Validate package
         run: |
           npm ci
           git submodule update --init
@@ -41,4 +41,8 @@ jobs:
           npm ci --prefix packages/playwright-cloudflare/tests
           npm --prefix packages/playwright-cloudflare/tests run test-types
           npm run check:submodules
-          npm exec -- pkg-pr-new publish packages/playwright-cloudflare
+
+      # Non-blocking until the pkg.pr.new GitHub App accepts this repository.
+      - name: Publish package preview
+        continue-on-error: true
+        run: npm exec -- pkg-pr-new publish packages/playwright-cloudflare

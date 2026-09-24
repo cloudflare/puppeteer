@@ -34,7 +34,7 @@ jobs:
         with:
           node-version: '22.x'
           registry-url: 'https://registry.npmjs.org'
-      - name: Validate and publish package preview
+      - name: Validate package
         run: |
           npm ci
           git submodule update --init
@@ -44,4 +44,8 @@ jobs:
           npm run build --workspace @cloudflare/playwright-mcp-template
           npm exec -- wrangler deploy --dry-run --config examples/playwright-mcp-cloudflare/wrangler.toml
           npm run check:submodules
-          npm exec -- pkg-pr-new publish packages/playwright-mcp-cloudflare
+
+      # Non-blocking until the pkg.pr.new GitHub App accepts this repository.
+      - name: Publish package preview
+        continue-on-error: true
+        run: npm exec -- pkg-pr-new publish packages/playwright-mcp-cloudflare

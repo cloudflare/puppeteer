@@ -33,7 +33,7 @@ jobs:
           node-version: '22.x'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Validate and Publish Package Preview
+      - name: Validate package
         run: |
           npm ci
           git submodule update --init
@@ -43,4 +43,8 @@ jobs:
           npm --prefix packages/puppeteer-cloudflare/tests run test-types
           npm --prefix packages/puppeteer-cloudflare/tests run typecheck:server
           npm run check:submodules
-          npm exec -- pkg-pr-new publish packages/puppeteer-cloudflare
+
+      # Non-blocking until the pkg.pr.new GitHub App accepts this repository.
+      - name: Publish package preview
+        continue-on-error: true
+        run: npm exec -- pkg-pr-new publish packages/puppeteer-cloudflare
