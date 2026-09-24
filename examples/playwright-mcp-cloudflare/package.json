@@ -1,6 +1,6 @@
 {
   "name": "@cloudflare/playwright-mcp-template",
-  "version": "0.0.1-next",
+  "version": "0.0.6-next",
   "description": "Cloudflare Playwright Tools for MCP - Template",
   "repository": {
     "type": "git",
@@ -17,7 +17,7 @@
     "deploy": "wrangler deploy"
   },
   "dependencies": {
-    "@cloudflare/playwright-mcp": "0.0.1-next"
+    "@cloudflare/playwright-mcp": "*"
   },
   "devDependencies": {
     "@types/node": "^22.14.1",

@@ -53,6 +53,9 @@ export default defineConfig({
 
       'playwright-core': '@cloudflare/playwright',
       'playwright': '@cloudflare/playwright/test',
+      // Keep @cloudflare/playwright at ^0.0.11 while matching the current
+      // Cloudflare MCP fork. That release provides the Workers-compatible
+      // memfs export used by these aliases; modern releases removed ./fs.
       'node:fs': '@cloudflare/playwright/fs',
       'fs': '@cloudflare/playwright/fs',
 
