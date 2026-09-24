@@ -1,0 +1,21 @@
+packages/playwright-cloudflare/tests/package-lock.json
+  s_6772a6fb91aacb::t_9f42efd581c3c6 11-13,41-44,71-74
+packages/puppeteer-cloudflare/tests/package-lock.json
+  s_6772a6fb91aacb::t_cffa5d06ba2390 12,47-49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "7e926e5304afcf8acd6b9810f58c2691467364a5",
+  "prompts": {},
+  "sessions": {
+    "s_6772a6fb91aacb": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f61075e29ffeVp2EdDTLHofj6b",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    }
+  }
+}

@@ -1,0 +1,97 @@
+.gitmodules
+  s_81e900cc250613::t_daa32a6d6cae72 10-12
+examples/playwright-mcp-cloudflare/src/index.ts
+  s_15e1012bd98740::t_94b84d451b54c0 1-21
+examples/playwright-mcp-cloudflare/tsconfig.json
+  s_15e1012bd98740::t_659e13e1698dcc 1-11
+examples/playwright-mcp-cloudflare/worker-configuration.d.ts
+  s_15e1012bd98740::t_8544f69067916b 1-13526
+examples/playwright-mcp-cloudflare/wrangler.toml
+  s_15e1012bd98740::t_8367fe7f3d99bc 1-15
+package-lock.json
+  s_15e1012bd98740::t_d99aa0853aec02 77-80,3948,5042-5046,5048-5062,5069-7972
+  s_15e1012bd98740::t_8750d964c4341e 22-68,81-84
+  s_15e1012bd98740::t_8974cb16260ebb 5047,5063-5068
+package.json
+  s_1120be2cb7f2bd::t_f2d840bf7c0982 10,13,15,19,21,24-25
+packages/playwright-mcp-cloudflare/.npmignore
+  s_e830272393c721::t_92971eecd63bb6 1-9
+packages/playwright-mcp-cloudflare/index.d.ts
+  s_e830272393c721::t_f02b2b9c4b5a08 1-41
+packages/playwright-mcp-cloudflare/src/index.ts
+  s_e830272393c721::t_1488be66b2332f 1-39
+packages/playwright-mcp-cloudflare/tests/src/index.ts
+  s_1120be2cb7f2bd::t_70aa4315cb1857 1-16
+packages/playwright-mcp-cloudflare/tests/tsconfig.json
+  s_1120be2cb7f2bd::t_3e709e6f5d907b 1-16
+packages/playwright-mcp-cloudflare/tests/types.ts
+  s_e830272393c721::t_7dfcc2e5ae8248 1-8
+packages/playwright-mcp-cloudflare/tests/wrangler.jsonc
+  s_1120be2cb7f2bd::t_2759178b635294 1-24
+patches/playwright-mcp.patch
+  s_1120be2cb7f2bd::t_f31e1f79651357 1-143
+submodules/playwright-mcp
+  s_15e1012bd98740::t_e08327aee096d3 1
+packages/playwright-cloudflare/index.d.ts
+  s_e830272393c721::t_79357220ca678d 70-72,82-96,152,158-175,183-199,207-210
+packages/playwright-cloudflare/src/index.ts
+  s_e830272393c721::t_37266ccfda35b2 14,31,92-103,153-159,167-190,211-220,234,257-268
+packages/playwright-cloudflare/tests/src/browser-rendering/guardrails.spec.ts
+  s_e830272393c721::t_7f45c9ea00bdae 70-82
+packages/playwright-cloudflare/tests/test-d/guardrails.test-d.ts
+  s_e830272393c721::t_86477798cd4c3b 18,35-37,52-55
+packages/puppeteer-cloudflare/src/cloudflare/BrowserWorker.ts
+  s_30142061f974c4::t_a33d84c2e02600 6-47,50-55
+packages/puppeteer-cloudflare/src/cloudflare/PuppeteerWorkers.ts
+  s_30142061f974c4::t_942e4fc3d88069 12-16,28-47,61,111,143-159,254-269,281-290,293,320-334,373-382
+packages/puppeteer-cloudflare/tests/test-d/guardrails.test-d.ts
+  s_30142061f974c4::t_df8ac548b09ae6 20,41-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "fe6580c055be0d588661774aa3c75fb19dcd8960",
+  "prompts": {},
+  "sessions": {
+    "s_1120be2cb7f2bd": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f329cc53affeghxkSA97Y2L3Po",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    },
+    "s_15e1012bd98740": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f329ed44fffertwJS62H8y5UoP",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    },
+    "s_30142061f974c4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f367a5251ffeR4Pops4WfIMOQh",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    },
+    "s_81e900cc250613": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f329c7c29ffel5iVPYuWseO6JD",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    },
+    "s_e830272393c721": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f32a71398ffeGmkrKX1o0mp2HA",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    }
+  }
+}
