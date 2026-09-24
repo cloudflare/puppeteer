@@ -266,17 +266,18 @@ test(`should call RPC acquire as a method on the binding`, async () => {
 
 test(`should keep session open when closing browser created with connect`, async () => {
   const {sessionId} = await acquire(env.BROWSER, {keep_alive: 10000});
-  const before = await sessions(env.BROWSER);
 
   const connectedBrowser = await connect(env.BROWSER, sessionId);
-  const after = await sessions(env.BROWSER);
 
-  // no new session created
-  expect(sessionIds(after)).toEqual(sessionIds(before));
+  // Connecting reuses the acquired session instead of creating a new one.
+  // Other tests run in parallel on the same account, so compare only this
+  // session rather than the whole active-session list.
+  expect(connectedBrowser.sessionId()).toBe(sessionId);
+  await fetchSingleSession(env.BROWSER, sessionId);
   await connectedBrowser.close();
 
-  const afterClose = await sessions(env.BROWSER);
-  expect(sessionIds(afterClose)).toEqual(sessionIds(after));
+  // Closing a connected browser leaves the session open until keep_alive.
+  await fetchSingleSession(env.BROWSER, sessionId);
 
   await waitForSessionToClose(env.BROWSER, sessionId);
   expect(sessionIds(await sessions(env.BROWSER))).not.toContain(sessionId);
@@ -304,11 +305,9 @@ test(`should close session after keep_alive`, async () => {
     await new Promise(resolve => {
       return setTimeout(resolve, 11000);
     });
-    expect(
-      (await sessions(env.BROWSER)).map(session => {
-        return session.sessionId;
-      }),
-    ).toContain(sessionId);
+    // Look the session up directly: the account-wide list is shared with
+    // parallel tests and may not include every active session.
+    await fetchSingleSession(env.BROWSER, sessionId);
     expect(browser.isConnected()).toBe(true);
 
     await waitForSessionToClose(env.BROWSER, sessionId, 15000);
@@ -349,14 +348,25 @@ test(`should add new session to history when launching browser`, async () => {
 test(`should show sessionId in active sessions under limits endpoint`, async () => {
   const [launchedBrowser, sessionId] = await launchAndGetSession(env.BROWSER);
 
-  const response = await limits(env.BROWSER);
-  expect(
-    response.activeSessions.map(s => {
-      return s.id;
-    }),
-  ).toContain(sessionId);
-
-  await launchedBrowser.close();
+  try {
+    // A new session can take a moment to appear under limits.
+    let activeSessionIds: string[] = [];
+    const deadline = Date.now() + 10000;
+    while (Date.now() < deadline) {
+      activeSessionIds = (await limits(env.BROWSER)).activeSessions.map(s => {
+        return s.id;
+      });
+      if (activeSessionIds.includes(sessionId)) {
+        break;
+      }
+      await new Promise(resolve => {
+        return setTimeout(resolve, 500);
+      });
+    }
+    expect(activeSessionIds).toContain(sessionId);
+  } finally {
+    await launchedBrowser.close();
+  }
 });
 
 test(`should have functions in default exported object`, () => {
