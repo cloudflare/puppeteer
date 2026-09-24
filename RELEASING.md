@@ -102,8 +102,8 @@ For example, version `1.0.0-rc.0` requires tag `cloudflare-playwright-v1.0.0-rc.
 6. Wait for the full MCP test suite on `main` to pass. Pull requests from
    branches in this repository also deploy the MCP test Worker and invoke
    `browser_navigate` through `/mcp` against Browser Run. Pull requests from
-   forks and Dependabot run only uncredentialed build, type, upstream, and
-   Wrangler dry-run checks.
+   forks and Dependabot run only uncredentialed build, type, and Wrangler
+   dry-run checks.
 
 ## Publish Playwright MCP
 
