@@ -25,7 +25,6 @@ import {WorkersWebSocketTransport} from './WorkersWebSocketTransport.js';
 export type {SessionGuardrails} from './utils.js';
 
 const FAKE_HOST = 'https://fake.host';
-const rpcBindings = new WeakSet<object>();
 const sessionPinnedEndpoints = new WeakSet<object>();
 
 function validateKitesurfOptions(options?: WorkersLaunchOptions): void {
@@ -281,10 +280,10 @@ export class PuppeteerWorkers extends Puppeteer {
       let connectionEndpoint = endpoint as BrowserWorker;
       if (
         sessionId &&
-        rpcBindings.has(connectionEndpoint) &&
+        typeof connectionEndpoint.connectSession === 'function' &&
         !sessionPinnedEndpoints.has(connectionEndpoint)
       ) {
-        const connection = await connectionEndpoint.connectSession!(sessionId);
+        const connection = await connectionEndpoint.connectSession(sessionId);
         connectionEndpoint = connection.webSocket;
         sessionPinnedEndpoints.add(connectionEndpoint);
       }
@@ -318,18 +317,20 @@ export class PuppeteerWorkers extends Puppeteer {
     options?: WorkersLaunchOptions
   ): Promise<AcquireResponse> {
     validateKitesurfOptions(options);
-    if (
-      options?.outboundByHost &&
-      (options.browser || typeof endpoint.acquire !== 'function')
-    ) {
+    const hasRpcAcquire =
+      typeof endpoint.acquire === 'function' &&
+      typeof endpoint.connectSession === 'function';
+    if (options?.outboundByHost && (options.browser || !hasRpcAcquire)) {
       throw new Error('outboundByHost requires a Browser Run RPC binding');
     }
     const wantsRpcAcquire = options?.lab || options?.outboundByHost;
-    if (wantsRpcAcquire && typeof endpoint.acquire === 'function') {
-      const response: BrowserRunAcquireResult = await endpoint.acquire(
+    if (wantsRpcAcquire && hasRpcAcquire) {
+      // Call as a method on the binding. On an RPC stub every property access,
+      // including Function.prototype members such as `bind`, becomes a remote
+      // call.
+      const response: BrowserRunAcquireResult = await endpoint.acquire!(
         toBrowserRunOptions(options)
       );
-      rpcBindings.add(endpoint);
       return response;
     }
     const searchParams = new URLSearchParams();

@@ -132,6 +132,9 @@ test(`should pass lab and outbound workers to the RPC acquire method`, async () 
     fetch: async () => {
       return new Response('ok');
     },
+    connectSession: async () => {
+      throw new Error('not called');
+    },
     acquire: async (options: unknown) => {
       received = options;
       return {sessionId: 'session'};
@@ -153,6 +156,9 @@ test(`should translate keep_alive for RPC acquire`, async () => {
   const rpcBinding = {
     fetch: async () => {
       return new Response('ok');
+    },
+    connectSession: async () => {
+      throw new Error('not called');
     },
     acquire: async (options: unknown) => {
       received = options;
@@ -204,6 +210,58 @@ test(`should preserve lab for a legacy acquire binding`, async () => {
 
   await acquire(legacyBinding, {lab: true});
   expect(new URL(request!.url).searchParams.get('lab')).toBe('true');
+});
+
+test(`should fall back to fetch when RPC session capabilities are incomplete`, async () => {
+  let request: Request | undefined;
+  let acquireCalled = false;
+  const partialBinding = {
+    fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
+      request = new Request(input, init);
+      return Response.json({sessionId: 'session'});
+    },
+    acquire: async () => {
+      acquireCalled = true;
+      return {sessionId: 'rpc-session'};
+    },
+  } as BrowserWorker;
+
+  await acquire(partialBinding, {lab: true});
+  expect(acquireCalled).toBe(false);
+  expect(new URL(request!.url).searchParams.get('lab')).toBe('true');
+});
+
+test(`should call RPC acquire as a method on the binding`, async () => {
+  // RPC stubs turn any property access, including `bind`, `call` and `apply`,
+  // into a remote call that Browser Run does not implement.
+  const rpcOnly = (name: string) => {
+    return () => {
+      throw new Error(`${name} must not be used on an RPC stub`);
+    };
+  };
+  let rpcCalls = 0;
+  const rpcAcquire = Object.assign(
+    async () => {
+      rpcCalls++;
+      return {sessionId: 'rpc-session'};
+    },
+    {bind: rpcOnly('bind'), call: rpcOnly('call'), apply: rpcOnly('apply')},
+  );
+  const rpcBinding = {
+    fetch: async () => {
+      return Response.json({sessionId: 'fetch-session'});
+    },
+    connectSession: async () => {
+      throw new Error('not called');
+    },
+    acquire: rpcAcquire,
+  } as unknown as BrowserWorker;
+
+  expect(await acquire(rpcBinding)).toEqual({sessionId: 'fetch-session'});
+  expect(await acquire(rpcBinding, {lab: true})).toEqual({
+    sessionId: 'rpc-session',
+  });
+  expect(rpcCalls).toBe(1);
 });
 
 test(`should keep session open when closing browser created with connect`, async () => {

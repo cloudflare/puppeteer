@@ -28,7 +28,6 @@ wrapClientApis();
 
 const HTTP_FAKE_HOST = 'http://fake.host';
 const WS_FAKE_HOST = 'ws://fake.host';
-const rpcBindings = new WeakSet<object>();
 
 const originalConnectOverCDP = playwright.chromium.connectOverCDP;
 // HACK this is a major hack, but we need it to make playwright-mcp and stagehand work without modifying their code extensively.
@@ -42,7 +41,7 @@ const originalConnectOverCDP = playwright.chromium.connectOverCDP;
   // by default, playwright.chromium.connectOverCDP enforces persistent to true (the default behavior upstream)
   if (!wsUrl.searchParams.has('persistent'))
     wsUrl.searchParams.set('persistent', 'true');
-  return wsUrl.searchParams.has('browser_session')
+  return extractOptions(wsUrl).sessionId
     ? connect(wsUrl.toString())
     : launch(wsUrl.toString());
 };
@@ -152,8 +151,8 @@ export async function connect(endpoint: BrowserEndpoint, sessionIdOrOptions?: st
 
   const binding = getBrowserBinding(endpoint);
   let connectionEndpoint = binding;
-  if (rpcBindings.has(binding)) {
-    const connection = await binding.connectSession!(options.sessionId);
+  if (typeof binding.connectSession === 'function') {
+    const connection = await binding.connectSession(options.sessionId);
     connectionEndpoint = connection.webSocket;
   }
   const webSocket = await connectDevtools(connectionEndpoint, options as { sessionId: string });
@@ -211,11 +210,13 @@ export async function acquire(endpoint: BrowserEndpoint, options?: WorkersLaunch
   validateKitesurfOptions(options);
   const binding = getBrowserBinding(endpoint);
   const wantsRpcAcquire = options.lab || options.outboundByHost;
-  if (options.outboundByHost && (options.browser || typeof binding.acquire !== 'function'))
+  const hasRpcAcquire = typeof binding.acquire === 'function' && typeof binding.connectSession === 'function';
+  if (options.outboundByHost && (options.browser || !hasRpcAcquire))
     throw new Error('outboundByHost requires a Browser Run RPC binding');
-  if (wantsRpcAcquire && !options.browser && typeof binding.acquire === 'function') {
-    const response = await binding.acquire(toBrowserRunOptions(options));
-    rpcBindings.add(binding);
+  if (wantsRpcAcquire && !options.browser && hasRpcAcquire) {
+    // Call as a method on the binding. On an RPC stub every property access,
+    // including Function.prototype members such as `bind`, becomes a remote call.
+    const response = await binding.acquire!(toBrowserRunOptions(options));
     return response;
   }
 

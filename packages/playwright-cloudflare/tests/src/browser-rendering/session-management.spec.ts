@@ -52,6 +52,7 @@ test(`should pass lab and outbound workers to the RPC acquire method`, async () 
   const outboundWorker = { fetch: async () => new Response('ok') } as BrowserWorker;
   const rpcBinding = {
     fetch: async () => new Response('ok'),
+    connectSession: async () => { throw new Error('not called'); },
     acquire: async (options: unknown) => {
       received = options;
       return { sessionId: 'session' };
@@ -66,6 +67,7 @@ test(`should translate keep_alive for RPC acquire`, async () => {
   let received: unknown;
   const rpcBinding = {
     fetch: async () => new Response('ok'),
+    connectSession: async () => { throw new Error('not called'); },
     acquire: async (options: unknown) => {
       received = options;
       return { sessionId: 'session' };
@@ -104,6 +106,48 @@ test(`should preserve lab for a fetch-only acquire binding`, async () => {
 
   await acquire(legacyBinding, { lab: true });
   expect(new URL(request!.url).searchParams.get('lab')).toBe('true');
+});
+
+test(`should fall back to fetch when RPC session capabilities are incomplete`, async () => {
+  let request: Request | undefined;
+  let acquireCalled = false;
+  const partialBinding = {
+    fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
+      request = new Request(input, init);
+      return Response.json({ sessionId: 'session' });
+    },
+    acquire: async () => {
+      acquireCalled = true;
+      return { sessionId: 'rpc-session' };
+    },
+  } as BrowserWorker;
+
+  await acquire(partialBinding, { lab: true });
+  expect(acquireCalled).toBe(false);
+  expect(new URL(request!.url).searchParams.get('lab')).toBe('true');
+});
+
+test(`should call RPC acquire as a method on the binding`, async () => {
+  // RPC stubs turn any property access, including `bind`, `call` and `apply`,
+  // into a remote call that Browser Run does not implement.
+  const rpcOnly = (name: string) => () => { throw new Error(`${name} must not be used on an RPC stub`); };
+  let rpcCalls = 0;
+  const rpcAcquire = Object.assign(
+      async () => {
+        rpcCalls++;
+        return { sessionId: 'rpc-session' };
+      },
+      { bind: rpcOnly('bind'), call: rpcOnly('call'), apply: rpcOnly('apply') },
+  );
+  const rpcBinding = {
+    fetch: async () => Response.json({ sessionId: 'fetch-session' }),
+    connectSession: async () => { throw new Error('not called'); },
+    acquire: rpcAcquire,
+  } as unknown as BrowserWorker;
+
+  expect(await acquire(rpcBinding)).toEqual({ sessionId: 'fetch-session' });
+  expect(await acquire(rpcBinding, { lab: true })).toEqual({ sessionId: 'rpc-session' });
+  expect(rpcCalls).toBe(1);
 });
 
 test(`should keep session open when closing browser created with connect`, async ({ binding }) => {
@@ -208,6 +252,19 @@ test(`should create browser with persistent context on playwright.chromium.conne
   const [page] = context.pages();
   expect(page.viewportSize()).toEqual({ width: 1280, height: 720 });
   await browser.close();
+});
+
+test(`should connect to the session encoded in an endpoint URL`, async ({ binding, playwright }) => {
+  const { sessionId } = await acquire(binding, { keep_alive: 10000 });
+  const before = await sessions(binding);
+  const url = endpointURLString(binding, { sessionId });
+  const browser = await playwright.chromium.connectOverCDP(url);
+  const after = await sessions(binding);
+
+  expect(browser.sessionId()).toBe(sessionId);
+  expect(sessionIds(after)).toEqual(sessionIds(before));
+  await browser.close();
+  await waitForSessionToClose(binding, sessionId);
 });
 
 test(`should launch browser with no persistent context by default`, async ({ binding }) => {
