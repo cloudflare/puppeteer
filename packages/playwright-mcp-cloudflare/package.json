@@ -18,6 +18,7 @@
     "build:patched": "npm run ci:mcp && npx vite build",
     "ci:mcp": "npm ci --prefix ../../submodules/playwright-mcp --ignore-scripts",
     "test:bundle": "npm run build && wrangler deploy --dry-run --config tests/wrangler.jsonc",
+    "test:deploy": "wrangler deploy --config tests/wrangler.jsonc",
     "test:remote": "node tests/remote-smoke.mjs",
     "test:types": "tsc -p tests/tsconfig.json --noEmit"
   },
