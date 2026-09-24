@@ -1,0 +1,22 @@
+packages/puppeteer-cloudflare/tests/src/server/testsServer.ts
+  s_15e1012bd98740::t_647b84f75b678d 3,38-56,96-103,226-230,233-249,329,349,507-514,567
+  s_15e1012bd98740::t_b173dda1582389 231-232
+packages/puppeteer-cloudflare/tests/src/browser-rendering/session-management.spec.ts
+  s_15e1012bd98740::t_f1713bdcfbb71a 272-276,279-280,308-310,351-369
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "973c161350b4cb5724fae8d6a0560ee373074766",
+  "prompts": {},
+  "sessions": {
+    "s_15e1012bd98740": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f329ed44fffertwJS62H8y5UoP",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    }
+  }
+}
