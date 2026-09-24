@@ -3,6 +3,8 @@ import path from 'path';
 import picomatch from 'picomatch';
 import { defineConfig } from 'vite';
 
+import packageJson from './package.json' with { type: 'json' };
+
 const baseDir = __dirname.replace(/\\/g, '/');
 
 // Path mappings: glob pattern → target (first match wins)
@@ -103,6 +105,7 @@ export default defineConfig({
   },
   define: {
     '__dirname': `'${baseDir}'`,
+    __CLOUDFLARE_PUPPETEER_VERSION__: JSON.stringify(packageJson.version),
   },
   build: {
     assetsInlineLimit: 0,
