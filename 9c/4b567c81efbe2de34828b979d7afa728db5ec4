@@ -1,0 +1,19 @@
+packages/puppeteer-cloudflare/utils/generate_worker_tests.js
+  s_b84233da4e54c5::t_f8dd602e396f1a 89,255,258-261,343
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "9c4b567c81efbe2de34828b979d7afa728db5ec4",
+  "prompts": {},
+  "sessions": {
+    "s_b84233da4e54c5": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f2d1f68f4ffeb28KxSMtpt5yug",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    }
+  }
+}
