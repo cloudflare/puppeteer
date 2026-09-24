@@ -1,0 +1,23 @@
+packages/puppeteer-cloudflare/src/cloudflare/WorkersWebSocketTransport.ts
+  s_15e1012bd98740::t_fcf739f51dfc31 57-65
+packages/puppeteer-cloudflare/tests/src/browser-rendering/test-server.spec.ts
+  s_15e1012bd98740::t_bf2a0c7697b145 25-26
+packages/puppeteer-cloudflare/tests/src/server/testsServer.ts
+  s_15e1012bd98740::t_af66eb39cd0085 3,38-56,96-103,226-249,329,349,507-514,567
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "e12e00d0b7259c93a9fee0348ae0ea851c58dba2",
+  "prompts": {},
+  "sessions": {
+    "s_15e1012bd98740": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f329ed44fffertwJS62H8y5UoP",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    }
+  }
+}
