@@ -54,8 +54,15 @@ export class WorkersWebSocketTransport implements ConnectionTransport {
           : {}),
       },
     });
-    response.webSocket!.accept();
-    return new WorkersWebSocketTransport(response.webSocket!, sessionId);
+    // A refused upgrade has no websocket to accept, so surface what core said
+    // instead of failing on a null dereference.
+    if (!response.webSocket) {
+      throw new Error(
+        `Unable to connect to browser: code: ${response.status}: message: ${await response.text()}`
+      );
+    }
+    response.webSocket.accept();
+    return new WorkersWebSocketTransport(response.webSocket, sessionId);
   }
 
   constructor(ws: WebSocket, sessionId: string | undefined) {

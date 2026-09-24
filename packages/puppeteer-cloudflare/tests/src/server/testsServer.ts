@@ -1,6 +1,6 @@
 import {TestRunner} from '@cloudflare/browser-test-runtime';
 import '@workerTests/index';
-import type { Browser} from '@cloudflare/puppeteer';
+import type { Browser, Page } from '@cloudflare/puppeteer';
 import puppeteer from '@cloudflare/puppeteer';
 import {DurableObject} from 'cloudflare:workers';
 
@@ -35,6 +35,25 @@ const skipTestsFullTitles = new Set(skipTests);
 // The zone serving the test Worker sets its Bot Management cookie on every
 // response. Upstream cookie specs expect only the cookies they create.
 const ZONE_BOT_MANAGEMENT_COOKIE = '__cf_bm';
+const zoneCookieFilterInstalled = Symbol('zoneCookieFilterInstalled');
+
+// Patch the shared Page prototype so pages in contexts that a spec creates
+// itself (browser.createBrowserContext()) are covered too.
+function ignoreZoneBotManagementCookie(page: Page): void {
+  const prototype = Object.getPrototypeOf(page) as Page & {
+    [zoneCookieFilterInstalled]?: true;
+  };
+  if (prototype[zoneCookieFilterInstalled]) {
+    return;
+  }
+  const cookies = prototype.cookies;
+  prototype.cookies = async function (this: Page, ...urls: string[]) {
+    return (await cookies.apply(this, urls)).filter(cookie => {
+      return cookie.name !== ZONE_BOT_MANAGEMENT_COOKIE;
+    });
+  };
+  prototype[zoneCookieFilterInstalled] = true;
+}
 
 function parseTrace(trace: string) {
   return Object.fromEntries(trace.split('\n').filter(line => {return line;}).map(line => {
@@ -72,6 +91,14 @@ function toBodyChunk(data: unknown): Uint8Array {
     return new Uint8Array(data);
   }
   return new TextEncoder().encode(String(data));
+}
+
+// Aborts responses that are still open when a test ends. The browser may still
+// be loading a subresource, so answer it instead of throwing out of the Worker.
+class TestServerResetError extends Error {
+  constructor() {
+    super('Test server was reset');
+  }
 }
 
 class WorkerServerResponse implements TestServerResponse {
@@ -196,6 +223,30 @@ class WorkerServerResponse implements TestServerResponse {
   }
 }
 
+// Consecutive tests reuse one Browser Run session. Browser Run can reject a new
+// connection until it has released the previous test's connection.
+async function connectWhenSessionIsFree(
+  binding: Parameters<typeof puppeteer.connect>[0],
+  sessionId: string,
+  // Stays within the proxy's 60s test timeout on top of the 45s test run.
+  timeout = 10000,
+): Promise<Browser> {
+  const deadline = Date.now() + timeout;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await puppeteer.connect(binding, sessionId);
+    } catch (error) {
+      if (Date.now() >= deadline) {
+        throw error;
+      }
+      log(`Session ${sessionId} not free yet (attempt ${attempt}): ${error}`);
+      await new Promise(resolve => {
+        return setTimeout(resolve, 500 * Math.min(attempt, 4));
+      });
+    }
+  }
+}
+
 export class TestsServer extends DurableObject<Env> {
   private cdnTraces!: {
     worker: CdnTrace;
@@ -275,7 +326,7 @@ export class TestsServer extends DurableObject<Env> {
     (globalThis as any).__dirname = '';
 
     const browserBinding = getBinding(url);
-    const browser = await puppeteer.connect(browserBinding, sessionId);
+    const browser = await connectWhenSessionIsFree(browserBinding, sessionId);
     try {
       const { worker, browser: container } = await this.getCdnTraces(browser, sessionId);
       const browserVersion = await browser.version();
@@ -295,12 +346,7 @@ export class TestsServer extends DurableObject<Env> {
         await newTestPage.setExtraHTTPHeaders({
           [TEST_SERVER_ROUTE_HEADER]: routeId,
         });
-        const cookies = newTestPage.cookies.bind(newTestPage);
-        newTestPage.cookies = async (...urls) => {
-          return (await cookies(...urls)).filter(cookie => {
-            return cookie.name !== ZONE_BOT_MANAGEMENT_COOKIE;
-          });
-        };
+        ignoreZoneBotManagementCookie(newTestPage);
         return newTestPage;
       };
       const page = await context.newPage();
@@ -458,7 +504,14 @@ export class TestsServer extends DurableObject<Env> {
           error instanceof Error ? error : new Error(String(error)),
         );
       }
-      return await response.response();
+      try {
+        return await response.response();
+      } catch (error) {
+        if (error instanceof TestServerResetError) {
+          return new Response(error.message, {status: 503});
+        }
+        throw error;
+      }
     }
 
     if (path.startsWith('/cached/') && request.headers.has('if-modified-since')) {
@@ -511,7 +564,7 @@ export class TestsServer extends DurableObject<Env> {
 
   #resetServer(server: string): void {
     const state = this.#server(server);
-    const error = new Error('Test server was reset');
+    const error = new TestServerResetError();
     for (const response of state.openResponses) {
       response.abort(error);
     }
