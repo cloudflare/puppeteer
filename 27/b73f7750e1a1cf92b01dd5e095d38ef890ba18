@@ -1,0 +1,23 @@
+.github/workflows/cf_playwright_full.yml
+  s_15e1012bd98740::t_36d24782270fea 39-40,42-43,48-52
+.github/workflows/cf_playwright_mcp_full.yml
+  s_15e1012bd98740::t_8635b229ebc148 38-39,41-42,47-51
+.github/workflows/cf_puppeteer_full.yml
+  s_15e1012bd98740::t_ed7d4924be20bd 38-39,41-42,47-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "27b73f7750e1a1cf92b01dd5e095d38ef890ba18",
+  "prompts": {},
+  "sessions": {
+    "s_15e1012bd98740": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f329ed44fffertwJS62H8y5UoP",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    }
+  }
+}
