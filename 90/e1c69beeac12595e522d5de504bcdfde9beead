@@ -1,0 +1,23 @@
+packages/playwright-cloudflare/tests/src/server/workerFixtures.ts
+  s_15e1012bd98740::t_105308f0c0f57c 24-32,376
+packages/puppeteer-cloudflare/tests/src/browser-rendering/test-server.spec.ts
+  s_15e1012bd98740::t_27f51e7023c6a3 25-33
+packages/puppeteer-cloudflare/tests/src/server/testsServer.ts
+  s_15e1012bd98740::t_a85f3aafa3f078 35-38,298-303
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "90e1c69beeac12595e522d5de504bcdfde9beead",
+  "prompts": {},
+  "sessions": {
+    "s_15e1012bd98740": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f329ed44fffertwJS62H8y5UoP",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    }
+  }
+}
