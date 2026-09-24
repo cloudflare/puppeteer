@@ -35,13 +35,20 @@ on:
       - 'submodules/puppeteer'
   workflow_dispatch:
 
+# A newer push to the same pull request cancels its older run. Runs for main,
+# other branches, and manual dispatches are never cancelled by this group.
 concurrency:
-  group: cf-puppeteer-worker-deployment
-  cancel-in-progress: false
+  group: cf-puppeteer-full-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test_full:
     runs-on: ubuntu-latest
+    # All branches deploy to the same test Worker, so only one job may use it at
+    # a time. Shared with the smoke workflow, which uses the same group name.
+    concurrency:
+      group: cf-puppeteer-worker-deployment
+      cancel-in-progress: false
     env:
       # Credentialed deploy + remote tests run for pushes, manual dispatches, and
       # PRs from branches in this repository (only writers can push those).
