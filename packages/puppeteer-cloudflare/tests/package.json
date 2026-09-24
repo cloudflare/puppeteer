@@ -22,7 +22,7 @@
   "devDependencies": {
     "@playwright/test": "^1.51.1",
     "tsd": "^0.31.1",
-    "wrangler": "^4.81.0"
+    "wrangler": "^4.137.0"
   },
   "tsd": {
     "directory": "test-d",

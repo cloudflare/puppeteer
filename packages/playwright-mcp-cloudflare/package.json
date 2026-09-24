@@ -37,9 +37,9 @@
     "zod-to-json-schema": "^3.24.6"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250725.0",
+    "@cloudflare/workers-types": "^5.20260921.1",
     "typescript": "^5.8.2",
-    "vite": "^7.0.6",
-    "wrangler": "4.85.0"
+    "vite": "^7.3.6",
+    "wrangler": "4.137.0"
   }
 }
