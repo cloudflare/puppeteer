@@ -1,0 +1,19 @@
+patches/playwright.patch
+  s_15e1012bd98740::t_593856138d4a71 187,190-235,251
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "9210bf13b5eb237e67846145b403a9b3c921496e",
+  "prompts": {},
+  "sessions": {
+    "s_15e1012bd98740": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f329ed44fffertwJS62H8y5UoP",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    }
+  }
+}
