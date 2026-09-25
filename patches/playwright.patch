@@ -184,10 +184,55 @@ index 7d99a3779..fefdcd98e 100644
        });
        await result;
 diff --git a/packages/playwright-core/src/server/javascript.ts b/packages/playwright-core/src/server/javascript.ts
-index bc9261b8d..a054ebc30 100644
+index bc9261b8d..fe61e610f 100644
 --- a/packages/playwright-core/src/server/javascript.ts
 +++ b/packages/playwright-core/src/server/javascript.ts
-@@ -289,20 +289,33 @@ export function normalizeEvaluationExpression(expression: string, isFunction: bo
+@@ -285,24 +285,77 @@ export function parseUnserializableValue(unserializableValue: string): any {
+     return -0;
+ }
+ 
++// Classifies Function#toString output without new Function. Function and class
++// expressions and arrows (including async arrows) are valid as-is; only
++// method shorthand such as `foo() {}`, `async foo() {}` or `*gen() {}` is not.
++function isMethodShorthand(expression: string): boolean {
++  if (/^(?:async\s+)?function\b/.test(expression) || /^class\b/.test(expression))
++    return false;
++  const asyncPrefix = /^async(?=[\s(])\s*/.exec(expression);
++  const rest = asyncPrefix ? expression.substring(asyncPrefix[0].length) : expression;
++  if (/^[A-Za-z_$][\w$]*\s*=>/.test(rest))
++    return false;
++  if (rest.startsWith('(')) {
++    // `async (a) => a` is an arrow; `async() {}` is a method named async.
++    const end = closingParenIndex(rest);
++    if (end === -1 || /^\s*=>/.test(rest.substring(end + 1)))
++      return false;
++    return !!asyncPrefix;
++  }
++  return /^(?:\*\s*)?(?:[A-Za-z_$][\w$]*|\[[^\]]+\])\s*\(/.test(rest);
++}
++
++function closingParenIndex(text: string): number {
++  let depth = 0;
++  let quote: string | undefined;
++  for (let i = 0; i < text.length; i++) {
++    const char = text[i];
++    if (quote) {
++      if (char === '\\')
++        i++;
++      else if (char === quote)
++        quote = undefined;
++    } else if (char === '"' || char === '\'' || char === '`') {
++      quote = char;
++    } else if (char === '(') {
++      depth++;
++    } else if (char === ')' && --depth === 0) {
++      return i;
++    }
++  }
++  return -1;
++}
++
+ export function normalizeEvaluationExpression(expression: string, isFunction: boolean | undefined): string {
    expression = expression.trim();
  
    if (isFunction) {
@@ -203,8 +248,7 @@ index bc9261b8d..a054ebc30 100644
 +    if (globalThis.navigator?.userAgent === 'Cloudflare-Workers') {
 +      // Workers cannot use new Function, so detect and normalize method shorthand directly.
 +      // All other Function#toString forms (functions, classes, and arrows) are already expressions.
-+      const isMethodShorthand = /^(?:async\s+)?(?:\*\s*)?(?:[A-Za-z_$][\w$]*|\[[^\]]+\])\s*\(/.test(expression);
-+      if (isMethodShorthand) {
++      if (isMethodShorthand(expression)) {
 +        if (expression.startsWith('async '))
 +          expression = 'async function ' + expression.substring('async '.length);
 +        else
