@@ -4,6 +4,7 @@
 declare namespace Cloudflare {
 	interface Env {
 		TESTS_SERVER: DurableObjectNamespace<import("./src/server/index").TestsServer>;
+		CF_VERSION_METADATA: WorkerVersionMetadata;
 		BROWSER_BRAPI_STAGING: any;
 		BROWSER_BRAPI_PRODUCTION: any;
 		BROWSER: any;

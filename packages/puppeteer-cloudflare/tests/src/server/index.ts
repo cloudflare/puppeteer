@@ -26,7 +26,10 @@ export default {
       return await binding.fetch(new Request(targetUrl.toString(), request));
     }
     if (url.pathname === '/') {
-      return Response.json(await testSuites());
+      // CI waits for this version before generating proxy tests from the list.
+      return Response.json(await testSuites(), {
+        headers: {'x-worker-version': env.CF_VERSION_METADATA?.id ?? ''},
+      });
     }
 
     const bindingName = url.searchParams.get('binding') ?? 'BROWSER';

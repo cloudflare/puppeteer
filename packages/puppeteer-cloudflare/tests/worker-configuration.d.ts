@@ -4,6 +4,7 @@
 declare namespace Cloudflare {
 	interface Env {
 		TESTS_SERVER: DurableObjectNamespace<import("./src/server/index").TestsServer>;
+		CF_VERSION_METADATA: WorkerVersionMetadata;
 		BROWSER: Fetcher;
 		ASSETS: Fetcher;
 	}

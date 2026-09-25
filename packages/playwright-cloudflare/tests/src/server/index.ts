@@ -19,8 +19,12 @@ export default {
       forwardUrl.host = 'fake.host';
       return await binding.fetch(new Request(forwardUrl.toString(), request));
     }
-    if (url.pathname === '/')
-      return Response.json(await testSuites());
+    if (url.pathname === '/') {
+      // CI waits for this version before generating proxy tests from the list.
+      return Response.json(await testSuites(), {
+        headers: { 'x-worker-version': env.CF_VERSION_METADATA?.id ?? '' },
+      });
+    }
 
     if (url.pathname === '/hello-world')
       return new Response('<title>Hello</title>Hello world', {

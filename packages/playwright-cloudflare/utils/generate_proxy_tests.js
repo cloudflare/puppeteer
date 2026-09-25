@@ -31,8 +31,28 @@ ${indent}}, testInfo));`;
   }
 }
 
+// A fresh deploy takes a few seconds to reach every edge location. When CI
+// passes the deployed version, wait until that version serves the test list;
+// otherwise test IDs can come from the previous version.
+async function fetchSuites() {
+  const expectedVersion = process.env.EXPECTED_WORKER_VERSION;
+  const deadline = Date.now() + 180_000;
+  for (;;) {
+    const res = await fetch(`${testsServerUrl}`, { headers: authHeaders });
+    if (!res.ok)
+      throw new Error(`Unable to list tests from ${testsServerUrl}: ${res.status} ${res.statusText}`);
+    const version = res.headers.get('x-worker-version');
+    if (!expectedVersion || version === expectedVersion)
+      return await res.json();
+    if (Date.now() > deadline)
+      throw new Error(`Test Worker still serves version ${version || '<none>'}, expected ${expectedVersion}`);
+    await res.body?.cancel();
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  }
+}
+
 (async () => {
-  const suites = await fetch(`${testsServerUrl}`, { headers: authHeaders }).then(res => res.json());
+  const suites = await fetchSuites();
   for (const suite of suites) {
     const targetProxyTestFile = path.join(proxyTestsDir, suite.file);
     const proxyTests = path.join(basedir, '../tests/src/proxy/proxyTests.ts');
