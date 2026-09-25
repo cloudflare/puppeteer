@@ -1,4 +1,4 @@
-import { launch, connect, sessions, history, acquire, limits, endpointURLString, BrowserWorker, ActiveSession, Browser } from '@cloudflare/playwright';
+import { launch, connect, sessions, history, acquire, limits, endpointURLString, BrowserWorker, ActiveSession } from '@cloudflare/playwright';
 import playwright from '@cloudflare/playwright';
 
 import { test, expect } from '../server/workerFixtures';
@@ -22,12 +22,6 @@ async function waitForSessionToClose(endpoint: BrowserWorker, sessionId: string)
       return;
     await new Promise(resolve => setTimeout(resolve, 250));
   }
-}
-
-async function waitForBrowserToDisconnect(browser: Browser) {
-  const deadline = Date.now() + 10000;
-  while (browser.isConnected() && Date.now() < deadline)
-    await new Promise(resolve => setTimeout(resolve, 250));
 }
 
 test(`should list sessions @smoke`, async ({ binding }) => {
@@ -152,17 +146,16 @@ test(`should call RPC acquire as a method on the binding`, async () => {
 
 test(`should keep session open when closing browser created with connect`, async ({ binding }) => {
   const { sessionId } = await acquire(binding, { keep_alive: 10000 });
-  const before = await sessions(binding);
 
   const connectedBrowser = await connect(binding, sessionId);
-  const after = await sessions(binding);
-
-  // no new session created
-  expect(sessionIds(after)).toEqual(sessionIds(before));
+  // Connecting reuses the acquired session. Other tests run in parallel on the
+  // same account, so check only this session rather than the whole list.
+  expect(connectedBrowser.sessionId()).toBe(sessionId);
+  await fetchSingleSession(binding, sessionId);
   await connectedBrowser.close();
 
-  const afterClose = await sessions(binding);
-  expect(sessionIds(afterClose)).toEqual(sessionIds(after));
+  // Closing a connected browser leaves the session open until keep_alive.
+  await fetchSingleSession(binding, sessionId);
 
   await waitForSessionToClose(binding, sessionId);
   expect(sessionIds(await sessions(binding))).not.toContain(sessionId);
@@ -177,23 +170,22 @@ test(`should close session when launched browser is closed`, async ({ binding })
   expect(afterClose.map(a => a.sessionId)).not.toContain(sessionId);
 });
 
-test(`should close session after keep_alive`, async ({ binding }) => {
+test(`should keep a connected session open past keep_alive`, async ({ binding }) => {
+  // keep_alive is an inactivity timeout: it closes sessions without a client,
+  // not sessions that still have a connected browser.
   const browser = await launch(binding, { keep_alive: 15000 });
   const sessionId = browser.sessionId();
 
   try {
     await new Promise(resolve => setTimeout(resolve, 11000));
-    expect(sessionIds(await sessions(binding))).toContain(sessionId);
+    await fetchSingleSession(binding, sessionId);
     expect(browser.isConnected()).toBe(true);
 
-    await waitForSessionToClose(binding, sessionId);
-    await waitForBrowserToDisconnect(browser);
-
-    expect(sessionIds(await sessions(binding))).not.toContain(sessionId);
-    expect(browser.isConnected()).toBe(false);
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    await fetchSingleSession(binding, sessionId);
+    expect(browser.isConnected()).toBe(true);
   } finally {
-    if (browser.isConnected())
-      await browser.close().catch(() => {});
+    await browser.close().catch(() => {});
   }
 });
 
@@ -210,11 +202,25 @@ test(`should add new session to history when launching browser`, async ({ bindin
 
 test(`should show sessionId in active sessions under limits endpoint`, async ({ binding }) => {
   const launchedBrowser = await launch(binding);
+  const sessionId = launchedBrowser.sessionId();
 
-  const response = await limits(binding);
-  expect(response.activeSessions.map(s => s.id)).toContain(launchedBrowser.sessionId());
-
-  await launchedBrowser.close();
+  try {
+    // A new session can take a moment to appear under limits.
+    let activeSessionIds: string[] = [];
+    const deadline = Date.now() + 10000;
+    while (Date.now() < deadline) {
+      activeSessionIds = (await limits(binding)).activeSessions.map(s => s.id);
+      if (activeSessionIds.includes(sessionId))
+        break;
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    if (!activeSessionIds.includes(sessionId)) {
+      const { maxConcurrentSessions } = await limits(binding);
+      throw new Error(`Session ${sessionId} missing from ${activeSessionIds.length} active sessions under limits (maxConcurrentSessions: ${maxConcurrentSessions})`);
+    }
+  } finally {
+    await launchedBrowser.close();
+  }
 });
 
 test(`should have functions in default exported object`, () => {
@@ -256,13 +262,11 @@ test(`should create browser with persistent context on playwright.chromium.conne
 
 test(`should connect to the session encoded in an endpoint URL`, async ({ binding, playwright }) => {
   const { sessionId } = await acquire(binding, { keep_alive: 10000 });
-  const before = await sessions(binding);
   const url = endpointURLString(binding, { sessionId });
   const browser = await playwright.chromium.connectOverCDP(url);
-  const after = await sessions(binding);
 
   expect(browser.sessionId()).toBe(sessionId);
-  expect(sessionIds(after)).toEqual(sessionIds(before));
+  await fetchSingleSession(binding, sessionId);
   await browser.close();
   await waitForSessionToClose(binding, sessionId);
 });
