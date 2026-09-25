@@ -48,6 +48,10 @@ export default {
     let response = await env.ASSETS?.fetch(request);
     if (!response)
       return new Response('Not found', { status: 404 });
+    // Like the upstream test server, give missing files a body. Chromium shows
+    // its own error page instead of an empty 4xx response.
+    if (response.status === 404 && request.method !== 'HEAD')
+      response = new Response(`File not found: ${new URL(request.url).pathname}`, { status: 404, headers: { 'Content-Type': 'text/plain' } });
 
     const headers = new Headers(response.headers);
     headers.set('Cache-Control', 'no-cache, no-store');
