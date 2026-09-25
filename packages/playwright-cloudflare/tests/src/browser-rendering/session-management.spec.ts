@@ -16,6 +16,9 @@ async function fetchSingleSession(endpoint: BrowserWorker, sessionId: string) {
   return session;
 }
 
+// Browser Run returns at most this many rows in limits().activeSessions.
+const LIMITS_ACTIVE_SESSIONS_CAP = 200;
+
 function sessionIds(activeSessions: ActiveSession[]) {
   return activeSessions.map(session => session.sessionId).sort();
 }
@@ -221,6 +224,13 @@ test(`should show sessionId in active sessions under limits endpoint`, async ({ 
       await new Promise(resolve => setTimeout(resolve, 500));
     }
     if (!activeSessionIds.includes(sessionId)) {
+      if (activeSessionIds.length >= LIMITS_ACTIVE_SESSIONS_CAP) {
+        // The list is full, so the new session can be cut off. Confirm that
+        // the session is active through its own endpoint instead.
+        await fetchSingleSession(binding, sessionId);
+        test.info().annotations.push({ type: 'note', description: `limits().activeSessions is capped at ${LIMITS_ACTIVE_SESSIONS_CAP}; session confirmed through /v1/devtools/session` });
+        return;
+      }
       const { maxConcurrentSessions } = await limits(binding);
       throw new Error(`Session ${sessionId} missing from ${activeSessionIds.length} active sessions under limits (maxConcurrentSessions: ${maxConcurrentSessions})`);
     }
