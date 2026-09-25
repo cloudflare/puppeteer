@@ -1,0 +1,48 @@
+name: "Playwright for Cloudflare - PR Package Preview"
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/cf_playwright_*.yml'
+      - '.npmrc'
+      - 'package.json'
+      - 'packages/browser-test-runtime/**'
+      - 'packages/playwright-cloudflare/**'
+      - 'patches/playwright.patch'
+      - 'scripts/**'
+      - 'submodules/playwright'
+      - 'submodules/jest'
+  workflow_dispatch:
+
+concurrency:
+  group: cf-playwright-preview-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Validate package
+        run: |
+          npm ci
+          git submodule update --init
+          npm run check:patch:playwright
+          npm run build --workspace @cloudflare/playwright
+          npm run test:bundle --workspace @cloudflare/playwright
+          npm ci --prefix packages/playwright-cloudflare/tests
+          npm --prefix packages/playwright-cloudflare/tests run test-types
+          npm run check:submodules
+
+      # Non-blocking until the pkg.pr.new GitHub App accepts this repository.
+      - name: Publish package preview
+        continue-on-error: true
+        run: npm exec -- pkg-pr-new publish packages/playwright-cloudflare

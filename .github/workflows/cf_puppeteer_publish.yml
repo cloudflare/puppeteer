@@ -1,0 +1,106 @@
+name: "Puppeteer for Cloudflare - Publish to NPM"
+
+on:
+  release:
+    types: [published]
+
+concurrency:
+  group: cf-puppeteer-publish-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: ${{ startsWith(github.event.release.tag_name, 'cloudflare-puppeteer-v') }}
+    name: "Publish @cloudflare/puppeteer to NPM"
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          git submodule update --init
+
+      - name: Verify release version
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          RELEASE_IS_PRERELEASE: ${{ github.event.release.prerelease }}
+        run: |
+          set -euo pipefail
+
+          package_json='packages/puppeteer-cloudflare/package.json'
+          package_version="$(node -p "require('./${package_json}').version")"
+          expected_tag="cloudflare-puppeteer-v${package_version}"
+
+          if [[ "${RELEASE_TAG}" != "${expected_tag}" ]]; then
+            printf 'Error: GitHub release tag must be exactly %s, but received %s.\n' \
+              "${expected_tag}" "${RELEASE_TAG}" >&2
+            exit 1
+          fi
+
+          semver_core='(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)'
+          prerelease_identifier='(0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)'
+          prerelease="-${prerelease_identifier}(\.${prerelease_identifier})*"
+          build='\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*'
+          stable_pattern="^${semver_core}(${build})?$"
+          prerelease_pattern="^${semver_core}${prerelease}(${build})?$"
+
+          case "${RELEASE_IS_PRERELEASE}" in
+            true)
+              if [[ ! "${package_version}" =~ ${prerelease_pattern} ]]; then
+                printf 'Error: GitHub prerelease requires a SemVer prerelease package version; found %s.\n' \
+                  "${package_version}" >&2
+                exit 1
+              fi
+              ;;
+            false)
+              if [[ ! "${package_version}" =~ ${stable_pattern} ]]; then
+                printf 'Error: Stable GitHub release requires a stable SemVer package version; found %s.\n' \
+                  "${package_version}" >&2
+                exit 1
+              fi
+              ;;
+            *)
+              printf 'Error: Unexpected GitHub release prerelease value: %s.\n' \
+                "${RELEASE_IS_PRERELEASE}" >&2
+              exit 1
+              ;;
+          esac
+
+          node scripts/verify-npm-release.mjs "${package_json}"
+
+      - name: Verify full suite passed for release commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          successful_runs="$(gh api --method GET \
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/cf_puppeteer_full.yml/runs" \
+            -f head_sha="${GITHUB_SHA}" -f status=completed \
+            --jq '[.workflow_runs[] | select(.conclusion == "success" and (.event == "push" or .event == "workflow_dispatch"))] | length')"
+          if [[ "${successful_runs}" -lt 1 ]]; then
+            printf 'Error: Puppeteer full tests have not passed for release commit %s.\n' "${GITHUB_SHA}" >&2
+            exit 1
+          fi
+
+      - name: Validate package
+        run: |
+          npm run check:patches:puppeteer
+          npm run build:puppeteer
+          npm run test:bundle:prebuilt --workspace @cloudflare/puppeteer
+          npm --prefix packages/puppeteer-cloudflare/tests run test-types
+          npm --prefix packages/puppeteer-cloudflare/tests run typecheck:server
+          npm run check:submodules
+
+      - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+        run: |
+          cd packages/puppeteer-cloudflare
+          npm publish ${{ github.event.release.prerelease && '--tag next' || '' }}

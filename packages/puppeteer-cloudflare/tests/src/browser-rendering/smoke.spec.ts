@@ -3,32 +3,22 @@ import {expect} from 'expect';
 import {getTestState} from '../server/mocha-utils.js';
 
 test('should perform basic interactions @smoke', async () => {
-  const {page} = getTestState();
+  const {page, server} = getTestState();
 
-  // Navigate the page to a URL.
-  await page.goto('https://pptr.dev/');
+  await page.goto(server.EMPTY_PAGE);
 
   // Set screen size.
   await page.setViewport({width: 1080, height: 1024});
-
-  await page.locator('.DocSearch-Button').click();
-
-  // Type into search box.
-  await page.locator('.DocSearch-Input').fill('Getting started');
-
-  // Wait and click on first result.
-  await page.locator('.DocSearch-Hit-title:nth-child(1)').click();
-
-  // Locate the full title with a unique string.
-  // eslint-disable-next-line rulesdir/use-using
-  const textSelector = await page
-    .locator('h1 ::-p-text(Getting started)')
-    .waitHandle();
-  const fullTitle = await textSelector?.evaluate(el => {
-    return el.textContent?.trim();
-  });
-
-  expect(fullTitle).toBe('Getting started');
+  await page.setContent(`
+    <input aria-label="Title">
+    <button onclick="document.querySelector('h1').textContent = document.querySelector('input').value">Update</button>
+    <h1></h1>
+  `);
+  await page.locator('input').fill('Getting started');
+  await page.locator('button').click();
+  expect(await page.locator('h1').map(element => element.textContent).wait()).toBe(
+    'Getting started',
+  );
 });
 
 test('should fetch HTML content @smoke', async () => {

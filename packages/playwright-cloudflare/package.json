@@ -1,0 +1,50 @@
+{
+  "name": "@cloudflare/playwright",
+  "description": "Playwright for Cloudflare Browser Run (formerly Browser Rendering)",
+  "version": "1.3.7-next",
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./test": {
+      "types": "./test.d.ts",
+      "default": "./lib/test.js"
+    },
+    "./internal": {
+      "types": "./internal.d.ts",
+      "default": "./lib/internal.js"
+    }
+  },
+  "scripts": {
+    "ci:tests": "cd tests && npm ci",
+    "build:types": "node utils/copy_types.js",
+    "patch": "cd ../.. && npm run patch:playwright",
+    "build": "node ../../scripts/with-patch.mjs playwright npm run build:patched",
+    "build:patched": "npm run build:patched --workspace @cloudflare/browser-test-runtime && npm run build:types && npx vite build",
+    "test:generate:worker": "node ../../scripts/with-patch.mjs playwright npm run test:generate:worker:patched",
+    "test:generate:worker:patched": "node ./utils/generate_worker_tests.js && cd tests && npx vite build",
+    "test:prepare:built": "npm run test:generate:worker && npm run ci:tests",
+    "test:bundle": "npm run test:prepare:built && cd tests && npx wrangler deploy --dry-run",
+    "test:pack": "node ../../scripts/verify-packed-playwright.mjs",
+    "test:generate:proxy": "node ./utils/generate_proxy_tests.js",
+    "test:deploy": "npm run test:prepare:built && cd tests && npx wrangler deploy",
+    "test:dev": "npm run test:generate:worker && npm run ci:tests && cd tests && npx wrangler dev",
+    "test:full": "npm run test:generate:proxy && cd tests && npx playwright test",
+    "test:smoke": "npm run test:generate:proxy && cd tests && npx playwright test --grep \"@smoke\""
+  },
+  "devDependencies": {
+    "@tsconfig/node18": "^18.2.6",
+    "vite": "^6.4.3"
+  },
+  "peerDependencies": {
+    "playwright-core": "*"
+  },
+  "peerDependenciesMeta": {
+    "playwright-core": {
+      "optional": true
+    }
+  }
+}

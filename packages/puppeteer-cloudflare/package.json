@@ -1,34 +1,62 @@
 {
-  "name": "puppeteer-cloudflare",
+  "name": "@cloudflare/puppeteer",
   "description": "Puppeteer for Cloudflare Workers",
-  "private": true,
+  "version": "1.5.0-rc.0",
+  "license": "Apache-2.0",
   "type": "module",
+  "types": "./lib/index.d.ts",
+  "files": [
+    "lib/"
+  ],
   "exports": {
     ".": {
-      "types": "./index.d.ts",
-      "import": "./lib/esm/index.js",
-      "require": "./lib/cjs/index.js",
-      "default": "./lib/esm/index.js"
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
     },
     "./internal/*": {
-      "import": "./lib/esm/packages/puppeteer-core/src/*",
-      "require": "./lib/cjs/packages/puppeteer-core/src/*",
-      "default": "./lib/esm/packages/puppeteer-core/src/*"
+      "default": "./lib/puppeteer-core/*"
     }
   },
   "scripts": {
+    "patch": "cd ../.. && npm run patch:puppeteer",
+    "ci:puppeteer": "cd ../../submodules/puppeteer && npm ci --ignore-scripts",
+    "build:puppeteer": "cd ../../submodules/puppeteer && npm run build --workspace puppeteer-core",
+    "build": "node ../../scripts/with-patch.mjs puppeteer npm run build:patched",
+    "build:patched": "npm run ci:puppeteer && npm run build:puppeteer && npx vite build && npm run build:types",
+    "build:types": "node ../../submodules/puppeteer/node_modules/typescript/bin/tsc -p tsconfig.types.json && node ./utils/copy_types.js",
+    "build:test-runtime": "npm --prefix ../.. run build --workspace @cloudflare/browser-test-runtime",
     "ci:tests": "cd tests && npm ci",
-    "test:generate:worker": "node ./utils/generate_worker_tests.js",
+    "test:generate:worker": "node ../../scripts/with-patch.mjs puppeteer npm run test:generate:worker:patched",
+    "test:generate:worker:patched": "npm run build:puppeteer && node ./utils/generate_worker_tests.js",
+    "test:generate:worker:prebuilt": "node ../../scripts/with-patch.mjs puppeteer npm run test:generate:worker:prebuilt:patched",
+    "test:generate:worker:prebuilt:patched": "node ./utils/generate_worker_tests.js",
     "test:generate:proxy": "node ./utils/generate_proxy_tests.js",
-    "test:deploy": "npm run test:generate:worker && npm run ci:tests && cd tests && npx wrangler deploy",
-    "test:dev": "npm run test:generate:worker && cd tests && npx wrangler dev",
+    "test:prepare": "npm run build:test-runtime && npm run test:prepare:built",
+    "test:prepare:built": "npm run test:generate:worker && npm run ci:tests",
+    "test:prepare:prebuilt": "npm run test:generate:worker:prebuilt && npm run ci:tests",
+    "test:bundle": "npm run test:prepare:built && cd tests && npx wrangler deploy --dry-run",
+    "test:bundle:prebuilt": "npm run test:prepare:prebuilt && cd tests && npx wrangler deploy --dry-run",
+    "test:deploy": "npm run build:test-runtime && npm run test:deploy:built",
+    "test:deploy:built": "npm run test:prepare:built && cd tests && npx wrangler deploy",
+    "test:dev": "npm run test:prepare && cd tests && npx wrangler dev",
     "test:full": "npm run test:generate:proxy && cd tests && npx playwright test",
     "test:smoke": "npm run test:generate:proxy && cd tests && npx playwright test --grep \"@smoke\"",
     "test:merge": "cd tests && npx playwright merge-reports --reporter html ./all-blob-reports"
   },
+  "dependencies": {
+    "@types/debug": "^4.1.12",
+    "@types/node": "^18.17.15",
+    "debug": "^4.4.3",
+    "devtools-protocol": "0.0.1581282",
+    "mitt": "3.0.1",
+    "parsel-js": "1.2.2",
+    "rxjs": "7.8.2",
+    "typed-query-selector": "^2.12.1",
+    "urlpattern-polyfill": "10.1.0"
+  },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250723.0",
-    "vite": "^6.3.5",
-    "wrangler": "^4.59.2"
+    "@cloudflare/workers-types": "^5.20260921.1",
+    "vite": "^6.4.3",
+    "wrangler": "4.137.0"
   }
 }

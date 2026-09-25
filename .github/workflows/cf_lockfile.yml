@@ -1,0 +1,32 @@
+name: "Browser Run - Root Lockfile Validation"
+
+on:
+  push:
+    branches: [main]
+    paths: [package-lock.json]
+  pull_request:
+    branches: [main]
+    paths: [package-lock.json]
+  workflow_dispatch:
+
+concurrency:
+  group: cf-lockfile-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - name: Validate root dependency graph
+        run: |
+          npm ci --ignore-scripts
+          git submodule update --init
+          npm run check:patches
+          npm run build
+          npm run check:submodules

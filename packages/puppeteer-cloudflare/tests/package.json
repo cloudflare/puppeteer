@@ -5,19 +5,25 @@
   "author": "",
   "license": "ISC",
   "description": "",
-  "types": "../../puppeteer-core/lib/types.d.ts",
+  "types": "../lib/index.d.ts",
   "scripts": {
-    "test-types": "tsd"
+    "test-types": "tsd",
+    "typecheck:server": "node ../../../submodules/puppeteer/node_modules/typescript/bin/tsc -p tsconfig.server.json"
   },
   "dependencies": {
-    "@cloudflare/playwright": "^0.0.10",
-    "@cloudflare/puppeteer": "file:../../puppeteer-core"
+    "@cloudflare/browser-test-runtime": "file:../../browser-test-runtime",
+    "@cloudflare/puppeteer": "file:..",
+    "diff": "^5.2.0",
+    "expect": "^29.7.0",
+    "jpeg-js": "^0.4.4",
+    "mime": "^3.0.0",
+    "pixelmatch": "^5.3.0",
+    "pngjs": "^7.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",
-    "@puppeteer-test/test": "file:../../../test",
     "tsd": "^0.31.1",
-    "wrangler": "^4.81.0"
+    "wrangler": "^4.137.0"
   },
   "tsd": {
     "directory": "test-d",
@@ -27,7 +33,7 @@
       "target": "esnext",
       "lib": ["esnext", "DOM"],
       "strict": true,
-      "skipLibCheck": true,
+      "skipLibCheck": false,
       "types": []
     }
   }
