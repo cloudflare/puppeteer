@@ -22,6 +22,22 @@ const authHeaders = {
   'CF-Access-Client-Secret': process.env.CF_ACCESS_CLIENT_SECRET ?? '',
 };
 
+function isOpenSession(details: unknown): boolean {
+  if (!details || typeof details !== 'object') {
+    return false;
+  }
+  const {endTime, closeReason, closeReasonText} = details as {
+    endTime?: number;
+    closeReason?: number;
+    closeReasonText?: string;
+  };
+  return (
+    endTime === undefined &&
+    closeReason === undefined &&
+    closeReasonText === undefined
+  );
+}
+
 export const test = baseTest.extend<object, WorkerOptions & WorkerFixture>({
   binding: ['BROWSER', {option: true, scope: 'worker'}],
   sessionId: [
@@ -39,7 +55,10 @@ export const test = baseTest.extend<object, WorkerOptions & WorkerFixture>({
           headers: authHeaders,
         });
 
-        if (response.ok) {
+        // The details endpoint also returns 200 for sessions that already
+        // ended (for example, after the browser crashed). A retry must not
+        // reconnect to such a session, or every later test fails with 410.
+        if (response.ok && isOpenSession(await response.json())) {
           sessionId = session.sessionId;
         }
       }
