@@ -27,7 +27,18 @@ async function launchAndGetSession(
 }
 
 async function fetchSingleSession(endpoint: BrowserWorker, sessionId: string) {
-  const response = await endpoint.fetch(`http://fake.host/v1/devtools/session/${sessionId}`);
+  // A just-acquired session can take a moment to become visible.
+  let response = await endpoint.fetch(
+    `http://fake.host/v1/devtools/session/${sessionId}`,
+  );
+  for (let attempt = 0; !response.ok && attempt < 10; attempt++) {
+    await new Promise(resolve => {
+      return setTimeout(resolve, 500);
+    });
+    response = await endpoint.fetch(
+      `http://fake.host/v1/devtools/session/${sessionId}`,
+    );
+  }
   expect(response.ok).toBe(true);
   const session = await response.json() as ActiveSession;
   expect(session.sessionId).toBe(sessionId);
@@ -267,7 +278,8 @@ test(`should keep session open when closing browser created with connect`, async
   // Closing a connected browser leaves the session open until keep_alive.
   await fetchSingleSession(env.BROWSER, sessionId);
 
-  await waitForSessionToClose(env.BROWSER, sessionId);
+  // keep_alive (10s) plus a margin for Browser Run to reap the session.
+  await waitForSessionToClose(env.BROWSER, sessionId, 20000);
   expect(sessionIds(await sessions(env.BROWSER))).not.toContain(sessionId);
 });
 

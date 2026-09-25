@@ -4,7 +4,12 @@ import playwright from '@cloudflare/playwright';
 import { test, expect } from '../server/workerFixtures';
 
 async function fetchSingleSession(endpoint: BrowserWorker, sessionId: string) {
-  const response = await endpoint.fetch(`http://fake.host/v1/devtools/session/${sessionId}`);
+  // A just-acquired session can take a moment to become visible.
+  let response = await endpoint.fetch(`http://fake.host/v1/devtools/session/${sessionId}`);
+  for (let attempt = 0; !response.ok && attempt < 10; attempt++) {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    response = await endpoint.fetch(`http://fake.host/v1/devtools/session/${sessionId}`);
+  }
   expect(response.ok).toBeTruthy();
   const session = await response.json() as ActiveSession;
   expect(session.sessionId).toBe(sessionId);
@@ -15,8 +20,8 @@ function sessionIds(activeSessions: ActiveSession[]) {
   return activeSessions.map(session => session.sessionId).sort();
 }
 
-async function waitForSessionToClose(endpoint: BrowserWorker, sessionId: string) {
-  const deadline = Date.now() + 10000;
+async function waitForSessionToClose(endpoint: BrowserWorker, sessionId: string, timeout = 10000) {
+  const deadline = Date.now() + timeout;
   while (Date.now() < deadline) {
     if (!(await sessions(endpoint)).some(session => session.sessionId === sessionId))
       return;
@@ -157,7 +162,8 @@ test(`should keep session open when closing browser created with connect`, async
   // Closing a connected browser leaves the session open until keep_alive.
   await fetchSingleSession(binding, sessionId);
 
-  await waitForSessionToClose(binding, sessionId);
+  // keep_alive (10s) plus a margin for Browser Run to reap the session.
+  await waitForSessionToClose(binding, sessionId, 20000);
   expect(sessionIds(await sessions(binding))).not.toContain(sessionId);
 });
 
