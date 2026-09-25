@@ -236,7 +236,10 @@ async function connectWhenSessionIsFree(
     try {
       return await puppeteer.connect(binding, sessionId);
     } catch (error) {
-      if (Date.now() >= deadline) {
+      // Only a busy session (409) or an error without an HTTP status can
+      // recover. A missing or dead browser (for example 410) will not.
+      const status = /code: (\d{3})/.exec(String(error))?.[1];
+      if (Date.now() >= deadline || (status && status !== '409')) {
         throw error;
       }
       log(`Session ${sessionId} not free yet (attempt ${attempt}): ${error}`);
@@ -245,6 +248,31 @@ async function connectWhenSessionIsFree(
       });
     }
   }
+}
+
+// Report a session that the Worker cannot use as a failed test instead of
+// throwing. A thrown error reaches the proxy as a generic 1101 page and hides
+// the Browser Run error. `sessionUnusable` makes the proxy acquire a new
+// session for the retry.
+function sessionUnusableResponse(
+  testId: string,
+  timeout: number,
+  sessionId: string,
+  error: unknown,
+): Response {
+  const message = `Unable to use Browser Run session ${sessionId}: ${error instanceof Error ? error.message : String(error)}`;
+  log(`❌ ${message}`);
+  return Response.json({
+    testId,
+    status: 'failed',
+    expectedStatus: 'passed',
+    errors: [{message}],
+    annotations: [{type: 'session id', description: sessionId}],
+    duration: 0,
+    hasNonRetriableError: false,
+    timeout,
+    sessionUnusable: true,
+  });
 }
 
 export class TestsServer extends DurableObject<Env> {
@@ -326,11 +354,23 @@ export class TestsServer extends DurableObject<Env> {
     (globalThis as any).__dirname = '';
 
     const browserBinding = getBinding(url);
-    const browser = await connectWhenSessionIsFree(browserBinding, sessionId);
+    let browser: Browser;
+    let worker: CdnTrace;
+    let container: CdnTrace;
+    let browserVersion: string;
     try {
-      const { worker, browser: container } = await this.getCdnTraces(browser, sessionId);
-      const browserVersion = await browser.version();
-
+      browser = await connectWhenSessionIsFree(browserBinding, sessionId);
+    } catch (error) {
+      return sessionUnusableResponse(testId, timeout, sessionId, error);
+    }
+    try {
+      ({worker, browser: container} = await this.getCdnTraces(browser, sessionId));
+      browserVersion = await browser.version();
+    } catch (error) {
+      await browser.disconnect().catch(() => {});
+      return sessionUnusableResponse(testId, timeout, sessionId, error);
+    }
+    try {
       const context = await browser.createBrowserContext();
       const newPage = context.newPage.bind(context);
       context.newPage = async () => {

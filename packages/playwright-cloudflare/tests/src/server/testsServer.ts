@@ -34,6 +34,8 @@ function shouldSkipTestResult(testResult: TestResult) {
   return skipErrorMessages.some(msg => typeof msg === 'string' ? errorText.includes(msg) : msg.test(errorText));
 }
 
+const sessionGoneError = /Unable to connect to browser: code: (404|410)\b/;
+
 export class TestsServer extends DurableObject<Env> {
   constructor(state: DurableObjectState, env: Env) {
     super(state, env);
@@ -100,8 +102,12 @@ export class TestsServer extends DurableObject<Env> {
           expectedStatus: 'skipped'
         } satisfies TestEndPayload);
       }
-      const [error] = result.errors;       
+      const [error] = result.errors;
       log(`❌ ${fullTitle} failed with status ${result.status}${error ? `: ${formatError(error)}` : ''}`);
+      // Browser Run no longer serves this session (for example, the browser
+      // became unhealthy). Tell the proxy to acquire a new one for the retry.
+      if (result.errors.some(e => sessionGoneError.test(e.message ?? '')))
+        return Response.json({ ...result, sessionUnusable: true });
     }
     return Response.json(result);
   }

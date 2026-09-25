@@ -23,6 +23,12 @@ const authHeaders = {
   'CF-Access-Client-Secret': process.env.CF_ACCESS_CLIENT_SECRET ?? '',
 };
 
+// Retries get a new workerIndex, but retain their parallelIndex. Reuse the
+// same remote session instead of allocating and leaking one per retry.
+function sessionFilePath(outputDir: string, binding: string, parallelIndex: number): string {
+  return path.join(outputDir, `session_${binding}_${parallelIndex}.json`);
+}
+
 function isOpenSession(details: unknown): boolean {
   if (!details || typeof details !== 'object')
     return false;
@@ -33,9 +39,7 @@ function isOpenSession(details: unknown): boolean {
 export const test = baseTest.extend<{}, WorkerFixture & WorkerOptions>({
   binding: ['BROWSER', { option: true, scope: 'worker' }],
   sessionId: [async ({ binding }, use, workerInfo) => {
-    // Retries get a new workerIndex, but retain their parallelIndex. Reuse the
-    // same remote session instead of allocating and leaking one per retry.
-    const sessionFile = path.join(workerInfo.project.outputDir, `session_${binding}_${workerInfo.parallelIndex}.json`);
+    const sessionFile = sessionFilePath(workerInfo.project.outputDir, binding, workerInfo.parallelIndex);
     let sessionId: string | undefined;
     if (fs.existsSync(sessionFile)) {
       const session = JSON.parse(fs.readFileSync(sessionFile, 'utf-8')) as AcquireResponse;
@@ -100,7 +104,14 @@ export async function proxyTests(file: string): Promise<ProxyTests> {
       if (!response.ok)
         throw new Error(`Failed to run test ${fullTitle} (${testId})`);
 
-      const { status, expectedStatus, errors, annotations, attachments } = await response.json() as TestPayload;
+      const { status, expectedStatus, errors, annotations, attachments, sessionUnusable } = await response.json() as TestPayload & { sessionUnusable?: boolean };
+
+      if (sessionUnusable) {
+        // The Worker could not use this Browser Run session (for example,
+        // the browser became unhealthy). Forget it so that the retry, which
+        // runs in a new worker, acquires a fresh session.
+        fs.rmSync(sessionFilePath(testInfo.project.outputDir, url.searchParams.get('binding') ?? 'BROWSER', testInfo.parallelIndex), { force: true });
+      }
 
       if (annotations)
         testInfo.annotations.push(...annotations);

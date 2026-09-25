@@ -22,6 +22,16 @@ const authHeaders = {
   'CF-Access-Client-Secret': process.env.CF_ACCESS_CLIENT_SECRET ?? '',
 };
 
+// Retries get a new workerIndex but keep their parallelIndex, so the saved
+// session is shared by a test and its retry.
+function sessionFilePath(
+  outputDir: string,
+  binding: string,
+  parallelIndex: number,
+): string {
+  return path.join(outputDir, `session_${binding}_${parallelIndex}.json`);
+}
+
 function isOpenSession(details: unknown): boolean {
   if (!details || typeof details !== 'object') {
     return false;
@@ -42,9 +52,10 @@ export const test = baseTest.extend<object, WorkerOptions & WorkerFixture>({
   binding: ['BROWSER', {option: true, scope: 'worker'}],
   sessionId: [
     async ({ binding }, use, workerInfo) => {
-      const sessionFile = path.join(
+      const sessionFile = sessionFilePath(
         workerInfo.project.outputDir,
-        `session_${binding}_${workerInfo.parallelIndex}.json`,
+        binding,
+        workerInfo.parallelIndex,
       );
       let sessionId: string | undefined;
       if (fs.existsSync(sessionFile)) {
@@ -129,8 +140,22 @@ export async function proxyTests(file: string): Promise<ProxyTests> {
         );
       }
 
-      const {status, expectedStatus, errors, annotations} =
-        (await response.json()) as TestPayload;
+      const {status, expectedStatus, errors, annotations, sessionUnusable} =
+        (await response.json()) as TestPayload & {sessionUnusable?: boolean};
+
+      if (sessionUnusable) {
+        // The Worker could not use this Browser Run session (for example,
+        // the browser became unhealthy). Forget it so that the retry, which
+        // runs in a new worker, acquires a fresh session.
+        fs.rmSync(
+          sessionFilePath(
+            testInfo.project.outputDir,
+            url.searchParams.get('binding') ?? 'BROWSER',
+            testInfo.parallelIndex,
+          ),
+          {force: true},
+        );
+      }
 
       if (annotations) {
         testInfo.annotations.push(...annotations);
