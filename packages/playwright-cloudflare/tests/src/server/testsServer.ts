@@ -4,6 +4,7 @@ import {
   type TestInfoError,
   type TestResult,
 } from '@cloudflare/browser-test-runtime';
+import { isSessionGoneError } from '@cloudflare/browser-test-runtime/worker-routes';
 import {isUnderTest} from '@cloudflare/playwright/internal';
 import { DurableObject } from 'cloudflare:workers';
 import '@workerTests/index';
@@ -34,8 +35,6 @@ function shouldSkipTestResult(testResult: TestResult) {
   return skipErrorMessages.some(msg => typeof msg === 'string' ? errorText.includes(msg) : msg.test(errorText));
 }
 
-const sessionGoneError = /Unable to connect to browser: code: (404|410)\b/;
-
 export class TestsServer extends DurableObject<Env> {
   constructor(state: DurableObjectState, env: Env) {
     super(state, env);
@@ -46,7 +45,9 @@ export class TestsServer extends DurableObject<Env> {
       return new Response('Not under test', { status: 500 });
 
     const url = new URL(request.url);
-    const file = url.pathname.substring(1);
+    // Test files are listed as `/bundle/...`. Accept a single or double
+    // leading slash in the request path.
+    const file = `/${url.pathname.replace(/^\/+/, '')}`;
     const sessionId = url.searchParams.get('sessionId');
     if (!sessionId)
       return new Response('sessionId is required', { status: 400 });
@@ -106,7 +107,7 @@ export class TestsServer extends DurableObject<Env> {
       log(`❌ ${fullTitle} failed with status ${result.status}${error ? `: ${formatError(error)}` : ''}`);
       // Browser Run no longer serves this session (for example, the browser
       // became unhealthy). Tell the proxy to acquire a new one for the retry.
-      if (result.errors.some(e => sessionGoneError.test(e.message ?? '')))
+      if (result.errors.some(e => isSessionGoneError(e.message)))
         return Response.json({ ...result, sessionUnusable: true });
     }
     return Response.json(result);

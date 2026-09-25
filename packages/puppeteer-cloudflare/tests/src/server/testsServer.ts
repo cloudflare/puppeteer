@@ -1,4 +1,5 @@
 import {TestRunner} from '@cloudflare/browser-test-runtime';
+import {sessionUnusableResult} from '@cloudflare/browser-test-runtime/worker-routes';
 import '@workerTests/index';
 import type { Browser, Page } from '@cloudflare/puppeteer';
 import puppeteer from '@cloudflare/puppeteer';
@@ -250,29 +251,17 @@ async function connectWhenSessionIsFree(
   }
 }
 
-// Report a session that the Worker cannot use as a failed test instead of
-// throwing. A thrown error reaches the proxy as a generic 1101 page and hides
-// the Browser Run error. `sessionUnusable` makes the proxy acquire a new
-// session for the retry.
+// Report a session that the Worker cannot use as a failed test with the real
+// Browser Run error; the proxy then acquires a new session for the retry.
 function sessionUnusableResponse(
   testId: string,
   timeout: number,
   sessionId: string,
   error: unknown,
 ): Response {
-  const message = `Unable to use Browser Run session ${sessionId}: ${error instanceof Error ? error.message : String(error)}`;
-  log(`❌ ${message}`);
-  return Response.json({
-    testId,
-    status: 'failed',
-    expectedStatus: 'passed',
-    errors: [{message}],
-    annotations: [{type: 'session id', description: sessionId}],
-    duration: 0,
-    hasNonRetriableError: false,
-    timeout,
-    sessionUnusable: true,
-  });
+  const result = sessionUnusableResult({testId, timeout, sessionId, error});
+  log(`❌ ${result.errors[0]?.message}`);
+  return Response.json(result);
 }
 
 export class TestsServer extends DurableObject<Env> {

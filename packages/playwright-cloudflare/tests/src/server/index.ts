@@ -2,6 +2,7 @@
 import './underTest';
 
 import { testSuites } from '@cloudflare/browser-test-runtime';
+import { forwardToBrowserRun, testListResponse } from '@cloudflare/browser-test-runtime/worker-routes';
 
 import { getBinding } from '../utils';
 
@@ -13,18 +14,10 @@ export default {
 
     if (url.pathname.startsWith('/v1')) {
       console.log('Forwarding request to binding', url.pathname);
-      const binding = getBinding(url);
-      const forwardUrl = new URL(request.url);
-      forwardUrl.protocol = 'http:';
-      forwardUrl.host = 'fake.host';
-      return await binding.fetch(new Request(forwardUrl.toString(), request));
+      return await forwardToBrowserRun(request, getBinding(url));
     }
-    if (url.pathname === '/') {
-      // CI waits for this version before generating proxy tests from the list.
-      return Response.json(await testSuites(), {
-        headers: { 'x-worker-version': env.CF_VERSION_METADATA?.id ?? '' },
-      });
-    }
+    if (url.pathname === '/')
+      return testListResponse(await testSuites(), env);
 
     if (url.pathname === '/hello-world')
       return new Response('<title>Hello</title>Hello world', {

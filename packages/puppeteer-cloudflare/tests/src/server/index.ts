@@ -2,6 +2,10 @@
 import './underTest.js';
 
 import {testSuites} from '@cloudflare/browser-test-runtime';
+import {
+  forwardToBrowserRun,
+  testListResponse,
+} from '@cloudflare/browser-test-runtime/worker-routes';
 
 import type {TestsServer} from './testsServer.js';
 import {
@@ -18,18 +22,10 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname.startsWith('/v1')) {
-      const binding = getBinding(url);
-      const targetUrl = new URL(request.url);
-      targetUrl.hostname = 'fake.host';
-      targetUrl.protocol = 'http:';
-      targetUrl.searchParams.delete('binding');
-      return await binding.fetch(new Request(targetUrl.toString(), request));
+      return await forwardToBrowserRun(request, getBinding(url));
     }
     if (url.pathname === '/') {
-      // CI waits for this version before generating proxy tests from the list.
-      return Response.json(await testSuites(), {
-        headers: {'x-worker-version': env.CF_VERSION_METADATA?.id ?? ''},
-      });
+      return testListResponse(await testSuites(), env);
     }
 
     const bindingName = url.searchParams.get('binding') ?? 'BROWSER';

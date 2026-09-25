@@ -1,14 +1,9 @@
-import fs from 'fs';
-import path from 'path';
-
-import type {AcquireResponse} from '@cloudflare/puppeteer';
+import {
+  browserSessionFixture,
+  proxyTests,
+} from '@cloudflare/browser-test-runtime/proxy';
 import {test as baseTest} from '@playwright/test';
-import type {TestInfo} from '@playwright/test';
 
-type TestPayload = Pick<
-  TestInfo,
-  'testId' | 'status' | 'expectedStatus' | 'errors' | 'annotations'
->;
 export interface WorkerOptions {
   binding: 'BROWSER' | 'BROWSER_BRAPI_STAGING' | 'BROWSER_BRAPI_PRODUCTION';
 }
@@ -17,161 +12,9 @@ export interface WorkerFixture {
   sessionId: string;
 }
 
-const authHeaders = {
-  'CF-Access-Client-Id': process.env.CF_ACCESS_CLIENT_ID ?? '',
-  'CF-Access-Client-Secret': process.env.CF_ACCESS_CLIENT_SECRET ?? '',
-};
-
-// Retries get a new workerIndex but keep their parallelIndex, so the saved
-// session is shared by a test and its retry.
-function sessionFilePath(
-  outputDir: string,
-  binding: string,
-  parallelIndex: number,
-): string {
-  return path.join(outputDir, `session_${binding}_${parallelIndex}.json`);
-}
-
-function isOpenSession(details: unknown): boolean {
-  if (!details || typeof details !== 'object') {
-    return false;
-  }
-  const {endTime, closeReason, closeReasonText} = details as {
-    endTime?: number;
-    closeReason?: number;
-    closeReasonText?: string;
-  };
-  return (
-    endTime === undefined &&
-    closeReason === undefined &&
-    closeReasonText === undefined
-  );
-}
-
 export const test = baseTest.extend<object, WorkerOptions & WorkerFixture>({
   binding: ['BROWSER', {option: true, scope: 'worker'}],
-  sessionId: [
-    async ({ binding }, use, workerInfo) => {
-      const sessionFile = sessionFilePath(
-        workerInfo.project.outputDir,
-        binding,
-        workerInfo.parallelIndex,
-      );
-      let sessionId: string | undefined;
-      if (fs.existsSync(sessionFile)) {
-        const session = JSON.parse(
-          fs.readFileSync(sessionFile, 'utf-8'),
-        ) as AcquireResponse;
-        const response = await fetch(`${testsServerUrl}/v1/devtools/session/${session.sessionId}?binding=${binding}`, {
-          headers: authHeaders,
-        });
-
-        // The details endpoint also returns 200 for sessions that already
-        // ended (for example, after the browser crashed). A retry must not
-        // reconnect to such a session, or every later test fails with 410.
-        if (response.ok && isOpenSession(await response.json())) {
-          sessionId = session.sessionId;
-        }
-      }
-
-      if (!sessionId) {
-        const response = await fetch(`${testsServerUrl}/v1/devtools/browser?binding=${binding}`, {
-          method: 'POST',
-          headers: authHeaders,
-        });
-        const body = await response.text();
-        if (!response.ok) {
-          throw new Error(
-            `Failed to acquire browser session (${response.status} ${response.statusText}): ${body}`,
-          );
-        }
-        const session = JSON.parse(body) as AcquireResponse;
-        if (!session.sessionId) {
-          throw new Error('Browser session response did not include a sessionId');
-        }
-        fs.writeFileSync(sessionFile, JSON.stringify(session));
-        sessionId = session.sessionId;
-      }
-
-      await use(sessionId);
-    },
-    {scope: 'worker'},
-  ],
+  sessionId: [browserSessionFixture, {scope: 'worker'}],
 });
 
-const testsServerUrl = process.env.TESTS_SERVER_URL ?? `http://localhost:8787`;
-
-interface ProxyTests {
-  beforeAll: (fixtures: WorkerFixture & WorkerOptions) => Promise<void>;
-  afterAll: () => Promise<void>;
-  runTest: (
-    test: {testId: string; fullTitle: string},
-    testInfo: TestInfo,
-  ) => Promise<void>;
-}
-
-export async function proxyTests(file: string): Promise<ProxyTests> {
-  const url = new URL(file, testsServerUrl);
-
-  return {
-    beforeAll: async ({sessionId, binding}: WorkerFixture & WorkerOptions) => {
-      url.searchParams.set('timeout', '45');
-      url.searchParams.set('sessionId', sessionId);
-      url.searchParams.set('binding', binding);
-    },
-
-    afterAll: async () => {},
-
-    runTest: async (
-      {testId, fullTitle}: {testId: string; fullTitle: string},
-      testInfo: TestInfo,
-    ) => {
-      const requestUrl = new URL(url);
-      requestUrl.searchParams.set('retry', String(testInfo.retry));
-      const response = await fetch(requestUrl, {
-        body: JSON.stringify({testId, fullTitle}),
-        method: 'POST',
-        headers: authHeaders,
-      });
-      if (!response.ok) {
-        const body = await response.text();
-        throw new Error(
-          `Failed to run test ${fullTitle} (${testId}): ${response.status} ${response.statusText}: ${body}`,
-        );
-      }
-
-      const {status, expectedStatus, errors, annotations, sessionUnusable} =
-        (await response.json()) as TestPayload & {sessionUnusable?: boolean};
-
-      if (sessionUnusable) {
-        // The Worker could not use this Browser Run session (for example,
-        // the browser became unhealthy). Forget it so that the retry, which
-        // runs in a new worker, acquires a fresh session.
-        fs.rmSync(
-          sessionFilePath(
-            testInfo.project.outputDir,
-            url.searchParams.get('binding') ?? 'BROWSER',
-            testInfo.parallelIndex,
-          ),
-          {force: true},
-        );
-      }
-
-      if (annotations) {
-        testInfo.annotations.push(...annotations);
-      }
-
-      if (errors) {
-        // if drop stacktrace because otherwise it tries to parse
-        // the stacktrace from the worker and fails
-        testInfo.errors = errors.map(({message, value}) => {
-          return {message, value};
-        });
-      }
-
-      testInfo.expectedStatus =
-        status === 'skipped' ? 'skipped' : expectedStatus;
-      testInfo.status = status;
-    },
-  };
-}
+export {proxyTests};
