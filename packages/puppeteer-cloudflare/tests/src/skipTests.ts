@@ -99,7 +99,7 @@ export const skipTests: string[] = [
     "input.spec.ts > input tests > FileChooser.accept > should be able to read selected file",
     "mouse.spec.ts > Mouse > should not throw if buttons are pressed twice",
     "mouse.spec.ts > Mouse > should reset properly",
-    "drag-and-drop.spec.ts > Drag n\\' Drop > should drag and drop",
+    "drag-and-drop.spec.ts > Drag n' Drop > should drag and drop",
     "keyboard.spec.ts > Keyboard > should send a character with sendCharacter in iframe",
     "jshandle.spec.ts > JSHandle > JSHandle.jsonValue > should work with dates",
     "jshandle.spec.ts > JSHandle > JSHandle.jsonValue > should not throw for circular objects",
