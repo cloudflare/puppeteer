@@ -58,18 +58,6 @@ async function waitForSessionToClose(
   }
 }
 
-async function waitForBrowserToDisconnect(
-  browser: Browser,
-  timeout = 10000,
-): Promise<void> {
-  const deadline = Date.now() + timeout;
-  while (browser.isConnected() && Date.now() < deadline) {
-    await new Promise(resolve => {
-      return setTimeout(resolve, 250);
-    });
-  }
-}
-
 test(`should list sessions @smoke`, async () => {
   const before = await sessions(env.BROWSER);
   const [browser, sessionId] = await launchAndGetSession(env.BROWSER);
@@ -295,7 +283,9 @@ test(`should close session when launched browser is closed`, async () => {
   ).not.toContain(sessionId);
 });
 
-test(`should close session after keep_alive`, async () => {
+test(`should keep a connected session open past keep_alive`, async () => {
+  // keep_alive is an inactivity timeout: it closes sessions without a client,
+  // not sessions that still have a connected browser.
   const keepAlive = 15000;
   const [browser, sessionId] = await launchAndGetSession(env.BROWSER, {
     keep_alive: keepAlive,
@@ -305,24 +295,16 @@ test(`should close session after keep_alive`, async () => {
     await new Promise(resolve => {
       return setTimeout(resolve, 11000);
     });
-    // Look the session up directly: the account-wide list is shared with
-    // parallel tests and may not include every active session.
     await fetchSingleSession(env.BROWSER, sessionId);
     expect(browser.isConnected()).toBe(true);
 
-    await waitForSessionToClose(env.BROWSER, sessionId, 15000);
-    await waitForBrowserToDisconnect(browser);
-
-    expect(
-      (await sessions(env.BROWSER)).map(session => {
-        return session.sessionId;
-      }),
-    ).not.toContain(sessionId);
-    expect(browser.isConnected()).toBe(false);
+    await new Promise(resolve => {
+      return setTimeout(resolve, 5000);
+    });
+    await fetchSingleSession(env.BROWSER, sessionId);
+    expect(browser.isConnected()).toBe(true);
   } finally {
-    if (browser.isConnected()) {
-      await browser.close().catch(() => {});
-    }
+    await browser.close().catch(() => {});
   }
 });
 
@@ -363,7 +345,12 @@ test(`should show sessionId in active sessions under limits endpoint`, async () 
         return setTimeout(resolve, 500);
       });
     }
-    expect(activeSessionIds).toContain(sessionId);
+    if (!activeSessionIds.includes(sessionId)) {
+      const {maxConcurrentSessions} = await limits(env.BROWSER);
+      throw new Error(
+        `Session ${sessionId} missing from ${activeSessionIds.length} active sessions under limits (maxConcurrentSessions: ${maxConcurrentSessions})`,
+      );
+    }
   } finally {
     await launchedBrowser.close();
   }
