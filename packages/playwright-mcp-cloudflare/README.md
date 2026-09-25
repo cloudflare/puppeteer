@@ -28,6 +28,21 @@ npm ci
 npx wrangler deploy
 ```
 
+### Compatibility date
+
+This package uses `@cloudflare/playwright` 0.0.11. That version reads binary WebSocket messages from Browser Run as `ArrayBuffer`.
+
+If your Worker uses a `compatibility_date` of `2026-03-17` or later, Workers delivers binary WebSocket messages as `Blob` by default. Browser tools then time out with `browserType.connectOverCDP: Timeout 30000ms exceeded`.
+
+To prevent this, add the `no_websocket_standard_binary_type` compatibility flag:
+
+```toml
+compatibility_date = "2026-09-23"
+compatibility_flags = ["nodejs_compat", "no_websocket_standard_binary_type"]
+```
+
+The example Worker uses an earlier compatibility date, so it does not need this flag.
+
 ### Use with Cloudflare AI Playground
 
 ![alt text](https://github.com/cloudflare/puppeteer/raw/main/examples/playwright-mcp-cloudflare/docs/imgs/playground-ai-screenshot.png)
