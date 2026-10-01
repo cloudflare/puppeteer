@@ -5,10 +5,10 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cloudflare/puppeteer.git",
+    "url": "git+https://github.com/cloudflare/browser.git",
     "directory": "packages/playwright-mcp-cloudflare"
   },
-  "homepage": "https://github.com/cloudflare/puppeteer/tree/main/packages/playwright-mcp-cloudflare",
+  "homepage": "https://github.com/cloudflare/browser/tree/main/packages/playwright-mcp-cloudflare",
   "engines": {
     "node": ">=18"
   },

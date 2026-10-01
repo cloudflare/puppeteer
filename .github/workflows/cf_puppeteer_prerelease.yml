@@ -6,6 +6,7 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - '.github/scripts/comment-package-preview.cjs'
       - '.github/workflows/cf_puppeteer_*.yml'
       - '.npmrc'
       - 'package.json'
@@ -26,6 +27,9 @@ concurrency:
 jobs:
   preview:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -44,7 +48,23 @@ jobs:
           npm --prefix packages/puppeteer-cloudflare/tests run typecheck:server
           npm run check:submodules
 
-      # Non-blocking until the pkg.pr.new GitHub App accepts this repository.
+      # Non-blocking so that a pkg.pr.new outage does not fail validation.
+      # --no-compact prints the repository-qualified URL, which works before
+      # this repository's releases are the npm `latest` versions.
       - name: Publish package preview
+        id: publish
         continue-on-error: true
-        run: npm exec -- pkg-pr-new publish packages/puppeteer-cloudflare
+        run: npm exec -- pkg-pr-new publish --no-compact --comment=off --json="$RUNNER_TEMP/pkg-pr-new.json" packages/puppeteer-cloudflare
+
+      # One comment per package; a new push or rerun updates only this one.
+      # Fork pull requests get a read-only token, so the step cannot comment.
+      - name: Comment install URL on the pull request
+        if: github.event_name == 'pull_request' && steps.publish.outcome == 'success'
+        continue-on-error: true
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_JSON: ${{ runner.temp }}/pkg-pr-new.json
+        with:
+          script: |
+            const commentPackagePreview = require(`${process.env.GITHUB_WORKSPACE}/.github/scripts/comment-package-preview.cjs`);
+            await commentPackagePreview({github, context, core});
