@@ -1,0 +1,25 @@
+packages/playwright-cloudflare/src/index.ts
+  s_b629304209cd9e::t_3ca4b3c67e569a 14,264-266
+packages/playwright-cloudflare/tests/src/browser-rendering/session-management.spec.ts
+  s_b629304209cd9e::t_a7a08d650a2324 54,91
+packages/playwright-cloudflare/tests/test-d/guardrails.test-d.ts
+  s_b629304209cd9e::t_9747ab38e7bb45 18
+packages/puppeteer-cloudflare/src/cloudflare/utils.ts
+  s_b629304209cd9e::t_3057a9aa714844 82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "d683a32daaaa1b2826fca98da5b6bf74c0427ddd",
+  "prompts": {},
+  "sessions": {
+    "s_b629304209cd9e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f083d1dabffe7SGrpcy1BT5WjW",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Maryna Iholnykova <maryna@cloudflare.com>"
+    }
+  }
+}
