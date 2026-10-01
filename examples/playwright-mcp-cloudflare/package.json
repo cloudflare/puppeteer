@@ -4,10 +4,10 @@
   "description": "Cloudflare Playwright Tools for MCP - Template",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cloudflare/puppeteer.git",
+    "url": "git+https://github.com/cloudflare/browser.git",
     "directory": "examples/playwright-mcp-cloudflare"
   },
-  "homepage": "https://github.com/cloudflare/puppeteer/tree/main/examples/playwright-mcp-cloudflare",
+  "homepage": "https://github.com/cloudflare/browser/tree/main/examples/playwright-mcp-cloudflare",
   "engines": {
     "node": ">=18"
   },
