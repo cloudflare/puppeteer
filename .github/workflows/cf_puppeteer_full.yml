@@ -1,0 +1,116 @@
+name: "Puppeteer for Cloudflare - Full Tests"
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/cf_puppeteer_*.yml'
+      - '.npmrc'
+      - 'package.json'
+      - 'packages/browser-test-runtime/**'
+      - 'packages/puppeteer-cloudflare/**'
+      - 'patches/playwright.patch'
+      - 'patches/puppeteer.patch'
+      - 'scripts/**'
+      - 'submodules/playwright'
+      - 'submodules/jest'
+      - 'submodules/puppeteer'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/cf_puppeteer_*.yml'
+      - '.npmrc'
+      - 'package.json'
+      - 'packages/browser-test-runtime/**'
+      - 'packages/puppeteer-cloudflare/**'
+      - 'patches/playwright.patch'
+      - 'patches/puppeteer.patch'
+      - 'scripts/**'
+      - 'submodules/playwright'
+      - 'submodules/jest'
+      - 'submodules/puppeteer'
+  workflow_dispatch:
+
+# A newer push to the same pull request cancels its older run. Runs for main,
+# other branches, and manual dispatches are never cancelled by this group.
+concurrency:
+  group: cf-puppeteer-full-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test_full:
+    runs-on: ubuntu-latest
+    # All branches deploy to the same test Worker, so only one job may use it at
+    # a time. Shared with the smoke workflow, which uses the same group name.
+    concurrency:
+      group: cf-puppeteer-worker-deployment
+      cancel-in-progress: false
+    env:
+      # Credentialed deploy + remote tests run for pushes, manual dispatches, and
+      # PRs from branches in this repository (only writers can push those).
+      # Fork and Dependabot PRs have no access to these secrets and only validate.
+      RUN_REMOTE_TESTS: ${{ github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]') }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Validate package
+        run: |
+          npm ci
+          git submodule update --init
+          npm run test:release-validation
+          npm run check:patches:puppeteer
+          npm run build:puppeteer
+          npm run test:bundle:prebuilt --workspace @cloudflare/puppeteer
+          npm --prefix packages/puppeteer-cloudflare/tests run test-types
+          npm --prefix packages/puppeteer-cloudflare/tests run typecheck:server
+          npm run check:submodules
+
+      - name: Deploy test Worker
+        if: ${{ env.RUN_REMOTE_TESTS == 'true' }}
+        working-directory: packages/puppeteer-cloudflare/tests
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        # Proxy tests read the test list from the deployed Worker. Export the
+        # new version ID so generation waits until that version serves requests.
+        run: |
+          set -o pipefail
+          npx wrangler deploy | tee "$RUNNER_TEMP/wrangler-deploy.log"
+          version="$(sed -n 's/^Current Version ID: //p' "$RUNNER_TEMP/wrangler-deploy.log" | tail -n 1)"
+          test -n "$version"
+          echo "EXPECTED_WORKER_VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Run Full Tests
+        if: ${{ env.RUN_REMOTE_TESTS == 'true' }}
+        working-directory: packages/puppeteer-cloudflare
+        env:
+          TESTS_SERVER_URL: https://puppeteer-test-workers.rendering.cfdata.org
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+        run: npm run test:full -- --reporter=html
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() && env.RUN_REMOTE_TESTS == 'true' }}
+        with:
+          # puppeteer tests run with playwright, that's why it's playwright-report
+          name: puppeteer-playwright-report--attempt-${{ github.run_attempt }}
+          path: packages/puppeteer-cloudflare/tests/playwright-report/
+          retention-days: 30
+
+      - name: Deploy to Cloudflare Pages
+        if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          cd packages/puppeteer-cloudflare/tests
+          npx wrangler pages deploy ./playwright-report --project-name puppeteer-full-test-report

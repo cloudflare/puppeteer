@@ -1,6 +1,6 @@
-import {promises} from '@cloudflare/playwright/fs';
+import {promises} from 'node:fs';
 
-export {promises} from '@cloudflare/playwright/fs';
+export {promises} from 'node:fs';
 
 export const {
   access,

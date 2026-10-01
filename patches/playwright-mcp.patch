@@ -1,0 +1,143 @@
+diff --git a/src/tools/common.ts b/src/tools/common.ts
+--- a/src/tools/common.ts
++++ b/src/tools/common.ts
+@@ -45,8 +45,8 @@ const resize: ToolFactory = captureSnapshot => defineTool({
+     title: 'Resize browser window',
+     description: 'Resize the browser window',
+     inputSchema: z.object({
+-      width: z.number().describe('Width of the browser window'),
+-      height: z.number().describe('Height of the browser window'),
++      width: z.coerce.number().describe('Width of the browser window'),
++      height: z.coerce.number().describe('Height of the browser window'),
+     }),
+     type: 'readOnly',
+   },
+diff --git a/src/tools/dialogs.ts b/src/tools/dialogs.ts
+--- a/src/tools/dialogs.ts
++++ b/src/tools/dialogs.ts
+@@ -25,7 +25,7 @@ const handleDialog: ToolFactory = captureSnapshot => defineTool({
+     title: 'Handle a dialog',
+     description: 'Handle a dialog',
+     inputSchema: z.object({
+-      accept: z.boolean().describe('Whether to accept the dialog.'),
++      accept: z.coerce.boolean().describe('Whether to accept the dialog.'),
+       promptText: z.string().optional().describe('The text of the prompt in case of a prompt dialog.'),
+     }),
+     type: 'destructive',
+diff --git a/src/tools/screenshot.ts b/src/tools/screenshot.ts
+--- a/src/tools/screenshot.ts
++++ b/src/tools/screenshot.ts
+@@ -24,7 +24,7 @@ import { generateLocator } from './utils.js';
+ import type * as playwright from 'playwright';
+ 
+ const screenshotSchema = z.object({
+-  raw: z.boolean().optional().describe('Whether to return without compression (in PNG format). Default is false, which returns a JPEG image.'),
++  raw: z.coerce.boolean().optional().describe('Whether to return without compression (in PNG format). Default is false, which returns a JPEG image.'),
+   filename: z.string().optional().describe('File name to save the screenshot to. Defaults to `page-{timestamp}.{png|jpeg}` if not specified.'),
+   element: z.string().optional().describe('Human-readable element description used to obtain permission to screenshot the element. If not provided, the screenshot will be taken of viewport. If element is provided, ref must be provided too.'),
+   ref: z.string().optional().describe('Exact target element reference from the page snapshot. If not provided, the screenshot will be taken of viewport. If ref is provided, element must be provided too.'),
+diff --git a/src/tools/snapshot.ts b/src/tools/snapshot.ts
+--- a/src/tools/snapshot.ts
++++ b/src/tools/snapshot.ts
+@@ -47,7 +47,7 @@ const elementSchema = z.object({
+ });
+ 
+ const clickSchema = elementSchema.extend({
+-  doubleClick: z.boolean().optional().describe('Whether to perform a double click instead of a single click'),
++  doubleClick: z.coerce.boolean().optional().describe('Whether to perform a double click instead of a single click'),
+ });
+ 
+ const click = defineTool({
+@@ -146,8 +146,8 @@ const hover = defineTool({
+ 
+ const typeSchema = elementSchema.extend({
+   text: z.string().describe('Text to type into the element'),
+-  submit: z.boolean().optional().describe('Whether to submit entered text (press Enter after)'),
+-  slowly: z.boolean().optional().describe('Whether to type one character at a time. Useful for triggering key handlers in the page. By default entire text is filled in at once.'),
++  submit: z.coerce.boolean().optional().describe('Whether to submit entered text (press Enter after)'),
++  slowly: z.coerce.boolean().optional().describe('Whether to type one character at a time. Useful for triggering key handlers in the page. By default entire text is filled in at once.'),
+ });
+ 
+ const type = defineTool({
+diff --git a/src/tools/tabs.ts b/src/tools/tabs.ts
+--- a/src/tools/tabs.ts
++++ b/src/tools/tabs.ts
+@@ -52,7 +52,7 @@ const selectTab: ToolFactory = captureSnapshot => defineTool({
+     title: 'Select a tab',
+     description: 'Select a tab by index',
+     inputSchema: z.object({
+-      index: z.number().describe('The index of the tab to select'),
++      index: z.coerce.number().describe('The index of the tab to select'),
+     }),
+     type: 'readOnly',
+   },
+@@ -108,7 +108,7 @@ const closeTab: ToolFactory = captureSnapshot => defineTool({
+     title: 'Close a tab',
+     description: 'Close a tab',
+     inputSchema: z.object({
+-      index: z.number().optional().describe('The index of the tab to close. Closes current tab if not provided.'),
++      index: z.coerce.number().optional().describe('The index of the tab to close. Closes current tab if not provided.'),
+     }),
+     type: 'destructive',
+   },
+diff --git a/src/tools/vision.ts b/src/tools/vision.ts
+--- a/src/tools/vision.ts
++++ b/src/tools/vision.ts
+@@ -64,8 +64,8 @@ const moveMouse = defineTool({
+     title: 'Move mouse',
+     description: 'Move mouse to a given position',
+     inputSchema: elementSchema.extend({
+-      x: z.number().describe('X coordinate'),
+-      y: z.number().describe('Y coordinate'),
++      x: z.coerce.number().describe('X coordinate'),
++      y: z.coerce.number().describe('Y coordinate'),
+     }),
+     type: 'readOnly',
+   },
+@@ -93,8 +93,8 @@ const click = defineTool({
+     title: 'Click',
+     description: 'Click left mouse button',
+     inputSchema: elementSchema.extend({
+-      x: z.number().describe('X coordinate'),
+-      y: z.number().describe('Y coordinate'),
++      x: z.coerce.number().describe('X coordinate'),
++      y: z.coerce.number().describe('Y coordinate'),
+     }),
+     type: 'destructive',
+   },
+@@ -128,10 +128,10 @@ const drag = defineTool({
+     title: 'Drag mouse',
+     description: 'Drag left mouse button',
+     inputSchema: elementSchema.extend({
+-      startX: z.number().describe('Start X coordinate'),
+-      startY: z.number().describe('Start Y coordinate'),
+-      endX: z.number().describe('End X coordinate'),
+-      endY: z.number().describe('End Y coordinate'),
++      startX: z.coerce.number().describe('Start X coordinate'),
++      startY: z.coerce.number().describe('Start Y coordinate'),
++      endX: z.coerce.number().describe('End X coordinate'),
++      endY: z.coerce.number().describe('End Y coordinate'),
+     }),
+     type: 'destructive',
+   },
+@@ -171,7 +171,7 @@ const type = defineTool({
+     description: 'Type text',
+     inputSchema: z.object({
+       text: z.string().describe('Text to type into the element'),
+-      submit: z.boolean().optional().describe('Whether to submit entered text (press Enter after)'),
++      submit: z.coerce.boolean().optional().describe('Whether to submit entered text (press Enter after)'),
+     }),
+     type: 'destructive',
+   },
+diff --git a/src/tools/wait.ts b/src/tools/wait.ts
+--- a/src/tools/wait.ts
++++ b/src/tools/wait.ts
+@@ -25,7 +25,7 @@ const wait: ToolFactory = captureSnapshot => defineTool({
+     title: 'Wait for',
+     description: 'Wait for text to appear or disappear or a specified time to pass',
+     inputSchema: z.object({
+-      time: z.number().optional().describe('The time to wait in seconds'),
++      time: z.coerce.number().optional().describe('The time to wait in seconds'),
+       text: z.string().optional().describe('The text to wait for'),
+       textGone: z.string().optional().describe('The text to wait for to disappear'),
+     }),

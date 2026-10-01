@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "lib": ["esnext", "DOM"],
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "paths": {
+      "@workerTests/*": ["./workerTests/*"],
+      "@cloudflareTests/*": ["./workerTests/*"],
+    },
+    "types": ["./worker-configuration.d.ts"]
+  },
+  "include": ["./**/*.ts", "./**/*.d.ts"],
+  // tsd type-checks test-d with the workers-types globals (see package.json).
+  "exclude": ["./test-d/**"],
+}

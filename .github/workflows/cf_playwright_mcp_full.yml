@@ -1,0 +1,91 @@
+name: "Playwright MCP for Cloudflare - CI"
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cf_playwright_mcp_*.yml'
+      - '.npmrc'
+      - 'package.json'
+      - 'examples/playwright-mcp-cloudflare/**'
+      - 'packages/browser-test-runtime/**'
+      - 'packages/playwright-cloudflare/**'
+      - 'packages/playwright-mcp-cloudflare/**'
+      - 'patches/playwright.patch'
+      - 'patches/playwright-mcp.patch'
+      - 'scripts/**'
+      - 'submodules/playwright'
+      - 'submodules/playwright-mcp'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/cf_playwright_mcp_*.yml'
+      - '.npmrc'
+      - 'package.json'
+      - 'examples/playwright-mcp-cloudflare/**'
+      - 'packages/browser-test-runtime/**'
+      - 'packages/playwright-cloudflare/**'
+      - 'packages/playwright-mcp-cloudflare/**'
+      - 'patches/playwright.patch'
+      - 'patches/playwright-mcp.patch'
+      - 'scripts/**'
+      - 'submodules/playwright'
+      - 'submodules/playwright-mcp'
+  workflow_dispatch:
+
+# A newer push to the same pull request cancels its older run. Runs for main,
+# other branches, and manual dispatches are never cancelled by this group.
+concurrency:
+  group: cf-playwright-mcp-full-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    # All branches deploy to the same test Worker, so only one job may use it at
+    # a time.
+    concurrency:
+      group: cf-playwright-mcp-worker-deployment
+      cancel-in-progress: false
+    env:
+      # Credentialed deploy + remote tests run for pushes, manual dispatches, and
+      # PRs from branches in this repository (only writers can push those).
+      # Fork and Dependabot PRs have no access to these secrets and only validate.
+      RUN_REMOTE_TESTS: ${{ github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]') }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Validate package
+        run: |
+          npm ci
+          git submodule update --init
+          npm run test:release-validation
+          npm run ci:mcp --workspace @cloudflare/playwright-mcp
+          npm run check:patch:playwright-mcp
+          npm run build --workspace @cloudflare/playwright-mcp
+          npm run test:types --workspace @cloudflare/playwright-mcp
+          npm run test:bundle --workspace @cloudflare/playwright-mcp
+          npm run build --workspace @cloudflare/playwright-mcp-template
+          npm exec -- wrangler deploy --dry-run --config examples/playwright-mcp-cloudflare/wrangler.toml
+          npm pack --workspace @cloudflare/playwright-mcp --dry-run
+          npm run check:submodules
+
+      - name: Deploy MCP test Worker
+        if: ${{ env.RUN_REMOTE_TESTS == 'true' }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npm run test:deploy --workspace @cloudflare/playwright-mcp
+
+      - name: Run deployed MCP Browser Run smoke test
+        if: ${{ env.RUN_REMOTE_TESTS == 'true' }}
+        env:
+          MCP_SERVER_URL: https://playwright-mcp-test-workers.rendering.cfdata.org/mcp
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+        run: npm run test:remote --workspace @cloudflare/playwright-mcp

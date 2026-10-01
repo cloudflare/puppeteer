@@ -17,7 +17,7 @@ import {connect, launch, acquire} from '@cloudflare/puppeteer';
 import {expectAssignable, expectNotAssignable, expectType} from 'tsd';
 
 declare const endpoint: BrowserWorker;
-declare const outboundWorker: BrowserWorker;
+declare const outboundWorker: Fetcher;
 
 const policy: SessionGuardrails = {
   allowedDomains: ['example.com', '*.example.com', 'api.*.example.com'],
