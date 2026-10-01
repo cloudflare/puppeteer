@@ -84,33 +84,30 @@ test('should handle XPath selectors @smoke', async () => {
   expect(content).toBe('Hello, World!');
 });
 
+// Use the coverage pages from the Puppeteer test assets, which the test
+// Worker serves. A live third-party page changes its markup over time.
 test('should collect code coverage @smoke', async () => {
-  const {page} = getTestState();
+  const {page, server} = getTestState();
 
-  await Promise.all([
-    page.coverage.startJSCoverage(),
-    page.coverage.startCSSCoverage(),
+  await page.coverage.startJSCoverage();
+  await page.goto(server.PREFIX + '/jscoverage/simple.html', {
+    waitUntil: 'load',
+  });
+  const jsCoverage = await page.coverage.stopJSCoverage();
+  expect(jsCoverage).toHaveLength(1);
+  expect(jsCoverage[0]!.url).toContain('/jscoverage/simple.html');
+  expect(jsCoverage[0]!.ranges).toEqual([
+    {start: 0, end: 17},
+    {start: 35, end: 61},
   ]);
-  // Navigate to page
-  await page.goto('https://example.com');
-  // Disable both JavaScript and CSS coverage
-  const [jsCoverage, cssCoverage] = await Promise.all([
-    page.coverage.stopJSCoverage(),
-    page.coverage.stopCSSCoverage(),
-  ]);
-  let totalBytes = 0;
-  let usedBytes = 0;
-  const coverage = [...jsCoverage, ...cssCoverage];
-  for (const entry of coverage) {
-    totalBytes += entry.text.length;
-    for (const range of entry.ranges) {
-      usedBytes += range.end - range.start - 1;
-    }
-  }
 
-  const usagePercentage = `Bytes used: ${(usedBytes / totalBytes) * 100}%`;
-
-  expect(usagePercentage).toBe("Bytes used: 99.3103448275862%");
+  await page.coverage.startCSSCoverage();
+  await page.goto(server.PREFIX + '/csscoverage/simple.html');
+  const cssCoverage = await page.coverage.stopCSSCoverage();
+  expect(cssCoverage).toHaveLength(1);
+  expect(cssCoverage[0]!.url).toContain('/csscoverage/simple.html');
+  expect(cssCoverage[0]!.ranges).toEqual([{start: 1, end: 22}]);
+  expect(cssCoverage[0]!.text.substring(1, 22)).toBe('div { color: green; }');
 });
 
 test('should evaluate on new document @smoke', async () => {
