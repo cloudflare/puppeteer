@@ -28,6 +28,11 @@ wrapClientApis();
 
 const HTTP_FAKE_HOST = 'http://fake.host';
 const WS_FAKE_HOST = 'ws://fake.host';
+// Bindings that acquired a session through the RPC `acquire` method. Only these
+// connect through `connectSession`; every other session connects through the
+// binding's `fetch`. Do not test for `connectSession` with `typeof`: on a
+// Browser Run binding every property is an RPC stub, so it is always a function.
+const rpcBindings = new WeakSet<object>();
 
 const originalConnectOverCDP = playwright.chromium.connectOverCDP;
 // HACK this is a major hack, but we need it to make playwright-mcp and stagehand work without modifying their code extensively.
@@ -151,8 +156,8 @@ export async function connect(endpoint: BrowserEndpoint, sessionIdOrOptions?: st
 
   const binding = getBrowserBinding(endpoint);
   let connectionEndpoint = binding;
-  if (typeof binding.connectSession === 'function') {
-    const connection = await binding.connectSession(options.sessionId);
+  if (rpcBindings.has(binding)) {
+    const connection = await binding.connectSession!(options.sessionId);
     connectionEndpoint = connection.webSocket;
   }
   const webSocket = await connectDevtools(connectionEndpoint, options as { sessionId: string });
@@ -217,6 +222,7 @@ export async function acquire(endpoint: BrowserEndpoint, options?: WorkersLaunch
     // Call as a method on the binding. On an RPC stub every property access,
     // including Function.prototype members such as `bind`, becomes a remote call.
     const response = await binding.acquire!(toBrowserRunOptions(options));
+    rpcBindings.add(binding);
     return response;
   }
 

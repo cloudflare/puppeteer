@@ -152,6 +152,25 @@ test(`should call RPC acquire as a method on the binding`, async () => {
   expect(rpcCalls).toBe(1);
 });
 
+test(`should connect HTTP-acquired sessions through fetch, not connectSession`, async ({ binding }) => {
+  // On a Browser Run binding every property is an RPC stub, so `acquire` and
+  // `connectSession` always look callable, even where Browser Run cannot serve
+  // them (for example, local development).
+  const stubLikeBinding = {
+    fetch: (input: RequestInfo | URL, init?: RequestInit) => binding.fetch(input, init),
+    acquire: async () => { throw new Error('RPC acquire must not be called'); },
+    connectSession: async () => { throw new Error('connectSession must not be called'); },
+  } as unknown as BrowserWorker;
+
+  const launchedBrowser = await launch(stubLikeBinding);
+  await launchedBrowser.close();
+
+  const { sessionId } = await acquire(stubLikeBinding, { keep_alive: 10000 });
+  const connectedBrowser = await connect(stubLikeBinding, sessionId);
+  expect(connectedBrowser.sessionId()).toBe(sessionId);
+  await connectedBrowser.close();
+});
+
 test(`should keep session open when closing browser created with connect`, async ({ binding }) => {
   const { sessionId } = await acquire(binding, { keep_alive: 10000 });
 

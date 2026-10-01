@@ -25,6 +25,11 @@ import {WorkersWebSocketTransport} from './WorkersWebSocketTransport.js';
 export type {SessionGuardrails} from './utils.js';
 
 const FAKE_HOST = 'https://fake.host';
+// Bindings that acquired a session through the RPC `acquire` method. Only these
+// connect through `connectSession`; every other session connects through the
+// binding's `fetch`. Do not test for `connectSession` with `typeof`: on a
+// Browser Run binding every property is an RPC stub, so it is always a function.
+const rpcBindings = new WeakSet<object>();
 const sessionPinnedEndpoints = new WeakSet<object>();
 
 function validateKitesurfOptions(options?: WorkersLaunchOptions): void {
@@ -280,10 +285,10 @@ export class PuppeteerWorkers extends Puppeteer {
       let connectionEndpoint = endpoint as BrowserWorker;
       if (
         sessionId &&
-        typeof connectionEndpoint.connectSession === 'function' &&
+        rpcBindings.has(connectionEndpoint) &&
         !sessionPinnedEndpoints.has(connectionEndpoint)
       ) {
-        const connection = await connectionEndpoint.connectSession(sessionId);
+        const connection = await connectionEndpoint.connectSession!(sessionId);
         connectionEndpoint = connection.webSocket;
         sessionPinnedEndpoints.add(connectionEndpoint);
       }
@@ -331,6 +336,7 @@ export class PuppeteerWorkers extends Puppeteer {
       const response: BrowserRunAcquireResult = await endpoint.acquire!(
         toBrowserRunOptions(options)
       );
+      rpcBindings.add(endpoint);
       return response;
     }
     const searchParams = new URLSearchParams();
