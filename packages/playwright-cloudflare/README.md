@@ -39,7 +39,7 @@ npx wrangler types
 
 [Browser Run now has full CDP support](https://developers.cloudflare.com/changelog/post/2026-04-10-browser-rendering-cdp-endpoint/), so starting with `@cloudflare/playwright` version 1.3.0, the library uses the standard CDP (Chrome DevTools Protocol) internally to communicate with Browser Run.
 
-Everything should work the same way, but if you encounter any issues, please [report them](https://github.com/cloudflare/playwright/issues). You can also downgrade to a previous playwright version by using `compatibility_date` prior to `2026-03-17` or by adding the `no_websocket_standard_binary_type` flag:
+Everything should work the same way, but if you encounter any issues, please [report them](https://github.com/cloudflare/browser/issues). You can also downgrade to a previous playwright version by using `compatibility_date` prior to `2026-03-17` or by adding the `no_websocket_standard_binary_type` flag:
 
 ```toml
 compatibility_date = "2026-03-16"
@@ -47,7 +47,7 @@ compatibility_date = "2026-03-16"
 compatibility_flags = ["nodejs_compat", "no_websocket_standard_binary_type", ...]
 ```
 
-See [cloudflare/puppeteer#193](https://github.com/cloudflare/puppeteer/issues/193) and [cloudflare/workerd#6442](https://github.com/cloudflare/workerd/issues/6442) for details.
+See [cloudflare/browser#193](https://github.com/cloudflare/browser/issues/193) and [cloudflare/workerd#6442](https://github.com/cloudflare/workerd/issues/6442) for details.
 
 ## Examples
 

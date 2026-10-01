@@ -1,6 +1,6 @@
 # Cloudflare Stagehand Example
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/playwright/tree/main/packages/playwright-cloudflare/examples/stagehand)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/browser/tree/main/packages/playwright-cloudflare/examples/stagehand)
 
 This example demonstrates how to integrate Stagehand 2.x in a Cloudflare Worker using Vite to extract information from a movie.
 

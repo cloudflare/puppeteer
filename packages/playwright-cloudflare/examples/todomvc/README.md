@@ -1,6 +1,6 @@
 # Playwright Cloudflare TodoMVC Example
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/playwright/tree/main/packages/playwright-cloudflare/examples/todomvc)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/browser/tree/main/packages/playwright-cloudflare/examples/todomvc)
 
 This example demonstrates how to run Playwright tests in a Cloudflare Worker using the TodoMVC application.
 
