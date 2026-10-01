@@ -47,10 +47,13 @@ export interface BrowserRunConnection {
 
 export interface BrowserWorker {
   fetch: typeof fetch;
-  launch?: (options?: BrowserRunOptions) => Promise<BrowserRunConnection>;
-  acquire?: (options?: BrowserRunOptions) => Promise<BrowserRunAcquireResult>;
-  connectSession?: (
+  // Declared as methods, not function-typed properties, so that the Browser Run
+  // binding type from @cloudflare/workers-types (whose options differ, for
+  // example `outboundByHost` values typed as `Fetcher`) is assignable.
+  launch?(options?: BrowserRunOptions): Promise<BrowserRunConnection>;
+  acquire?(options?: BrowserRunOptions): Promise<BrowserRunAcquireResult>;
+  connectSession?(
     sessionId: string,
     options?: BrowserRunConnectOptions
-  ) => Promise<BrowserRunConnection>;
+  ): Promise<BrowserRunConnection>;
 }

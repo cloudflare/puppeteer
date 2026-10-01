@@ -34,7 +34,7 @@
       "lib": ["esnext", "DOM"],
       "strict": true,
       "skipLibCheck": false,
-      "types": []
+      "types": ["@cloudflare/workers-types"]
     }
   }
 }

@@ -50,10 +50,11 @@ function validateKitesurfOptions(options?: WorkersLaunchOptions): void {
   }
 }
 
-// We can't include both workers-types and dom because they conflict
+// We can't include both workers-types and dom because they conflict.
+// Match the modifiers in workers-types, so projects that load both compile.
 declare global {
   interface Response {
-    readonly webSocket: WebSocket | null;
+    webSocket: WebSocket | null;
   }
   interface WebSocket {
     accept(): void;

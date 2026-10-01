@@ -17,4 +17,6 @@
     "types": ["./worker-configuration.d.ts"]
   },
   "include": ["./**/*.ts", "./**/*.d.ts"],
+  // tsd type-checks test-d with the workers-types globals (see package.json).
+  "exclude": ["./test-d/**"],
 }

@@ -31,6 +31,7 @@
         "DOM"
       ],
       "strict": false,
+      "strictFunctionTypes": true,
       "skipLibCheck": true,
       "types": [
         "node",

@@ -67,9 +67,12 @@ export interface SessionGuardrails {
  */
 export interface BrowserWorker {
   fetch: typeof fetch;
-  launch?: (options?: BrowserRunOptions) => Promise<BrowserRunConnection>;
-  acquire?: (options?: BrowserRunOptions) => Promise<AcquireResponse>;
-  connectSession?: (sessionId: string, options?: BrowserRunConnectOptions) => Promise<BrowserRunConnection>;
+  // Declared as methods, not function-typed properties, so that the Browser Run
+  // binding type from @cloudflare/workers-types (whose options differ, for
+  // example `outboundByHost` values typed as `Fetcher`) is assignable.
+  launch?(options?: BrowserRunOptions): Promise<BrowserRunConnection>;
+  acquire?(options?: BrowserRunOptions): Promise<AcquireResponse>;
+  connectSession?(sessionId: string, options?: BrowserRunConnectOptions): Promise<BrowserRunConnection>;
 }
 
 export type BrowserEndpoint = BrowserWorker | string | URL;
