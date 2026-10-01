@@ -31,6 +31,13 @@ export interface SessionlessBrowser extends Omit<Browser, 'sessionId'> {
   sessionId(): undefined;
 }
 
+// Browser Run types come from the Workers runtime types, which every Worker
+// project loads, either from @cloudflare/workers-types or from `wrangler types`.
+// Refer to their global names instead of copying them, so that they cannot
+// drift from the binding. They require @cloudflare/workers-types 5.20260917.1 or
+// later, or the types that `wrangler types` generates with Wrangler 4.134.0 or
+// later.
+
 /**
  * Guardrails that restrict the outbound traffic of a browser session.
  *
@@ -42,37 +49,20 @@ export interface SessionlessBrowser extends Omit<Browser, 'sessionId'> {
  *
  * @public
  */
-export interface SessionGuardrails {
-  /**
-   * Hostname patterns the browser may access, max 50.
-   *
-   * @remarks
-   * Each entry is a bare hostname (no scheme, port or path) and may contain a
-   * single `*` wildcard. Prefer `*.example.com` (subdomain wildcard) over
-   * `*example.com` (prefix wildcard), which also matches lookalikes such as
-   * `evilexample.com`.
-   */
-  allowedDomains?: string[];
-  /**
-   * Preset names or HTTPS URLs of newline-separated hostname lists, max 4.
-   *
-   * @remarks
-   * The available preset is `common-cdns`.
-   */
-  allowedDomainSets?: string[];
-}
+export type SessionGuardrails = BrowserRunAcquireGuardrails;
 
 /**
+ * A Browser Run binding, or any other binding with a Browser Run compatible
+ * `fetch`, such as a service binding.
+ *
+ * @remarks
+ * Only `fetch` is required. The Browser Run RPC methods are used when the
+ * binding has them.
+ *
  * @public
  */
-export interface BrowserWorker {
+export interface BrowserWorker extends Partial<Pick<BrowserRun, 'launch' | 'acquire' | 'connectSession'>> {
   fetch: typeof fetch;
-  // Declared as methods, not function-typed properties, so that the Browser Run
-  // binding type from @cloudflare/workers-types (whose options differ, for
-  // example `outboundByHost` values typed as `Fetcher`) is assignable.
-  launch?(options?: BrowserRunOptions): Promise<BrowserRunConnection>;
-  acquire?(options?: BrowserRunOptions): Promise<AcquireResponse>;
-  connectSession?(sessionId: string, options?: BrowserRunConnectOptions): Promise<BrowserRunConnection>;
 }
 
 export type BrowserEndpoint = BrowserWorker | string | URL;
@@ -80,45 +70,17 @@ export type BrowserEndpoint = BrowserWorker | string | URL;
 /**
  * @public
  */
-export interface AcquireResponse {
-  sessionId: string;
-  webSocketDebuggerUrl?: string;
-  targets?: BrowserRunTarget[];
-}
+export type AcquireResponse = BrowserRunAcquireResult;
 
 /**
  * @public
  */
-export interface BrowserRunTarget {
-  id: string;
-  type: string;
-  url: string;
-  title?: string;
-  description?: string;
-  webSocketDebuggerUrl?: string;
-  devtoolsFrontendUrl?: string;
-}
+export type ActiveSession = BrowserRunSession;
 
 /**
  * @public
  */
-export interface ActiveSession {
-  sessionId: string;
-  startTime: number; // timestamp
-  // connection info, if present means there's a connection established
-  // from a worker to that session
-  connectionId?: string;
-  connectionStartTime?: number;
-}
-
-/**
- * @public
- */
-export interface ClosedSession extends ActiveSession {
-  endTime: number; // timestamp
-  closeReason: number; // close reason code
-  closeReasonText: string; // close reason description
-}
+export type ClosedSession = BrowserRunSession;
 
 /**
  * @public
@@ -137,12 +99,7 @@ export interface HistoryResponse {
 /**
  * @public
  */
-export interface LimitsResponse {
-  activeSessions: Array<{id: string}>;
-  maxConcurrentSessions: number;
-  allowedBrowserAcquisitions: number; // 1 if allowed, 0 otherwise
-  timeUntilNextAllowedBrowserAcquisition: number;
-}
+export type LimitsResponse = BrowserRunLimits;
 
 /**
  * @public
@@ -152,28 +109,10 @@ export interface WorkersLaunchOptions {
   recording?: boolean;
   lab?: boolean;
   browser?: 'kitesurf'; // when set to 'kitesurf', no session is acquired and the connection is made directly to /v1/devtools/browser
-  outboundByHost?: Record<string, BrowserWorker>;
+  outboundByHost?: BrowserRunAcquireOptions['outboundByHost'];
   // restricts the outbound traffic of the session being acquired, latched for
   // its lifetime
   guardrails?: SessionGuardrails;
-}
-
-/**
- * Options accepted by Browser Run's RPC binding methods. The RPC surface uses
- * camelCase and does not accept URL-only options such as `browser` or
- * `persistent`.
- *
- * @public
- */
-export interface BrowserRunOptions {
-  keepAlive?: number;
-  recording?: boolean;
-  lab?: boolean;
-  location?: string;
-  guardrails?: SessionGuardrails;
-  outboundByHost?: Record<string, BrowserWorker>;
-  targets?: boolean;
-  liveViewUrlExpiresInMs?: number;
 }
 
 /**
@@ -181,23 +120,6 @@ export interface BrowserRunOptions {
  */
 export interface WorkersConnectOptions {
   sessionId: string; // session ID to connect to
-}
-
-/**
- * @public
- */
-export interface BrowserRunConnectOptions {
-  targetId?: string;
-}
-
-/**
- * @public
- */
-export interface BrowserRunConnection {
-  sessionId: string;
-  webSocket: BrowserWorker;
-  webSocketDebuggerUrl?: string;
-  targets?: BrowserRunTarget[];
 }
 
 // Extracts the keys whose values match a specified type `ValueType`

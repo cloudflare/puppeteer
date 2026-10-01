@@ -15,7 +15,7 @@ import { expectAssignable, expectNotAssignable, expectType } from 'tsd';
 import type { BrowserWorker, SessionGuardrails, WorkersLaunchOptions } from '@cloudflare/playwright';
 
 declare const binding: BrowserWorker;
-declare const outboundWorker: BrowserWorker;
+declare const outboundWorker: Fetcher;
 
 const sessionPolicy: SessionGuardrails = {
   allowedDomains: ['example.com', '*.example.com', 'api.*.example.com'],

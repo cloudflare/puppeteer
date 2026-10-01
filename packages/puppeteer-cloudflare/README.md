@@ -23,6 +23,16 @@ compatibility_flags = ["nodejs_compat"]
 browser = { binding = "MYBROWSER" }
 ```
 
+## TypeScript
+
+The package types use the Browser Run types of the Workers runtime, for example `BrowserRun` and `BrowserRunAcquireGuardrails`. Your project gets these types from `wrangler types` with Wrangler 4.134.0 or later, or from `@cloudflare/workers-types` 5.20260917.1 or later.
+
+If your types are older, TypeScript reports `Cannot find name 'BrowserRun'`. With `skipLibCheck`, TypeScript does not report an error, but it also does not check these types. To update the types, run:
+
+```sh
+npx wrangler types
+```
+
 ## CDP Protocol Support
 
 [Browser Run now has full CDP support](https://developers.cloudflare.com/changelog/post/2026-04-10-browser-rendering-cdp-endpoint/), so starting with `@cloudflare/puppeteer` version 1.1.0, the library uses the standard CDP (Chrome DevTools Protocol) internally to communicate with Browser Run.

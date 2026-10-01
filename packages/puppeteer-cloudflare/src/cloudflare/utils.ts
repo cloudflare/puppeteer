@@ -79,25 +79,7 @@ export type Browsers = 'kitesurf';
  *
  * @public
  */
-export interface SessionGuardrails {
-  /**
-   * Hostname patterns the browser may access, max 50.
-   *
-   * @remarks
-   * Each entry is a bare hostname (no scheme, port or path) and may contain a
-   * single `*` wildcard. Prefer `*.example.com` (subdomain wildcard) over
-   * `*example.com` (prefix wildcard), which also matches lookalikes such as
-   * `evilexample.com`.
-   */
-  allowedDomains?: string[];
-  /**
-   * Preset names or HTTPS URLs of newline-separated hostname lists, max 4.
-   *
-   * @remarks
-   * The available preset is `common-cdns`.
-   */
-  allowedDomainSets?: string[];
-}
+export type SessionGuardrails = BrowserRunAcquireGuardrails;
 
 /**
  * Guardrails header, base64url-encoded JSON. Carries the policy on the websocket

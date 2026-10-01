@@ -114,7 +114,7 @@ test(`should reject outbound workers combined with browser=kitesurf`, async () =
     fetch: async () => {
       return new Response('ok');
     },
-  } as BrowserWorker;
+  } as unknown as Fetcher;
   await expect(
     launch(binding, {
       browser: 'kitesurf',
@@ -129,7 +129,7 @@ test(`should pass lab and outbound workers to the RPC acquire method`, async () 
     fetch: async () => {
       return new Response('ok');
     },
-  } as BrowserWorker;
+  } as unknown as Fetcher;
   const rpcBinding = {
     fetch: async () => {
       return new Response('ok');
@@ -183,7 +183,7 @@ test(`should pass translated options to RPC launch and reuse its pinned Fetcher`
       connectSessionCalls++;
       throw new Error('pinned Fetcher was probed');
     },
-  } as BrowserWorker;
+  } as unknown as Fetcher;
   const rpcBinding = {
     fetch: async () => {
       return new Response('ok');

@@ -4,56 +4,24 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export interface BrowserRunAcquireResult {
-  sessionId: string;
-  webSocketDebuggerUrl?: string;
-  targets?: BrowserRunTarget[];
-}
+// Browser Run types come from the Workers runtime types, which every Worker
+// project loads, either from @cloudflare/workers-types or from `wrangler types`.
+// Refer to their global names instead of copying them, so that they cannot
+// drift from the binding. They require @cloudflare/workers-types 5.20260917.1 or
+// later, or the types that `wrangler types` generates with Wrangler 4.134.0 or
+// later.
 
-export interface BrowserRunTarget {
-  id: string;
-  type: string;
-  url: string;
-  title?: string;
-  description?: string;
-  webSocketDebuggerUrl?: string;
-  devtoolsFrontendUrl?: string;
-}
-
-export interface BrowserRunOptions {
-  keepAlive?: number;
-  recording?: boolean;
-  lab?: boolean;
-  location?: string;
-  guardrails?: {
-    allowedDomains?: string[];
-    allowedDomainSets?: string[];
-  };
-  outboundByHost?: Record<string, BrowserWorker>;
-  targets?: boolean;
-  liveViewUrlExpiresInMs?: number;
-}
-
-export interface BrowserRunConnectOptions {
-  targetId?: string;
-}
-
-export interface BrowserRunConnection {
-  sessionId: string;
-  webSocket: BrowserWorker;
-  webSocketDebuggerUrl?: string;
-  targets?: BrowserRunTarget[];
-}
-
-export interface BrowserWorker {
+/**
+ * A Browser Run binding, or any other binding with a Browser Run compatible
+ * `fetch`, such as a service binding.
+ *
+ * @remarks
+ * Only `fetch` is required. The Browser Run RPC methods are used when the
+ * binding has them.
+ *
+ * @public
+ */
+export interface BrowserWorker
+  extends Partial<Pick<BrowserRun, 'launch' | 'acquire' | 'connectSession'>> {
   fetch: typeof fetch;
-  // Declared as methods, not function-typed properties, so that the Browser Run
-  // binding type from @cloudflare/workers-types (whose options differ, for
-  // example `outboundByHost` values typed as `Fetcher`) is assignable.
-  launch?(options?: BrowserRunOptions): Promise<BrowserRunConnection>;
-  acquire?(options?: BrowserRunOptions): Promise<BrowserRunAcquireResult>;
-  connectSession?(
-    sessionId: string,
-    options?: BrowserRunConnectOptions
-  ): Promise<BrowserRunConnection>;
 }

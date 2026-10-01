@@ -11,7 +11,7 @@ import * as packageJson from '../package.json';
 
 import type { ProtocolRequest } from 'playwright-core/lib/server/transport';
 import type { CRBrowser } from 'playwright-core/lib/server/chromium/crBrowser';
-import type { AcquireResponse, ActiveSession, Browser, BrowserBindingKey, BrowserEndpoint, BrowserRunOptions, BrowserWorker, ClosedSession, ConnectOverCDPOptions, HistoryResponse, LimitsResponse, SessionGuardrails, SessionsResponse, WorkersLaunchOptions } from '..';
+import type { AcquireResponse, ActiveSession, Browser, BrowserBindingKey, BrowserEndpoint, BrowserWorker, ClosedSession, ConnectOverCDPOptions, HistoryResponse, LimitsResponse, SessionGuardrails, SessionsResponse, WorkersLaunchOptions } from '..';
 import type { ChannelOwner } from 'playwright-core/lib/client/channelOwner';
 
 function resetMonotonicTime() {
@@ -260,6 +260,9 @@ export async function acquire(endpoint: BrowserEndpoint, options?: WorkersLaunch
   const response: AcquireResponse = JSON.parse(text);
   return response;
 }
+
+// `lab` is accepted by Browser Run but is not in the workers-types options type.
+type BrowserRunOptions = BrowserRunAcquireOptions & { lab?: boolean };
 
 function toBrowserRunOptions(options?: WorkersLaunchOptions & { persistent?: boolean }): BrowserRunOptions {
   const rpcOptions = { ...options };

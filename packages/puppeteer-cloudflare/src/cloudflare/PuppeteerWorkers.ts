@@ -9,11 +9,7 @@ import type {ConnectionTransport} from 'puppeteer-core/lib/common/ConnectionTran
 import type {ConnectOptions} from 'puppeteer-core/lib/common/ConnectOptions.js';
 import {Puppeteer} from 'puppeteer-core/lib/common/Puppeteer.js';
 
-import type {
-  BrowserRunAcquireResult,
-  BrowserRunOptions,
-  BrowserWorker,
-} from './BrowserWorker.js';
+import type {BrowserWorker} from './BrowserWorker.js';
 import {
   connectToCDPBrowser,
   type Browsers,
@@ -67,22 +63,11 @@ export type AcquireResponse = BrowserRunAcquireResult;
 /**
  * @public
  */
-export interface ActiveSession {
-  sessionId: string;
-  startTime: number; // timestamp
-  // connection info, if present means there's a connection established
-  // from a worker to that session
-  connectionId?: string;
-  connectionStartTime?: string;
-}
+export type ActiveSession = BrowserRunSession;
 /**
  * @public
  */
-export interface ClosedSession extends ActiveSession {
-  endTime: number; // timestamp
-  closeReason: number; // close reason code
-  closeReasonText: string; // close reason description
-}
+export type ClosedSession = BrowserRunSession;
 /**
  * @public
  */
@@ -98,12 +83,7 @@ export interface HistoryResponse {
 /**
  * @public
  */
-export interface LimitsResponse {
-  activeSessions: Array<{id: string}>;
-  maxConcurrentSessions: number;
-  allowedBrowserAcquisitions: number; // 1 if allowed, 0 otherwise
-  timeUntilNextAllowedBrowserAcquisition: number;
-}
+export type LimitsResponse = BrowserRunLimits;
 /**
  * @public
  */
@@ -113,7 +93,7 @@ export interface WorkersLaunchOptions {
   recording?: boolean;
   lab?: boolean;
   browser?: Browsers;
-  outboundByHost?: Record<string, BrowserWorker>;
+  outboundByHost?: BrowserRunAcquireOptions['outboundByHost'];
   // restricts the outbound traffic of the session being acquired, latched for
   // its lifetime. Travels over a browser binding only, so it has no effect when
   // connecting to an endpoint addressed by URL.
@@ -159,8 +139,9 @@ export class PuppeteerWorkers extends Puppeteer {
       typeof endpoint.launch === 'function'
     ) {
       const response = await endpoint.launch(toBrowserRunOptions(options));
-      sessionPinnedEndpoints.add(response.webSocket);
-      return await this.connect(response.webSocket, response.sessionId);
+      const webSocket = connectionEndpointOf(response);
+      sessionPinnedEndpoints.add(webSocket);
+      return await this.connect(webSocket, response.sessionId);
     }
     if (options?.browser) {
       // Sessions for these browsers are acquired by the connect call itself.
@@ -269,8 +250,9 @@ export class PuppeteerWorkers extends Puppeteer {
         );
       }
       const response = await browserWorker.launch(toBrowserRunOptions(options));
-      sessionPinnedEndpoints.add(response.webSocket);
-      return await this.connect(response.webSocket, response.sessionId);
+      const webSocket = connectionEndpointOf(response);
+      sessionPinnedEndpoints.add(webSocket);
+      return await this.connect(webSocket, response.sessionId);
     }
     // Without a sessionId the browser is acquired by this call itself, so
     // there's no session to connect to yet.
@@ -290,7 +272,7 @@ export class PuppeteerWorkers extends Puppeteer {
         !sessionPinnedEndpoints.has(connectionEndpoint)
       ) {
         const connection = await connectionEndpoint.connectSession!(sessionId);
-        connectionEndpoint = connection.webSocket;
+        connectionEndpoint = connectionEndpointOf(connection);
         sessionPinnedEndpoints.add(connectionEndpoint);
       }
       const connectionTransport: ConnectionTransport =
@@ -378,6 +360,16 @@ export class PuppeteerWorkers extends Puppeteer {
     return response;
   }
 }
+
+// The `Fetcher` that a Browser Run RPC connection is pinned to. It is a
+// `BrowserWorker` for consumers, but this package builds with the DOM `fetch`
+// types, which differ from the Workers ones.
+function connectionEndpointOf(connection: BrowserRunConnection): BrowserWorker {
+  return connection.webSocket as unknown as BrowserWorker;
+}
+
+// `lab` is accepted by Browser Run but is not in the workers-types options type.
+type BrowserRunOptions = BrowserRunAcquireOptions & {lab?: boolean};
 
 function toBrowserRunOptions(
   options?: WorkersLaunchOptions

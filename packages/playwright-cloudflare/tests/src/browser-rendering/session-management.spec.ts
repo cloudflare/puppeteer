@@ -51,7 +51,7 @@ test(`should launch a lab browser`, async ({ binding }) => {
 
 test(`should pass lab and outbound workers to the RPC acquire method`, async () => {
   let received: unknown;
-  const outboundWorker = { fetch: async () => new Response('ok') } as BrowserWorker;
+  const outboundWorker = { fetch: async () => new Response('ok') } as unknown as Fetcher;
   const rpcBinding = {
     fetch: async () => new Response('ok'),
     connectSession: async () => { throw new Error('not called'); },
@@ -88,7 +88,7 @@ test(`should pass translated options to RPC launch`, async () => {
       received = options;
       return {
         sessionId: 'session',
-        webSocket: { fetch: async () => new Response('not a websocket') } as BrowserWorker,
+        webSocket: { fetch: async () => new Response('not a websocket') } as unknown as Fetcher,
       };
     },
   } as BrowserWorker;
