@@ -37,6 +37,11 @@ export const skipTests: string[] = [
   'library/page-event-crash.spec.ts > should be able to close context when page crashes',
   'library/page-event-crash.spec.ts > should cancel waitForEvent when page crashes',
   'library/page-event-crash.spec.ts > should throw on any action after page crashes',
+  // The injected clock follows real time until install(). If the round trips to
+  // Browser Run before install() take more than 100 ms, performance.now() is
+  // ahead by that time.
+  'library/page-clock.spec.ts > stubTimers > replaces global performance.now',
+  'library/page-clock.spec.ts > stubTimers > replaces global performance.timeOrigin',
   'library/permissions.spec.ts > permissions > should isolate permissions between browser contexts',
   'library/permissions.spec.ts > local network request is allowed from public origin',
   'library/permissions.spec.ts > permissions > should be prompt by default',
