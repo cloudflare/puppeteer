@@ -1,5 +1,5 @@
 {
-  "name": "@cloudflare/browser",
+  "name": "@cloudflare/browser-run",
   "private": true,
   "description": "Cloudflare Browser Run packages",
   "workspaces": [
