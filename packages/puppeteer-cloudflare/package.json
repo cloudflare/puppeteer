@@ -5,10 +5,10 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/cloudflare/browser.git",
+    "url": "git+https://github.com/cloudflare/browser-run.git",
     "directory": "packages/puppeteer-cloudflare"
   },
-  "homepage": "https://github.com/cloudflare/browser/tree/main/packages/puppeteer-cloudflare",
+  "homepage": "https://github.com/cloudflare/browser-run/tree/main/packages/puppeteer-cloudflare",
   "type": "module",
   "types": "./lib/index.d.ts",
   "files": [
