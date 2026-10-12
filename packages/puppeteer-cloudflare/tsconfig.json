@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "lib": ["ES2022", "DOM"],
+    "paths": {
+      "devtools-protocol/types/protocol-mapping.js": ["../../submodules/puppeteer/packages/puppeteer-core/node_modules/devtools-protocol/types/protocol-mapping.d.ts"],
+      "puppeteer-core/lib/*": ["../../submodules/puppeteer/packages/puppeteer-core/src/*"],
+    }
+  },
+  "include": ["src/**/*.ts"]
+}

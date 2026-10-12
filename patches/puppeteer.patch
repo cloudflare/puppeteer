@@ -1,0 +1,379 @@
+diff --git a/packages/puppeteer-core/src/api/Browser.ts b/packages/puppeteer-core/src/api/Browser.ts
+index 6a441ee0789..48cd7c1bd79 100644
+--- a/packages/puppeteer-core/src/api/Browser.ts
++++ b/packages/puppeteer-core/src/api/Browser.ts
+@@ -727,4 +727,13 @@ export abstract class Browser extends EventEmitter<BrowserEvents> {
+    * @internal
+    */
+   abstract isNetworkEnabled(): boolean;
++
++  /**
++   * Browser Run session ID.
++   *
++   * @public
++   */
++  sessionId(): string {
++    throw new Error('Not implemented');
++  }
+ }
+diff --git a/packages/puppeteer-core/src/cdp/Browser.ts b/packages/puppeteer-core/src/cdp/Browser.ts
+index 6d5c2fccde1..648968363ee 100644
+--- a/packages/puppeteer-core/src/cdp/Browser.ts
++++ b/packages/puppeteer-core/src/cdp/Browser.ts
+@@ -68,6 +68,7 @@ export class CdpBrowser extends BrowserBase {
+     waitForInitiallyDiscoveredTargets = true,
+     networkEnabled = true,
+     handleDevToolsAsPage = false,
++    sessionId?: string,
+   ): Promise<CdpBrowser> {
+     const browser = new CdpBrowser(
+       connection,
+@@ -80,6 +81,7 @@ export class CdpBrowser extends BrowserBase {
+       waitForInitiallyDiscoveredTargets,
+       networkEnabled,
+       handleDevToolsAsPage,
++      sessionId,
+     );
+     if (acceptInsecureCerts) {
+       await connection.send('Security.setIgnoreCertificateErrors', {
+@@ -100,6 +102,8 @@ export class CdpBrowser extends BrowserBase {
+   #networkEnabled = true;
+   #targetManager: TargetManager;
+   #handleDevToolsAsPage = false;
++  // Keep the remote Browser Run session available for diagnostics.
++  #sessionId: string;
+ 
+   constructor(
+     connection: Connection,
+@@ -112,6 +116,7 @@ export class CdpBrowser extends BrowserBase {
+     waitForInitiallyDiscoveredTargets = true,
+     networkEnabled = true,
+     handleDevToolsAsPage = false,
++    sessionId?: string,
+   ) {
+     super();
+     this.#networkEnabled = networkEnabled;
+@@ -139,6 +144,7 @@ export class CdpBrowser extends BrowserBase {
+         new CdpBrowserContext(this.#connection, this, contextId),
+       );
+     }
++    this.#sessionId = sessionId || 'unknown';
+   }
+ 
+   #emitDisconnected = () => {
+@@ -545,4 +551,12 @@ export class CdpBrowser extends BrowserBase {
+   override isNetworkEnabled(): boolean {
+     return this.#networkEnabled;
+   }
++
++  /**
++   * Browser Run session ID.
++   * @public
++   */
++  override sessionId(): string {
++    return this.#sessionId;
++  }
+ }
+diff --git a/packages/puppeteer-core/src/cdp/Page.ts b/packages/puppeteer-core/src/cdp/Page.ts
+index fed1282dddf..a6eef18ed05 100644
+--- a/packages/puppeteer-core/src/cdp/Page.ts
++++ b/packages/puppeteer-core/src/cdp/Page.ts
+@@ -698,16 +698,36 @@ export class CdpPage extends Page {
+       if (!cookie.url && pageURL.startsWith('http')) {
+         item.url = pageURL;
+       }
++      const partitionKeys: Protocol.Network.CookiePartitionKey[] = [];
++      if (item.url && !item.partitionKey) {
++        // Network.getCookies is target-scoped, so it returns partitioned
++        // cookies visible from this page rather than every browser partition.
++        const {cookies: matchingCookies} =
++          await this.#primaryTargetClient.send('Network.getCookies', {
++            urls: [item.url],
++          });
++        for (const matchingCookie of matchingCookies) {
++          if (
++            matchingCookie.name === item.name &&
++            matchingCookie.partitionKey &&
++            !partitionKeys.some(partitionKey => {
++              return (
++                partitionKey.topLevelSite ===
++                  matchingCookie.partitionKey!.topLevelSite &&
++                partitionKey.hasCrossSiteAncestor ===
++                  matchingCookie.partitionKey!.hasCrossSiteAncestor
++              );
++            })
++          ) {
++            partitionKeys.push(matchingCookie.partitionKey);
++          }
++        }
++      }
+       await this.#primaryTargetClient.send('Network.deleteCookies', item);
+-      if (pageURL.startsWith('http') && !item.partitionKey) {
+-        const url = new URL(pageURL);
+-        // Delete also cookies from the page's partition.
++      for (const partitionKey of partitionKeys) {
+         await this.#primaryTargetClient.send('Network.deleteCookies', {
+           ...item,
+-          partitionKey: {
+-            topLevelSite: url.origin.replace(`:${url.port}`, ''),
+-            hasCrossSiteAncestor: false,
+-          },
++          partitionKey,
+         });
+       }
+     }
+diff --git a/packages/puppeteer-core/src/common/BrowserConnector.ts b/packages/puppeteer-core/src/common/BrowserConnector.ts
+index bc7880ae451..86e22a0cc03 100644
+--- a/packages/puppeteer-core/src/common/BrowserConnector.ts
++++ b/packages/puppeteer-core/src/common/BrowserConnector.ts
+@@ -5,22 +5,14 @@
+  */
+ 
+ import type {Browser} from '../api/Browser.js';
+-import {_connectToBiDiBrowser} from '../bidi/BrowserConnector.js';
+ import {_connectToCdpBrowser} from '../cdp/BrowserConnector.js';
+-import {environment, isNode} from '../environment.js';
+ import {assert} from '../util/assert.js';
+ import {isErrorLike} from '../util/ErrorLike.js';
+
++import {BrowserWebSocketTransport} from './BrowserWebSocketTransport.js';
+ import type {ConnectionTransport} from './ConnectionTransport.js';
+ import type {ConnectOptions} from './ConnectOptions.js';
+
+-const getWebSocketTransportClass = async () => {
+-  return isNode
+-    ? (await import('../node/NodeWebSocketTransport.js')).NodeWebSocketTransport
+-    : (await import('../common/BrowserWebSocketTransport.js'))
+-        .BrowserWebSocketTransport;
+-};
+-
+ /**
+  * Users should never call this directly; it's called when calling
+  * `puppeteer.connect`. This method attaches Puppeteer to an existing browser instance.
+@@ -33,21 +25,13 @@ export async function _connectToBrowser(
+   const {connectionTransport, endpointUrl} =
+     await getConnectionTransport(options);
+ 
+-  if (options.protocol === 'webDriverBiDi') {
+-    const bidiBrowser = await _connectToBiDiBrowser(
+-      connectionTransport,
+-      endpointUrl,
+-      options,
+-    );
+-    return bidiBrowser;
+-  } else {
+-    const cdpBrowser = await _connectToCdpBrowser(
+-      connectionTransport,
+-      endpointUrl,
+-      options,
+-    );
+-    return cdpBrowser;
+-  }
++  // The Workers build supports CDP and excludes Node-only BiDi dependencies.
++  const cdpBrowser = await _connectToCdpBrowser(
++    connectionTransport,
++    endpointUrl,
++    options,
++  );
++  return cdpBrowser;
+ }
+ 
+ /**
+@@ -57,96 +41,35 @@ export async function _connectToBrowser(
+ async function getConnectionTransport(
+   options: ConnectOptions,
+ ): Promise<{connectionTransport: ConnectionTransport; endpointUrl: string}> {
+-  const {
+-    browserWSEndpoint,
+-    browserURL,
+-    channel,
+-    transport,
+-    headers = {},
+-  } = options;
++  const {browserWSEndpoint, browserURL, transport} = options;
+
+   assert(
+     Number(!!browserWSEndpoint) +
+       Number(!!browserURL) +
+-      Number(!!transport) +
+-      Number(!!channel) ===
++      Number(!!transport) ===
+       1,
+-    'Exactly one of browserWSEndpoint, browserURL, transport or channel must be passed to puppeteer.connect',
++    'Exactly one of browserWSEndpoint, browserURL or transport must be passed to puppeteer.connect',
+   );
+
+   if (transport) {
+     return {connectionTransport: transport, endpointUrl: ''};
+   } else if (browserWSEndpoint) {
+-    const WebSocketClass = await getWebSocketTransportClass();
++    // BrowserWebSocketTransport uses the WebSocket API available in Workers.
+     const connectionTransport: ConnectionTransport =
+-      await WebSocketClass.create(browserWSEndpoint, headers);
++      await BrowserWebSocketTransport.create(browserWSEndpoint);
+     return {
+       connectionTransport: connectionTransport,
+       endpointUrl: browserWSEndpoint,
+     };
+   } else if (browserURL) {
+     const connectionURL = await getWSEndpoint(browserURL);
+-    const WebSocketClass = await getWebSocketTransportClass();
++    // Use the same Workers-compatible transport for discovered endpoints.
+     const connectionTransport: ConnectionTransport =
+-      await WebSocketClass.create(connectionURL);
++      await BrowserWebSocketTransport.create(connectionURL);
+     return {
+       connectionTransport: connectionTransport,
+       endpointUrl: connectionURL,
+     };
+-  } else if (options.channel && isNode) {
+-    const {detectBrowserPlatform, resolveDefaultUserDataDir, Browser} =
+-      await import('@puppeteer/browsers');
+-    const platform = detectBrowserPlatform();
+-    if (!platform) {
+-      throw new Error('Could not detect required browser platform');
+-    }
+-    const {convertPuppeteerChannelToBrowsersChannel} =
+-      await import('../node/LaunchOptions.js');
+-    const {join} = await import('node:path');
+-    const userDataDir = resolveDefaultUserDataDir(
+-      Browser.CHROME,
+-      platform,
+-      convertPuppeteerChannelToBrowsersChannel(options.channel),
+-    );
+-    const portPath = join(userDataDir, 'DevToolsActivePort');
+-    try {
+-      const fileContent = await environment.value.fs.promises.readFile(
+-        portPath,
+-        'ascii',
+-      );
+-      const [rawPort, rawPath] = fileContent
+-        .split('\n')
+-        .map(line => {
+-          return line.trim();
+-        })
+-        .filter(line => {
+-          return !!line;
+-        });
+-      if (!rawPort || !rawPath) {
+-        throw new Error(`Invalid DevToolsActivePort '${fileContent}' found`);
+-      }
+-      const port = parseInt(rawPort, 10);
+-      if (isNaN(port) || port <= 0 || port > 65535) {
+-        throw new Error(`Invalid port '${rawPort}' found`);
+-      }
+-      const browserWSEndpoint = `ws://localhost:${port}${rawPath}`;
+-      const WebSocketClass = await getWebSocketTransportClass();
+-      const connectionTransport = await WebSocketClass.create(
+-        browserWSEndpoint,
+-        headers,
+-      );
+-      return {
+-        connectionTransport: connectionTransport,
+-        endpointUrl: browserWSEndpoint,
+-      };
+-    } catch (error) {
+-      throw new Error(
+-        `Could not find DevToolsActivePort for ${options.channel} at ${portPath}`,
+-        {
+-          cause: error,
+-        },
+-      );
+-    }
+   }
+   throw new Error('Invalid connection options');
+ }
+diff --git a/packages/puppeteer-core/src/common/util.ts b/packages/puppeteer-core/src/common/util.ts
+index 61ea5871dfe..d8f36286d12 100644
+--- a/packages/puppeteer-core/src/common/util.ts
++++ b/packages/puppeteer-core/src/common/util.ts
+@@ -188,7 +188,13 @@ export function evaluationString(
+     return JSON.stringify(arg);
+   }
+
+-  return `(${fun})(${args.map(serializeArgument).join(',')})`;
++  // function is most likely bundled with wrangler,
++  // which uses esbuild with keepNames enabled.
++  // See: https://github.com/cloudflare/workers-sdk/issues/7107
++  const script = `(${fun})(${args.map(serializeArgument).join(',')})`;
++  return globalThis.navigator?.userAgent === 'Cloudflare-Workers'
++    ? `((__name => (${script}))(t => t))`
++    : script;
+ }
+ 
+ /**
+@@ -200,7 +206,24 @@ export async function getReadableAsTypedArray(
+ ): Promise<Uint8Array | null> {
+   const buffers: Uint8Array[] = [];
+   const reader = readable.getReader();
+-  if (path) {
++  if (
++    path &&
++    globalThis.navigator?.userAgent === 'Cloudflare-Workers'
++  ) {
++    // Workers file handles do not preserve repeated writeFile append behavior.
++    await environment.value.fs.promises.writeFile(path, new Uint8Array());
++    while (true) {
++      const {done, value} = await reader.read();
++      if (done) {
++        break;
++      }
++      await environment.value.fs.promises.appendFile(path, value);
++    }
++    const file = await environment.value.fs.promises.readFile(path);
++    return file.length === 0
++      ? null
++      : new Uint8Array(file.buffer, file.byteOffset, file.byteLength);
++  } else if (path) {
+     const fileHandle = await environment.value.fs.promises.open(path, 'w+');
+     try {
+       while (true) {
+diff --git a/packages/puppeteer-core/src/util/Function.ts b/packages/puppeteer-core/src/util/Function.ts
+index ae0f161c6d9..f0d5ae5f40c 100644
+--- a/packages/puppeteer-core/src/util/Function.ts
++++ b/packages/puppeteer-core/src/util/Function.ts
+@@ -29,27 +29,29 @@ export const createFunction = (
+  */
+ export function stringifyFunction(fn: (...args: never) => unknown): string {
+   let value = fn.toString();
+-  if (
++  const isFunction =
+     value.match(/^(async )*function(\(|\s)/) ||
+-    value.match(/^(async )*function\s*\*\s*/)
+-  ) {
+-    return value;
+-  }
++    value.match(/^(async )*function\s*\*\s*/);
+   const isArrow =
+     value.startsWith('(') ||
+     value.match(/^async\s*\(/) ||
+     value.match(
+       /^(async)*\s*(?:[$_\p{ID_Start}])(?:[$\u200C\u200D\p{ID_Continue}])*\s*=>/u,
+     );
+-  if (isArrow) {
+-    return value;
+-  }
+-  // This means we might have a function shorthand (e.g. `test(){}`). Let's
+-  // try prefixing.
+-  let prefix = 'function ';
+-  if (value.startsWith('async ')) {
+-    prefix = `async ${prefix}`;
+-    value = value.substring('async '.length);
++  if (!isFunction && !isArrow) {
++    // This means we might have a function shorthand (e.g. `test(){}`). Let's
++    // try prefixing.
++    let prefix = 'function ';
++    if (value.startsWith('async ')) {
++      prefix = `async ${prefix}`;
++      value = value.substring('async '.length);
++    }
++    value = `${prefix}${value}`;
+   }
+-  return `${prefix}${value}`;
++
++  // Functions bundled by Wrangler use esbuild's keepNames helper.
++  // See: https://github.com/cloudflare/workers-sdk/issues/7107
++  return globalThis.navigator?.userAgent === 'Cloudflare-Workers'
++    ? `((__name => (${value}))(t => t))`
++    : value;
+ }

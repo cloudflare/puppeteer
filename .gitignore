@@ -1,43 +1,27 @@
 # Dependencies
-node_modules
+node_modules/
 
-# Production
-build/
+# Build output
 lib/
-bin/
+dist/
 
-# Generated files
-**/*.tsbuildinfo
-*.api.json
-*.tgz
-yarn.lock
-.docusaurus/
-.cache-loader
-test/output-*/
-.dev_profile*
-coverage/
-generated/
-.eslintcache
-.cache/
+# Test output
+test-results/
+playwright-report/
 
-# IDE Artifacts
-.vscode/*
-!.vscode/extensions.json
-!.vscode/*.template.json
-.devcontainer
+# Local configuration
+.env
+.env.*.local
+.wrangler/
 
-# Misc
+# IDE and OS files
+.idea/
+.vscode/
+*.swp
+*.swo
 .DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+Thumbs.db
 
+# Logs
+*.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Wireit
-.wireit
-
-.wrangler

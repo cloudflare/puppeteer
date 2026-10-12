@@ -12,4 +12,4 @@ export const stub = (): never => {
     throw new Skipped("Skipped because sinon.stub is not supported in this environment");
 };
 
-export default {};
+export default {spy, stub, useFakeTimers};

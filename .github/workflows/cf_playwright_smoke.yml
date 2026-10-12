@@ -1,0 +1,64 @@
+name: "Playwright for Cloudflare - Smoke Tests"
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: cf-playwright-worker-deployment
+  cancel-in-progress: false
+
+jobs:
+  test_smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Prepare package
+        run: |
+          npm ci
+          git submodule update --init
+          cd packages/playwright-cloudflare
+          npm run build
+          npm run test:prepare:built
+
+      - name: Deploy test Worker
+        working-directory: packages/playwright-cloudflare/tests
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        # Proxy tests read the test list from the deployed Worker. Export the
+        # new version ID so generation waits until that version serves requests.
+        run: |
+          set -o pipefail
+          npx wrangler deploy | tee "$RUNNER_TEMP/wrangler-deploy.log"
+          version="$(sed -n 's/^Current Version ID: //p' "$RUNNER_TEMP/wrangler-deploy.log" | tail -n 1)"
+          test -n "$version"
+          echo "EXPECTED_WORKER_VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Type-check Cloudflare CDP types
+        run: |
+          cd packages/playwright-cloudflare/tests
+          npm ci
+          npm run test-types
+
+      - name: Run Smoke Tests
+        working-directory: packages/playwright-cloudflare
+        env:
+          TESTS_SERVER_URL: https://playwright-test-workers.rendering.cfdata.org
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+        run: |
+          npm run test:smoke -- --reporter=html
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-smoke-report--attempt-${{ github.run_attempt }}
+          path: packages/playwright-cloudflare/tests/playwright-report/
+          retention-days: 30

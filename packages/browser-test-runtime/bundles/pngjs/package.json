@@ -1,0 +1,9 @@
+{
+  "name": "pngjs-bundle",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "browserify-zlib": "^0.2.0",
+    "pngjs": "^6.0.0"
+  }
+}

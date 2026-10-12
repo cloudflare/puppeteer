@@ -1,0 +1,114 @@
+/* Base layout */
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  margin: 0;
+  color: #111;
+}
+
+h1 {
+  margin-top: 0;
+}
+
+.app {
+  display: flex;
+  min-height: 100vh;
+}
+
+.left {
+  flex: 1;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+.right {
+  width: 60%;
+  min-width: 360px;
+  background: #f7f7f7;
+  display: flex;
+  justify-content: center;
+  overflow: auto;
+}
+
+.right-inner {
+  padding: 16px;
+  width: 100%;
+}
+
+/* Loading spinner */
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 5px solid #6366f1;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Sections (visibility handled by React) */
+/* details is conditionally rendered by React */
+
+.loading {
+  background-color: white;
+}
+
+.loading .loading-text {
+  margin: 12px 0;
+  color: #555;
+  font-size: 14px;
+}
+
+.loading .logline-category {
+  color: #555;
+}
+
+/* error is conditionally rendered by React */
+
+.error h2 {
+  color: #e74c3c;
+  margin: 0 0 8px;
+}
+
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex-direction: column;
+  min-height: 220px;
+}
+
+.screenshot {
+  width: 100%;
+  height: auto;
+  border: 1px solid #ddd;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  background: white;
+}
+
+/* error stack is conditionally rendered by React */
+/* Keep default pre styling */
+
+/* Small screens */
+@media (max-width: 900px) {
+  .app {
+    flex-direction: column;
+  }
+
+  .right {
+    width: 100%;
+    min-width: 0;
+  }
+}

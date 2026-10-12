@@ -15,16 +15,22 @@ const excludedFiles = [
   'browser.spec.ts',
   'browsercontext-cookies.spec.ts',
   'browsercontext.spec.ts',
+  'cdp/a11yLoaderId.spec.ts',
   'cdp/backendNodeId.spec.ts',
   'cdp/bfcache.spec.ts',
   'cdp/CDPSession.spec.ts',
   'cdp/devtools.spec.ts',
   'cdp/extensions.spec.ts',
+  'cdp/heapSnapshot.spec.ts',
+  'cdp/interventionHeaders.spec.ts',
+  'cdp/network.spec.ts',
+  'cdp/pdf.spec.ts',
   'cdp/pipe.spec.ts',
   'cdp/prerender.spec.ts',
   'cdp/queryObjects.spec.ts',
   'cdp/screencast.spec.ts',
   'cdp/TargetManager.spec.ts',
+  'cdp/userDataDir.spec.ts',
   'chromiumonly.spec.ts',
   'connect.spec.ts',
   'debugInfo.spec.ts',
@@ -48,7 +54,7 @@ const excludedFiles = [
   'worker.spec.ts',
 ];
 
-const sourceTestsDir = path.join(basedir, '..', '..', '..', 'test', 'src');
+const sourceTestsDir = path.join(basedir, '..', '..', '..', 'submodules', 'puppeteer', 'test', 'src');
 const cloudflareSourceTestsDir = path.join(basedir, '..', 'tests', 'src');
 const workerTestsDir = path.join(basedir, '..', 'tests', 'workerTests');
 
@@ -66,7 +72,7 @@ function setTestFilePlugin() {
       if (/\.(spec|test)\.ts$/.test(id)) {
         return {
           code: [
-            `import { setCurrentTestFile } from '@cloudflare/playwright/internal';setCurrentTestFile(${JSON.stringify(testPath)});globalThis.__dirname = ${JSON.stringify(path.dirname(testPath))};`,
+            `import { setCurrentTestFile } from '@cloudflare/browser-test-runtime';setCurrentTestFile(${JSON.stringify(testPath)});globalThis.__dirname = ${JSON.stringify(path.dirname(testPath))};`,
             src,
             'setCurrentTestFile(undefined);',
           ].join('\n'),
@@ -80,7 +86,7 @@ function setTestFilePlugin() {
 deleteDir(workerTestsDir);
 
 // generate workerTests/index.ts file
-const testFiles = listFiles(sourceTestsDir)
+const testFiles = listFiles(sourceTestsDir, {recursive: true})
   .filter(file => {
     return /\.(test|spec)\.ts$/.test(file);
   })
@@ -107,6 +113,86 @@ const cloudflareTestFiles = listFiles(cloudflareSourceTestsDir, {
       .replace(/\.ts$/, '');
   });
 
+function tracingTempDirectoryPlugin() {
+  return {
+    name: 'tracing-temp-directory',
+    enforce: 'pre',
+    transform(code, id) {
+      if (!id.endsWith('/tracing.spec.ts')) {
+        return;
+      }
+      return code.replaceAll('import.meta.dirname', JSON.stringify('/tmp'));
+    },
+  };
+}
+
+function remoteTestServerPlugin() {
+  return {
+    name: 'remote-test-server',
+    enforce: 'pre',
+    transform(code, id) {
+      if (id.endsWith('/page.spec.ts')) {
+        return code.replace(
+          "    it('should work with options parameter', async () => {\n      const {page, server} = await getTestState();\n\n      expect(\n        await page.evaluate(() => {\n          return navigator.userAgent;\n        }),\n      ).toContain('Mozilla');\n      await page.setUserAgent({userAgent: 'foobar'});",
+          "    it('should work with options parameter', async () => {\n      const {page, server} = await getTestState();\n\n      await page.setUserAgent({userAgent: 'foobar'});",
+        );
+      }
+      if (id.endsWith('/console.spec.ts')) {
+        // Worker fixtures use HTTPS, so an HTTP URL tests mixed-content blocking
+        // instead of the network failure and console location asserted upstream.
+        // Browser Run's network proxy can surface the failed lookup as a reset.
+        return code
+          .replaceAll('http://wat', 'https://does-not-exist.invalid')
+          .replace(
+            'expect(message.text()).toContain(`ERR_NAME_NOT_RESOLVED`);',
+            "expect(message.text()).atLeastOneToContain(['ERR_NAME_NOT_RESOLVED', 'ERR_CONNECTION_RESET']);",
+          );
+      }
+      if (id.endsWith('/navigation.spec.ts')) {
+        return code
+          .replace(
+            "it('should work when subframe issues window.stop()', async function () {",
+            "it('should work when subframe issues window.stop()', async function ({}, testInfo) {",
+          )
+          .replace('timeout: this.timeout() - 1000,', 'timeout: testInfo.timeout - 1000,');
+      }
+      if (!id.endsWith('/cookies.spec.ts')) {
+        return;
+      }
+
+      return code
+        .replace(
+          "domain: 'localhost',\n        path: '/',\n        sameParty: false,\n        expires: -1,\n        httpOnly: false,\n        secure: false,\n        sourceScheme: 'Unset',",
+          "domain: new URL(server.EMPTY_PAGE).hostname,\n        path: '/',\n        sameParty: false,\n        expires: -1,\n        httpOnly: false,\n        secure: new URL(server.EMPTY_PAGE).protocol === 'https:',\n        sourceScheme: 'Unset',",
+        )
+        .replace(
+          "domain: 'localhost',\n            path: '/',\n            sameParty: false,\n            expires: -1,\n            size: 14,\n            httpOnly: false,\n            secure: false,\n            session: true,\n            sourceScheme: 'Unset',",
+          "domain: new URL(server.EMPTY_PAGE).hostname,\n            path: '/',\n            sameParty: false,\n            expires: -1,\n            size: 14,\n            httpOnly: false,\n            secure: new URL(server.EMPTY_PAGE).protocol === 'https:',\n            session: true,\n            sourceScheme: 'Unset',",
+        )
+        .replace(
+          '      await expectCookieEquals(await page.cookies(), [\n        {\n          name: \'partitionCookie\',',
+          '      const cookies = await page.cookies();\n      await expectCookieEquals(cookies, [\n        {\n          name: \'partitionCookie\',',
+        )
+        .replace(
+          "          partitionKey: isChrome\n            ? url.origin.replace(`:${url.port}`, '')\n            : url.origin,",
+          '',
+        )
+        .replace(
+          "      ]);\n    });\n    it('should not set a cookie on a blank page'",
+          "      ]);\n      const partitionSite = new URL(cookies[0]!.partitionKey!);\n      expect(partitionSite.protocol).toBe(url.protocol);\n      expect(\n        url.hostname === partitionSite.hostname ||\n          url.hostname.endsWith(`.${partitionSite.hostname}`),\n      ).toBe(true);\n    });\n    it('should not set a cookie on a blank page'",
+        )
+        .replace(
+          "      const origin = isChrome\n        ? url.origin.replace(`:${url.port}`, '')\n        : url.origin;",
+          "      const origin = url.origin;",
+        )
+        .replace(
+          "      expect(await page.cookies()).toHaveLength(1);\n      await page.deleteCookie({\n        url: url.toString(),\n        name: 'partitionCookie',\n        partitionKey: origin,\n      });",
+          "      const [cookie] = await page.cookies();\n      expect(cookie).toBeDefined();\n      await page.deleteCookie({\n        url: url.toString(),\n        name: 'partitionCookie',\n        partitionKey: cookie!.partitionKey,\n      });",
+        );
+    },
+  };
+}
+
 writeFile(
   path.join(workerTestsDir, 'index.ts'),
   `import '../src/server/workerFixtures';
@@ -121,8 +207,15 @@ ${[...testFiles, ...cloudflareTestFiles]
 
 (async () => {
   await build({
-    plugins: [setTestFilePlugin()],
+    plugins: [
+      setTestFilePlugin(),
+      tracingTempDirectoryPlugin(),
+      remoteTestServerPlugin(),
+    ],
     root: sourceTestsDir,
+    define: {
+      'import.meta.dirname': 'globalThis.__dirname',
+    },
     resolve: {
       alias: {
         // https://workers-nodejs-compat-matrix.pages.dev/
@@ -159,10 +252,16 @@ ${[...testFiles, ...cloudflareTestFiles]
 
         '@pptr/testserver': path.resolve(
           basedir,
-          '../tests/src/server/workerFixtures',
+          '../tests/src/server/mocha-utils',
         ),
 
+        'puppeteer-core/internal/node/util/fs.js': path.resolve(
+          basedir,
+          '../../../submodules/puppeteer/packages/puppeteer-core/src/node/util/fs.ts',
+        ),
         'puppeteer-core/internal': '@cloudflare/puppeteer/internal',
+        'puppeteer-core': '@cloudflare/puppeteer',
+        'puppeteer/internal/puppeteer.js': '@cloudflare/puppeteer',
         'puppeteer/lib/cjs/puppeteer/puppeteer.js': '@cloudflare/puppeteer',
         puppeteer: '@cloudflare/puppeteer',
 
@@ -173,8 +272,7 @@ ${[...testFiles, ...cloudflareTestFiles]
         ),
 
         // eslint-disable-next-line prettier/prettier
-        'fs': '@cloudflare/playwright/fs',
-        'node:fs': '@cloudflare/playwright/fs',
+        'fs': 'node:fs',
 
         './mocha-utils.js': path.resolve(
           basedir,
@@ -218,6 +316,7 @@ ${[...testFiles, ...cloudflareTestFiles]
           'node:dns',
           'node:domain',
           'node:events',
+          'node:fs',
           'node:http',
           'node:http2',
           'node:https',
@@ -239,19 +338,22 @@ ${[...testFiles, ...cloudflareTestFiles]
           'node:zlib',
 
           'cloudflare:workers',
-          '@cloudflare/puppeteer/internal',
-          '@cloudflare/puppeteer/internal/util/Deferred.js',
+          '@cloudflare/browser-test-runtime',
           '@cloudflare/puppeteer',
-          '@cloudflare/playwright',
-          '@cloudflare/playwright/test',
-          '@cloudflare/playwright/internal',
-          '@cloudflare/playwright/fs',
+          /^@cloudflare\/puppeteer\/internal\/.+/,
+          'expect',
+          'diff',
+          'jpeg-js',
+          'mime',
+          'mocha',
+          'pixelmatch',
+          'pngjs',
         ],
       },
       commonjsOptions: {
         transformMixedEsModules: true,
         extensions: ['.ts', '.js'],
-        include: [path.resolve(basedir, '../../../test/**/*'), /node_modules/],
+        include: [path.resolve(basedir, '../../../submodules/puppeteer/test/**/*'), /node_modules/],
       },
     },
   });
