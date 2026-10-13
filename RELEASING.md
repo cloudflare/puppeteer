@@ -133,4 +133,12 @@ A user with repository write access can start a manual test workflow. Repository
 
 The publish workflows do not have manual triggers. They run only after a user publishes a GitHub Release.
 
-The publish workflows use the repository `NODE_AUTH_TOKEN` secret to publish to npm.
+The publish workflows publish to npm with trusted publishing (OIDC), not a token. On npmjs.com, each package must have a GitHub Actions trusted publisher with these values:
+
+| Package | Repository | Workflow file |
+| --- | --- | --- |
+| `@cloudflare/puppeteer` | `cloudflare/browser-run` | `cf_puppeteer_publish.yml` |
+| `@cloudflare/playwright` | `cloudflare/browser-run` | `cf_playwright_publish.yml` |
+| `@cloudflare/playwright-mcp` | `cloudflare/browser-run` | `cf_playwright_mcp_publish.yml` |
+
+Leave the environment empty. If the repository or a workflow file is renamed, update these settings.

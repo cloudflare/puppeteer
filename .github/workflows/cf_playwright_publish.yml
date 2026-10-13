@@ -16,6 +16,9 @@ jobs:
     permissions:
       actions: read
       contents: read
+      # npm trusted publishing (OIDC). Configure each package on npmjs.com
+      # with this repository and workflow file name.
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -100,8 +103,8 @@ jobs:
           npm run check:submodules
 
       - name: Publish to npm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
         run: |
+          # Trusted publishing needs npm 11.5.1 or later.
+          npm install -g npm@^11.5.1
           cd packages/playwright-cloudflare
           npm publish ${{ github.event.release.prerelease && '--tag next' || '' }}
