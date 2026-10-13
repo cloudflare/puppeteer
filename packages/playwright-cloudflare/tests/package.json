@@ -18,7 +18,7 @@
     "@playwright/test": "^1.57.0",
     "@types/node": "^26.1.1",
     "tsd": "^0.31.1",
-    "wrangler": "^4.137.0"
+    "wrangler": "^4.149.0"
   },
   "tsd": {
     "directory": "test-d",
